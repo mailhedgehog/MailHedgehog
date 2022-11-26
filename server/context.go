@@ -1,8 +1,10 @@
 package server
 
 import (
+	"fmt"
 	"github.com/mailpiggy/MailPiggy/authorisation"
 	"github.com/mailpiggy/MailPiggy/config"
+	"github.com/mailpiggy/MailPiggy/logger"
 	"github.com/mailpiggy/MailPiggy/storage"
 )
 
@@ -16,6 +18,8 @@ func Configure(config *config.AppConfig) *Context {
 	context := &Context{
 		Config: *config,
 	}
+
+	logger.MinLogLevel = config.Log.Level
 
 	switch config.Storage.Use {
 	case "directory":
@@ -35,4 +39,12 @@ func Configure(config *config.AppConfig) *Context {
 	}
 
 	return context
+}
+
+func (context *Context) smtpBindAddr() string {
+	return context.Config.Smtp.Host + ":" + fmt.Sprint(context.Config.Smtp.Port)
+}
+
+func (context *Context) httpBindAddr() string {
+	return context.Config.Smtp.Host + ":" + fmt.Sprint(context.Config.Smtp.Port)
 }

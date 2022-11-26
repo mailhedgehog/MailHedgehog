@@ -8,9 +8,11 @@ import (
 
 type AppConfig struct {
 	Smtp struct {
-		Port int `yaml:"port"`
+		Host string `yaml:"host"`
+		Port int    `yaml:"port"`
 	} `yaml:"smtp"`
 	Http struct {
+		Host string `yaml:"host"`
 		Port int    `yaml:"port"`
 		Path string `yaml:"path"`
 	} `yaml:"http"`
@@ -27,6 +29,9 @@ type AppConfig struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
 	} `yaml:"authorisation"`
+	Log struct {
+		Level string `yaml:"level"`
+	} `yaml:"log"`
 }
 
 func ParseConfig(filePath string) *AppConfig {
@@ -45,10 +50,16 @@ func ParseConfig(filePath string) *AppConfig {
 }
 
 func (config *AppConfig) withDefaults() {
+	if len(config.Smtp.Host) <= 0 {
+		config.Smtp.Host = "0.0.0.0"
+	}
 	if config.Smtp.Port <= 0 {
 		config.Smtp.Port = 1025
 	}
 
+	if len(config.Http.Host) <= 0 {
+		config.Http.Host = "0.0.0.0"
+	}
 	if config.Http.Port <= 0 {
 		config.Http.Port = 8025
 	}
@@ -65,5 +76,9 @@ func (config *AppConfig) withDefaults() {
 		if len(config.Authorisation.File.Path) <= 0 {
 			config.Authorisation.File.Path = ""
 		}
+	}
+
+	if len(config.Log.Level) <= 0 {
+		config.Log.Level = logger.DEBUG
 	}
 }

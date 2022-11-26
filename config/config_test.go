@@ -8,8 +8,10 @@ import (
 func TestParseConfigsWithDefault(t *testing.T) {
 	config := ParseConfig("")
 
+	(*gounit.T)(t).AssertEqualsString("0.0.0.0", config.Smtp.Host)
 	(*gounit.T)(t).AssertEqualsInt(1025, config.Smtp.Port)
 
+	(*gounit.T)(t).AssertEqualsString("0.0.0.0", config.Http.Host)
 	(*gounit.T)(t).AssertEqualsInt(8025, config.Http.Port)
 	(*gounit.T)(t).AssertEqualsString("", config.Http.Path)
 
