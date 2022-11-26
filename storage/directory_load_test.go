@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
+	"github.com/mailpiggy/MailPiggy/gounit"
 	"testing"
 	"time"
 )
@@ -10,9 +11,7 @@ import (
 func TestLoad(t *testing.T) {
 	storage := CreateDirectoryStorage("")
 
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 
 	for i := 0; i < 2; i++ {
 		msg := &dto.Message{
@@ -22,16 +21,9 @@ func TestLoad(t *testing.T) {
 		storage.Store("", msg)
 	}
 
-	if storage.Count("") != 2 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 2, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertEqualsInt(2, storage.Count(""))
 
 	message, err := storage.Load("", "1")
-	if err != nil {
-		t.Error(err)
-	}
-
-	if message.ID != "1" {
-		t.Errorf("message.ID expected: %s, got: %s", "1", message.ID)
-	}
+	(*gounit.T)(t).AssertNotError(err)
+	(*gounit.T)(t).AssertEqualsString("1", string(message.ID))
 }

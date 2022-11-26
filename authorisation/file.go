@@ -48,8 +48,13 @@ func (fileAuth *FileAuth) Authorised(authType AuthorisationType, username string
 func (fileAuth *FileAuth) AuthFile(path string) int {
 	fileAuth.users = nil
 
+	if len(path) <= 0 {
+		return 0
+	}
+
 	file, err := os.Open(path)
 	logger.PanicIfError(err)
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 
@@ -60,7 +65,6 @@ func (fileAuth *FileAuth) AuthFile(path string) int {
 		} else {
 		}
 	}
-	file.Close()
 
 	if fileAuth.users == nil {
 		return 0

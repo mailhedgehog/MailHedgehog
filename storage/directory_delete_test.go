@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
+	"github.com/mailpiggy/MailPiggy/gounit"
 	"testing"
 	"time"
 )
@@ -10,9 +11,7 @@ import (
 func TestDelete(t *testing.T) {
 	storage := CreateDirectoryStorage("")
 
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 
 	for i := 0; i < 2; i++ {
 		msg := &dto.Message{
@@ -22,22 +21,14 @@ func TestDelete(t *testing.T) {
 		storage.Store("", msg)
 	}
 
-	if storage.Count("") != 2 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 2, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertEqualsInt(2, storage.Count(""))
 
-	storage.Delete("", "1")
-	if storage.Count("") != 1 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 1, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertNotError(storage.Delete("", "1"))
+	(*gounit.T)(t).AssertEqualsInt(1, storage.Count(""))
 
-	storage.Delete("", "0")
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
-	}
+	(*gounit.T)(t).AssertNotError(storage.Delete("", "0"))
+	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 
-	storage.Delete("", "1")
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
-	}
+	(*gounit.T)(t).ExpectError(storage.Delete("", "1"))
+	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 }

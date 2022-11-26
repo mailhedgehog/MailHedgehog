@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
+	"github.com/mailpiggy/MailPiggy/gounit"
 	"testing"
 	"time"
 )
@@ -22,18 +23,10 @@ func TestDeleteRoom(t *testing.T) {
 		}
 	}
 
-	if storage.RoomsCount() != 15 {
-		t.Errorf("storage.RoomsCount() expected: %d, got: %d", 15, storage.RoomsCount())
-	}
-	err := storage.DeleteRoom(room + fmt.Sprint(5))
-	if err != nil {
-		t.Error(err)
-	}
-	err = storage.DeleteRoom(room + fmt.Sprint(10))
-	if err != nil {
-		t.Error(err)
-	}
-	if storage.RoomsCount() != 13 {
-		t.Errorf("storage.RoomsCount() expected: %d, got: %d", 13, storage.RoomsCount())
-	}
+	(*gounit.T)(t).AssertEqualsInt(15, storage.RoomsCount())
+
+	(*gounit.T)(t).AssertNotError(storage.DeleteRoom(room + fmt.Sprint(5)))
+	(*gounit.T)(t).AssertNotError(storage.DeleteRoom(room + fmt.Sprint(10)))
+
+	(*gounit.T)(t).AssertEqualsInt(13, storage.RoomsCount())
 }

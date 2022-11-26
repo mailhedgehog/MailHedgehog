@@ -1,0 +1,13 @@
+smtp:
+  port: 1025
+http:
+  port: 8025
+  path: box
+storage:
+  use: directory
+  directory:
+    path: ""
+authorisation:
+  use: file
+  file:
+    path: "auth.file"

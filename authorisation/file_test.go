@@ -1,6 +1,7 @@
 package authorisation
 
 import (
+	"github.com/mailpiggy/MailPiggy/gounit"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"os"
 	"testing"
@@ -42,60 +43,32 @@ func init() {
 func TestAuthFile(t *testing.T) {
 	authorisation := CreateFileAuthorisation(filePath)
 
-	if len(authorisation.users) != 3 {
-		t.Errorf("Invalid users count expected: %d, got: %d", 3, len(authorisation.users))
-	}
+	(*gounit.T)(t).AssertEqualsInt(3, len(authorisation.users))
 
 	authorisation.AuthFile(filePath + "2")
 
-	if len(authorisation.users) > 0 {
-		t.Errorf("Invalid users count expected: %d, got: %d", 0, len(authorisation.users))
-	}
+	(*gounit.T)(t).AssertLessOrEqualInt(len(authorisation.users), 0)
 
 	countUsers := authorisation.AuthFile(filePath)
 
-	if len(authorisation.users) != 3 {
-		t.Errorf("Invalid users count expected: %d, got: %d", 3, len(authorisation.users))
-	}
-	if countUsers != 3 {
-		t.Errorf("Invalid users count expected: %d, got: %d", 3, countUsers)
-	}
+	(*gounit.T)(t).AssertEqualsInt(3, len(authorisation.users))
+	(*gounit.T)(t).AssertEqualsInt(3, countUsers)
 }
 
 func TestAuthorised(t *testing.T) {
 	authorisation := CreateFileAuthorisation(filePath)
 
-	if !authorisation.Authorised(HTTP, "user1", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
-	if !authorisation.Authorised(SMTP, "user1", "test2") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(HTTP, "user1", "test1"))
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(SMTP, "user1", "test2"))
 
-	if !authorisation.Authorised(HTTP, "user2", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
-	if !authorisation.Authorised(SMTP, "user2", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(HTTP, "user2", "test1"))
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(HTTP, "user2", "test1"))
 
-	if !authorisation.Authorised(HTTP, "user4", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
-	if !authorisation.Authorised(SMTP, "user4", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", true, false)
-	}
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(HTTP, "user4", "test1"))
+	(*gounit.T)(t).AssertTrue(authorisation.Authorised(HTTP, "user4", "test1"))
 
-	if authorisation.Authorised(HTTP, "user4", "foo") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", false, true)
-	}
-	if authorisation.Authorised(SMTP, "user4", "bar") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", false, true)
-	}
-	if authorisation.Authorised(HTTP, "userX", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", false, true)
-	}
-	if authorisation.Authorised(SMTP, "userX", "test1") {
-		t.Errorf("authorisation.Authorised expected: %t, got: %t", false, true)
-	}
+	(*gounit.T)(t).AssertFalse(authorisation.Authorised(HTTP, "user4", "foo"))
+	(*gounit.T)(t).AssertFalse(authorisation.Authorised(SMTP, "user4", "bar"))
+	(*gounit.T)(t).AssertFalse(authorisation.Authorised(HTTP, "userX", "test1"))
+	(*gounit.T)(t).AssertFalse(authorisation.Authorised(SMTP, "userX", "test1"))
 }
