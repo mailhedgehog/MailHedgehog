@@ -235,7 +235,7 @@ func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
 	n = n[offset:endIndex]
 
 	for _, fileinfo := range n {
-		rooms = append(rooms, filepath.Join(directory.Path, fileinfo.Name()))
+		rooms = append(rooms, fileinfo.Name())
 	}
 
 	logManager().Debug(fmt.Sprintf("Found %d rooms", len(rooms)))

@@ -1,10 +1,11 @@
 module github.com/mailpiggy/MailPiggy
 
-go 1.17
+go 1.19
 
 require (
 	github.com/google/uuid v1.3.0
 	github.com/spf13/cobra v1.6.1
+	golang.org/x/exp v0.0.0-20221114191408-850992195362
 )
 
 require (

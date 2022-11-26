@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
+	"golang.org/x/exp/slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -30,6 +32,10 @@ func TestRoomsList(t *testing.T) {
 
 	if len(rooms) != 3 {
 		t.Errorf("len(rooms) expected: %d, got: %d", 3, len(rooms))
+	}
+
+	if !slices.Contains(rooms, "foo_bar3") {
+		t.Errorf("rooms contains expected: %s, got: %s", "foo_bar3", strings.Join(rooms, ", "))
 	}
 }
 
