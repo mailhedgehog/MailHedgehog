@@ -1,9 +1,7 @@
 package server
 
 import (
-	"github.com/mailpiggy/MailPiggy/authorisation"
 	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/storage"
 )
 
 var configuredLogger *logger.Logger
@@ -15,12 +13,8 @@ func logManager() *logger.Logger {
 	return configuredLogger
 }
 
-type Context struct {
-	Authorisation authorisation.Authorisation
-	Storage       storage.Storage
-}
-
-func Configure(filePath string) *Context {
-
-	return &Context{}
+func Start(context *Context) {
+	logManager().Warning("TODO: SMTP Implement", context.Config.Smtp.Port)
+	logManager().Warning("TODO: HTTP Implement", context.Config.Http.Port)
+	logManager().Warning("TODO: UI Implement", context.Config.Http.Path)
 }

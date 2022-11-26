@@ -1,8 +1,18 @@
 package gounit
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 type T testing.T
+
+func (t *T) AssertInstanceOf(expected, actual interface{}) {
+	if reflect.TypeOf(expected) != reflect.TypeOf(actual) {
+		t.Helper()
+		t.Errorf("Types not equals expected: %d, got: %d", reflect.TypeOf(expected).String(), reflect.TypeOf(actual).String())
+	}
+}
 
 func (t *T) AssertNotError(err error) {
 	if err != nil {

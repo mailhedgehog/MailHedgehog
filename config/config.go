@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-type ParsedConfig struct {
+type AppConfig struct {
 	Smtp struct {
 		Port int `yaml:"port"`
 	} `yaml:"smtp"`
@@ -15,8 +15,9 @@ type ParsedConfig struct {
 		Path string `yaml:"path"`
 	} `yaml:"http"`
 	Storage struct {
-		Use       string `yaml:"use"`
-		Directory struct {
+		Use          string `yaml:"use"`
+		PerRoomLimit int    `yaml:"per_room_limit"`
+		Directory    struct {
 			Path string `yaml:"path"`
 		} `yaml:"directory"`
 	} `yaml:"storage"`
@@ -28,8 +29,8 @@ type ParsedConfig struct {
 	} `yaml:"authorisation"`
 }
 
-func parseConfig(filePath string) *ParsedConfig {
-	config := &ParsedConfig{}
+func ParseConfig(filePath string) *AppConfig {
+	config := &AppConfig{}
 
 	if len(filePath) > 0 {
 		yamlFile, err := os.ReadFile(filePath)
@@ -43,7 +44,7 @@ func parseConfig(filePath string) *ParsedConfig {
 	return config
 }
 
-func (config *ParsedConfig) withDefaults() {
+func (config *AppConfig) withDefaults() {
 	if config.Smtp.Port <= 0 {
 		config.Smtp.Port = 1025
 	}

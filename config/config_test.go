@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestConfigureWithDefaults(t *testing.T) {
-	config := parseConfig("")
+func TestParseConfigsWithDefault(t *testing.T) {
+	config := ParseConfig("")
 
 	(*gounit.T)(t).AssertEqualsInt(1025, config.Smtp.Port)
 
@@ -21,8 +21,8 @@ func TestConfigureWithDefaults(t *testing.T) {
 
 }
 
-func TestConfigure(t *testing.T) {
-	config := parseConfig(".config.yml")
+func TestParseConfigs(t *testing.T) {
+	config := ParseConfig(".config.yml")
 
 	(*gounit.T)(t).AssertEqualsInt(1025, config.Smtp.Port)
 
