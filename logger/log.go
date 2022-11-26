@@ -28,6 +28,9 @@ const (
 	DEBUG              = "debug"
 )
 
+// MinLogLevel minimal level to display
+var MinLogLevel = INFO
+
 var (
 	EmergencyColor = Red
 	AlertColor     = Red
@@ -55,6 +58,29 @@ func Color(colorString string) func(...interface{}) string {
 	return sprint
 }
 
+func logLevelNumber(logLevel LogLevel) int {
+	switch logLevel {
+	case EMERGENCY:
+		return 7
+	case ALERT:
+		return 6
+	case CRITICAL:
+		return 5
+	case ERROR:
+		return 4
+	case WARNING:
+		return 3
+	case NOTICE:
+		return 2
+	case INFO:
+		return 1
+	case DEBUG:
+		return 0
+	default:
+		panic(fmt.Sprintf("Wrong log level: %s", logLevel))
+	}
+}
+
 func Log(level LogLevel, message string, context ...interface{}) {
 	switch level {
 	case EMERGENCY:
@@ -79,6 +105,10 @@ func Log(level LogLevel, message string, context ...interface{}) {
 }
 
 func Emergency(message string, context ...interface{}) {
+	if logLevelNumber(EMERGENCY) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogEmergencyHandler != nil {
 		LogEmergencyHandler(message, context...)
 		return
@@ -97,6 +127,10 @@ func Emergency(message string, context ...interface{}) {
 }
 
 func Alert(message string, context ...interface{}) {
+	if logLevelNumber(ALERT) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogAlertHandler != nil {
 		LogAlertHandler(message, context...)
 		return
@@ -115,6 +149,10 @@ func Alert(message string, context ...interface{}) {
 }
 
 func Critical(message string, context ...interface{}) {
+	if logLevelNumber(CRITICAL) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogCriticalHandler != nil {
 		LogCriticalHandler(message, context...)
 		return
@@ -133,6 +171,10 @@ func Critical(message string, context ...interface{}) {
 }
 
 func Error(message string, context ...interface{}) {
+	if logLevelNumber(ERROR) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogErrorHandler != nil {
 		LogErrorHandler(message, context...)
 		return
@@ -151,6 +193,10 @@ func Error(message string, context ...interface{}) {
 }
 
 func Warning(message string, context ...interface{}) {
+	if logLevelNumber(WARNING) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogWarningHandler != nil {
 		LogWarningHandler(message, context)
 		return
@@ -169,6 +215,10 @@ func Warning(message string, context ...interface{}) {
 }
 
 func Notice(message string, context ...interface{}) {
+	if logLevelNumber(NOTICE) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogNoticeHandler != nil {
 		LogNoticeHandler(message, context...)
 		return
@@ -187,6 +237,10 @@ func Notice(message string, context ...interface{}) {
 }
 
 func Info(message string, context ...interface{}) {
+	if logLevelNumber(INFO) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogInfoHandler != nil {
 		LogInfoHandler(message, context...)
 		return
@@ -205,6 +259,10 @@ func Info(message string, context ...interface{}) {
 }
 
 func Debug(message string, context ...interface{}) {
+	if logLevelNumber(DEBUG) < logLevelNumber(MinLogLevel) {
+		return
+	}
+
 	if LogDebugHandler != nil {
 		LogDebugHandler(message, context...)
 		return

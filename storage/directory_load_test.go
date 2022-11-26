@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestDelete(t *testing.T) {
+func TestLoad(t *testing.T) {
 	storage := CreateDirectoryStorage("")
 
 	if storage.Count("") != 0 {
@@ -26,18 +26,12 @@ func TestDelete(t *testing.T) {
 		t.Errorf("storage.Count() expected: %d, got: %d", 2, storage.Count(""))
 	}
 
-	storage.Delete("", "1")
-	if storage.Count("") != 1 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 1, storage.Count(""))
+	message, err := storage.Load("", "1")
+	if err != nil {
+		t.Error(err)
 	}
 
-	storage.Delete("", "0")
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
-	}
-
-	storage.Delete("", "1")
-	if storage.Count("") != 0 {
-		t.Errorf("storage.Count() expected: %d, got: %d", 0, storage.Count(""))
+	if message.ID != "1" {
+		t.Errorf("message.ID expected: %s, got: %s", "1", message.ID)
 	}
 }

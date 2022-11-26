@@ -207,7 +207,9 @@ func (directory *Directory) Load(room Room, messageId dto.MessageID) (*dto.Messa
 }
 
 func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
-	rooms := make([]Room, 0)
+	if offset < 0 || limit < 0 {
+		return nil, errors.New("offset and limit should be >= 0")
+	}
 
 	dir, err := os.Open(directory.Path)
 	if err != nil {
@@ -220,15 +222,21 @@ func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
 		return nil, err
 	}
 
-	sort.Slice(n, func(i, j int) bool {
-		return n[i].ModTime().After(n[j].ModTime())
-	})
+	rooms := make([]Room, 0)
 
-	for _, fileinfo := range n {
-		rooms = append(rooms, fileinfo.Name())
+	if offset >= len(n) {
+		return rooms, nil
 	}
 
-	// TODO: offset, limit
+	endIndex := len(n)
+	if offset+limit < len(n) {
+		endIndex = offset + limit
+	}
+	n = n[offset:endIndex]
+
+	for _, fileinfo := range n {
+		rooms = append(rooms, filepath.Join(directory.Path, fileinfo.Name()))
+	}
 
 	logManager().Debug(fmt.Sprintf("Found %d rooms", len(rooms)))
 
