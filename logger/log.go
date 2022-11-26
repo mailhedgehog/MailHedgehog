@@ -50,6 +50,12 @@ var (
 	Teal   = Color("\033[1;36m%s\033[0m")
 )
 
+func PanicIfError(e error) {
+	if e != nil {
+		panic(e)
+	}
+}
+
 func Color(colorString string) func(...interface{}) string {
 	sprint := func(args ...interface{}) string {
 		return fmt.Sprintf(colorString,

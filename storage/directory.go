@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
+	"github.com/mailpiggy/MailPiggy/logger"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -19,15 +20,12 @@ type Directory struct {
 func CreateDirectoryStorage(path string) *Directory {
 	if len(path) <= 0 {
 		dir, err := os.MkdirTemp("", "mailpiggy_")
-		if err != nil {
-			panic(err)
-		}
+		logger.PanicIfError(err)
 		path = dir
 	}
 	if _, err := os.Stat(path); err != nil {
-		if err := os.MkdirAll(path, 0770); err != nil {
-			panic(err)
-		}
+		err := os.MkdirAll(path, 0770)
+		logger.PanicIfError(err)
 	}
 	logManager().Debug(fmt.Sprintf("Mail storage directory path is '%s'", path))
 
@@ -42,9 +40,7 @@ func (directory *Directory) RoomDirectory(room Room) string {
 	path := filepath.Join(directory.Path, room)
 	if _, err := os.Stat(path); err != nil {
 		err := os.MkdirAll(path, 0770)
-		if err != nil {
-			panic(err)
-		}
+		logger.PanicIfError(err)
 	}
 
 	return path
@@ -184,9 +180,7 @@ func (directory *Directory) parseList(room string, n []os.FileInfo, offset, limi
 
 func (directory *Directory) Count(room Room) int {
 	dir, err := os.Open(directory.RoomDirectory(room))
-	if err != nil {
-		panic(err)
-	}
+	logger.PanicIfError(err)
 	defer dir.Close()
 	n, _ := dir.Readdirnames(0)
 	return len(n)
@@ -245,9 +239,7 @@ func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
 
 func (directory *Directory) RoomsCount() int {
 	dir, err := os.Open(directory.Path)
-	if err != nil {
-		panic(err)
-	}
+	logger.PanicIfError(err)
 	defer dir.Close()
 	n, _ := dir.Readdirnames(0)
 	return len(n)
