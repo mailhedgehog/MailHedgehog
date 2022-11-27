@@ -8,7 +8,7 @@ storage:
   per_room_limit: 100
   directory:
     path: ""
-authorisation:
+authentication:
   use: file
   file:
     path: "auth.file"

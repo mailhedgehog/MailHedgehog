@@ -18,8 +18,8 @@ func TestParseConfigsWithDefault(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("directory", config.Storage.Use)
 	(*gounit.T)(t).AssertEqualsString("", config.Storage.Directory.Path)
 
-	(*gounit.T)(t).AssertEqualsString("file", config.Authorisation.Use)
-	(*gounit.T)(t).AssertEqualsString("", config.Authorisation.File.Path)
+	(*gounit.T)(t).AssertEqualsString("file", config.Authentication.Use)
+	(*gounit.T)(t).AssertEqualsString("", config.Authentication.File.Path)
 
 }
 
@@ -34,6 +34,6 @@ func TestParseConfigs(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("directory", config.Storage.Use)
 	(*gounit.T)(t).AssertEqualsString("", config.Storage.Directory.Path)
 
-	(*gounit.T)(t).AssertEqualsString("file", config.Authorisation.Use)
-	(*gounit.T)(t).AssertEqualsString("auth.file", config.Authorisation.File.Path)
+	(*gounit.T)(t).AssertEqualsString("file", config.Authentication.Use)
+	(*gounit.T)(t).AssertEqualsString("auth.file", config.Authentication.File.Path)
 }

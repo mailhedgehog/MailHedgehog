@@ -7,9 +7,14 @@ import (
 )
 
 type AppConfig struct {
-	Smtp struct {
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
+	Hostname string `yaml:"hostname"`
+	Smtp     struct {
+		Host       string `yaml:"host"`
+		Port       int    `yaml:"port"`
+		Validation struct {
+			MaximumLineLength int `yaml:"maximum_line_length"`
+			MaximumReceivers  int `yaml:"maximum_receivers"`
+		} `yaml:"validation"`
 	} `yaml:"smtp"`
 	Http struct {
 		Host string `yaml:"host"`
@@ -23,12 +28,12 @@ type AppConfig struct {
 			Path string `yaml:"path"`
 		} `yaml:"directory"`
 	} `yaml:"storage"`
-	Authorisation struct {
+	Authentication struct {
 		Use  string `yaml:"use"`
 		File struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
-	} `yaml:"authorisation"`
+	} `yaml:"authentication"`
 	Log struct {
 		Level string `yaml:"level"`
 	} `yaml:"log"`
@@ -50,6 +55,15 @@ func ParseConfig(filePath string) *AppConfig {
 }
 
 func (config *AppConfig) withDefaults() {
+	if len(config.Hostname) <= 0 {
+		identification, _ := os.Hostname()
+		if len(identification) <= 0 {
+			config.Hostname = "mailpiggy.local"
+		} else {
+			config.Hostname = identification
+		}
+	}
+
 	if len(config.Smtp.Host) <= 0 {
 		config.Smtp.Host = "0.0.0.0"
 	}
@@ -71,10 +85,10 @@ func (config *AppConfig) withDefaults() {
 		}
 	}
 
-	if len(config.Authorisation.Use) <= 0 {
-		config.Authorisation.Use = "file"
-		if len(config.Authorisation.File.Path) <= 0 {
-			config.Authorisation.File.Path = ""
+	if len(config.Authentication.Use) <= 0 {
+		config.Authentication.Use = "file"
+		if len(config.Authentication.File.Path) <= 0 {
+			config.Authentication.File.Path = ""
 		}
 	}
 

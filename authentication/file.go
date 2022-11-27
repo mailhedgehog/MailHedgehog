@@ -1,4 +1,4 @@
-package authorisation
+package authentication
 
 import (
 	"bufio"
@@ -10,19 +10,19 @@ import (
 	"strings"
 )
 
-// FileAuth represents the Authorisation handler using file
+// FileAuth represents the authentication handler using file
 type FileAuth struct {
 	users map[string]userInfo
 }
 
-func CreateFileAuthorisation(authFilePath string) *FileAuth {
+func CreateFileAuthentication(authFilePath string) *FileAuth {
 	authFile := &FileAuth{}
 	authFile.AuthFile(authFilePath)
 
 	return authFile
 }
 
-func (fileAuth *FileAuth) Authorised(authType AuthorisationType, username string, password string) bool {
+func (fileAuth *FileAuth) Authorised(authType AuthenticationType, username string, password string) bool {
 	if fileAuth.users == nil {
 		return true
 	}
