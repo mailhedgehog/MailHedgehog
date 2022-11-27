@@ -16,7 +16,13 @@ const (
 	CODE_SERVICE_CLOSING        = 221
 	CODE_AUTHENTICATION_SUCCESS = 235
 	CODE_ACTION_OK              = 250
+	CODE_AUTH_CREDENTIALS       = 334
+	CODE_MAIL_DATA              = 354
 	CODE_SYNTAX_ERROR           = 500
+	CODE_NOT_IMPLEMENTED        = 502
+	CODE_AUTH_FAILED            = 535
+	CODE_MAILBOX_404            = 550
+	CODE_EXCEEDED_STORAGE       = 552
 )
 
 /*
@@ -25,8 +31,6 @@ const (
       252 Cannot VRFY user, but will accept message and attempt
          delivery
          (See section 3.5.3)
-
-      354 Start mail input; end with <CRLF>.<CRLF>
 421 <domain> Service not available, closing transmission channel
          (This may be a reply to any command if the service knows it
          must shut down)
@@ -37,15 +41,10 @@ const (
       500 Syntax error, command unrecognized
          (This may include errors such as command line too long)
       501 Syntax error in parameters or arguments
-      502 Command not implemented (see section 4.2.4)
       503 Bad sequence of commands
       504 Command parameter not implemented
-      550 Requested action not taken: mailbox unavailable
-         (e.g., mailbox not found, no access, or command rejected
-         for policy reasons)
       551 User not local; please try <forward-path>
          (See section 3.4)
-      552 Requested mail action aborted: exceeded storage allocation
       553 Requested action not taken: mailbox name not allowed
          (e.g., mailbox syntax incorrect)
       554 Transaction failed  (Or, in the case of a connection-opening
@@ -80,15 +79,13 @@ func ReplyServiceReady(identification string) *Reply {
 	return &Reply{CODE_SERVICE_READY, []string{identification}, nil}
 }
 
-// ReplyBye creates a Bye reply
 func ReplyBye() *Reply { return &Reply{CODE_SERVICE_CLOSING, []string{"Bye"}, nil} }
 
 // ReplyAuthOk creates a authentication successful reply
 func ReplyAuthOk() *Reply {
-	return &Reply{CODE_AUTHENTICATION_SUCCESS, []string{"Authentication successful"}, nil}
+	return &Reply{CODE_AUTHENTICATION_SUCCESS, []string{"Authenticate successful"}, nil}
 }
 
-// ReplyOk creates a OK reply
 func ReplyOk(message ...string) *Reply {
 	if len(message) == 0 {
 		message = []string{"Ok"}
@@ -96,10 +93,35 @@ func ReplyOk(message ...string) *Reply {
 	return &Reply{CODE_ACTION_OK, message, nil}
 }
 
-// ReplyUnrecognisedCommand creates Unrecognised command reply
 func ReplyUnrecognisedCommand() *Reply {
 	return &Reply{CODE_SYNTAX_ERROR, []string{"Unrecognised command"}, nil}
 }
 
+func ReplyCommandNotImplemented() *Reply {
+	return &Reply{CODE_NOT_IMPLEMENTED, []string{"Command not implemented"}, nil}
+}
+
 // ReplyLineTooLong due to exceeding these limits
 func ReplyLineTooLong() *Reply { return &Reply{CODE_SYNTAX_ERROR, []string{"Line too long."}, nil} }
+
+// ReplyAuthCredentials creates reply with a 334 code and requests a username
+func ReplyAuthCredentials(response string) *Reply {
+	return &Reply{CODE_AUTH_CREDENTIALS, []string{response}, nil}
+}
+
+// ReplyAuthFailed creates reply with auth failed response
+func ReplyAuthFailed() *Reply {
+	return &Reply{CODE_AUTH_FAILED, []string{"Authenticate failed"}, nil}
+}
+
+func ReplyMailbox404(response string) *Reply {
+	return &Reply{CODE_MAILBOX_404, []string{response}, nil}
+}
+
+func ReplyExceededStorage(response string) *Reply {
+	return &Reply{CODE_EXCEEDED_STORAGE, []string{response}, nil}
+}
+
+func ReplyMailData() *Reply {
+	return &Reply{CODE_MAIL_DATA, []string{"End data with <CR><LF>.<CR><LF>"}, nil}
+}

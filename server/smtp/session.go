@@ -35,7 +35,11 @@ func (session *Session) IsConversation() bool {
 	}
 
 	receivedText := string(buffer[0:numberOfBytes])
-	logManager().Debug(fmt.Sprintf("Received %d bytes: %s", numberOfBytes, receivedText))
+	logManager().Info(fmt.Sprintf(
+		"CLIENT -> SERVER (%d bytes): %s",
+		numberOfBytes,
+		strings.ReplaceAll(strings.ReplaceAll(receivedText, "\n", "\\n"), "\r", "\\r"),
+	))
 
 	session.receivedLine += receivedText
 	for strings.Contains(session.receivedLine, smtpServer.COMMAND_END_SYMBOL) {
@@ -59,9 +63,10 @@ func (session *Session) IsConversation() bool {
 func (session *Session) Write(reply *smtpServer.Reply) {
 	lines := reply.Lines()
 	for _, l := range lines {
-		logText := strings.Replace(l, "\n", "\\n", -1)
-		logText = strings.Replace(logText, "\r", "\\r", -1)
-		logManager().Debug(fmt.Sprintf("Sent line: %s", l))
+		logManager().Info(fmt.Sprintf(
+			"SERVER -> CLIENT: %s",
+			strings.ReplaceAll(strings.ReplaceAll(l, "\n", "\\n"), "\r", "\\r"),
+		))
 		_, err := session.writer.Write([]byte(l))
 		if err != nil {
 			logManager().Error(fmt.Sprintf("Write session error: %s", err.Error()))

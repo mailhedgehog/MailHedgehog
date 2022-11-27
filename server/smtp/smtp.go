@@ -2,6 +2,7 @@ package smtp
 
 import (
 	"fmt"
+	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/smtpServer"
@@ -53,6 +54,29 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	)
 
 	smtProtocol.AuthenticationMechanismsCallback = func() []string { return []string{AUTH_MECHANISM_PLAIN} }
+	smtProtocol.MessageReceivedCallback = func(message *dto.SMTPMessage) (string, error) {
+		formattedMessage := message.Parse()
+
+		room := ""
+		if context.Authentication.AuthenticatedUser() != nil {
+			room = context.Authentication.AuthenticatedUser().Username
+		}
+		
+		id, err := context.Storage.Store(room, formattedMessage)
+		logManager().Warning("TODO: add websocket") //TODO
+
+		return string(id), err
+	}
+	smtProtocol.CreateCustomSceneCallback = func(sceneName string) smtpServer.Scene {
+		switch sceneName {
+		case "AUTH_PLAIN":
+			return &AuthPlainScene{
+				authentication: context.Authentication,
+			}
+
+		}
+		return nil
+	}
 
 	session := &Session{
 		context:  context,
@@ -63,7 +87,6 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 
 	session.Start("")
 	for session.IsConversation() {
-		logManager().Debug("Conversation goes")
 		// loop
 	}
 	io.Closer(connection).Close() // not sure if this is necessary?

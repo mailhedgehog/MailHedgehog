@@ -15,10 +15,15 @@ func logManager() *logger.Logger {
 	return configuredLogger
 }
 
+type AuthenticatedUser struct {
+	Username string
+}
+
 // Authentication interface represents a backend flow to store or retrieve messages
 type Authentication interface {
-	// Authorised check us credentials valid
-	Authorised(authType AuthenticationType, username string, password string) bool
+	// Authenticate check us credentials valid
+	Authenticate(authType AuthenticationType, username string, password string) bool
+	AuthenticatedUser() *AuthenticatedUser
 }
 
 const (

@@ -1,9 +1,12 @@
 package smtpServer
 
 import (
+	"errors"
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
+	"golang.org/x/exp/slices"
+	"regexp"
 	"strings"
 )
 
@@ -18,16 +21,12 @@ func logManager() *logger.Logger {
 
 const COMMAND_END_SYMBOL = "\r\n"
 
-type ConversationState int
+type ConversationState string
 
 const (
-	STATE_INVALID   = ConversationState(-1)
-	STATE_ESTABLISH = ConversationState(iota)
-	STATE_AUTH      = ConversationState(3)
-	STATE_MAIL      = ConversationState(4)
-	STATE_RCPT      = ConversationState(5)
-	STATE_DATA      = ConversationState(6)
-	STATE_DONE      = ConversationState(7)
+	STATE_CONVERSATION = ConversationState("conversation")
+	STATE_DATA         = ConversationState("data")
+	STATE_CUSTOM_SCENE = ConversationState("custom_scene")
 )
 
 type Validation struct {
@@ -43,6 +42,10 @@ type Protocol struct {
 	Message *dto.SMTPMessage
 
 	AuthenticationMechanismsCallback func() []string
+	MessageReceivedCallback          func(message *dto.SMTPMessage) (string, error)
+
+	CreateCustomSceneCallback func(sceneName string) Scene
+	currentScene              Scene
 }
 
 func CreateProtocol(hostname string, validation *Validation) *Protocol {
@@ -52,13 +55,19 @@ func CreateProtocol(hostname string, validation *Validation) *Protocol {
 			MaximumReceivers:  0,
 		}
 	}
-	return &Protocol{
+
+	protocol := &Protocol{
 		Hostname:   hostname,
 		validation: validation,
-
-		State:   STATE_ESTABLISH,
-		Message: &dto.SMTPMessage{},
 	}
+	protocol.resetState()
+
+	return protocol
+}
+
+func (protocol *Protocol) resetState() {
+	protocol.State = STATE_CONVERSATION
+	protocol.Message = &dto.SMTPMessage{}
 }
 
 func (protocol *Protocol) SayHi(identification string) *Reply {
@@ -66,7 +75,7 @@ func (protocol *Protocol) SayHi(identification string) *Reply {
 	if len(identification) > 0 {
 		identification = " " + identification
 	}
-	protocol.State = STATE_ESTABLISH
+	protocol.State = STATE_CONVERSATION
 	return ReplyServiceReady(protocol.Hostname + identification + " Service ready")
 }
 
@@ -77,6 +86,13 @@ func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {
 		}
 	}
 
+	if protocol.State == STATE_CUSTOM_SCENE {
+		if protocol.currentScene != nil {
+			return protocol.currentScene.HandleLine(receivedLine)
+		}
+		return ReplyCommandNotImplemented()
+	}
+
 	if protocol.State == STATE_DATA {
 		return protocol.handleMailContent(receivedLine)
 	}
@@ -85,9 +101,29 @@ func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {
 }
 
 func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
-	fmt.Println(receivedLine)
-	fmt.Println("---handleMailContent----")
-	return ReplyLineTooLong()
+	protocol.Message.Data += receivedLine + "\r\n"
+	if strings.HasSuffix(protocol.Message.Data, "\r\n.\r\n") {
+		protocol.Message.Data = strings.ReplaceAll(protocol.Message.Data, "\r\n..", "\r\n.")
+
+		logManager().Debug("Got EOF, storing message and reset state.")
+		protocol.Message.Data = strings.TrimSuffix(protocol.Message.Data, "\r\n.\r\n")
+		protocol.State = STATE_CONVERSATION
+
+		defer protocol.resetState()
+
+		if protocol.MessageReceivedCallback == nil {
+			return ReplyExceededStorage("No storage backend")
+		}
+
+		messageId, err := protocol.MessageReceivedCallback(protocol.Message)
+		if err != nil {
+			logManager().Error(fmt.Sprintf("Error storing message: %s", err.Error()))
+			return ReplyExceededStorage("Unable to store message")
+		}
+		return ReplyOk("Ok: queued as " + messageId)
+	}
+
+	return nil
 }
 
 func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
@@ -102,7 +138,23 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 	case COMMAND_EHLO:
 		return protocol.EHLO(command)
 	case COMMAND_AUTH:
-		return protocol.AUTH(command)
+		logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
+		authMechanism := protocol.parseAuthMechanism(command.args)
+		if slices.Contains(protocol.authMechanisms(), authMechanism) && protocol.CreateCustomSceneCallback != nil {
+			protocol.currentScene = protocol.CreateCustomSceneCallback(string(command.verb) + "_" + authMechanism)
+			if protocol.currentScene != nil {
+				protocol.State = STATE_CUSTOM_SCENE
+				return protocol.currentScene.Init(receivedLine, protocol)
+			}
+		}
+		return ReplyCommandNotImplemented()
+	case COMMAND_MAIL:
+		return protocol.MAIL(command)
+	case COMMAND_RCPT:
+		return protocol.RCPT(command)
+	case COMMAND_DATA:
+		protocol.State = STATE_DATA
+		return ReplyMailData()
 	case COMMAND_QUIT:
 		return ReplyBye()
 	default:
@@ -112,31 +164,75 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 
 func (protocol *Protocol) HELO(command *Command) *Reply {
 	protocol.Message.Helo = command.args
-	logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
 
 	return ReplyOk("Hello " + command.args)
 }
 
 func (protocol *Protocol) EHLO(command *Command) *Reply {
 	protocol.Message.Helo = command.args
-	logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
-
 	replyArgs := []string{"Hello " + command.args, "PIPELINING"}
 
 	logManager().Warning("TODO: add tls support") // TODO
 
-	if protocol.AuthenticationMechanismsCallback != nil {
-		if mechanisms := protocol.AuthenticationMechanismsCallback(); len(mechanisms) > 0 {
-			replyArgs = append(replyArgs, string(COMMAND_AUTH)+" "+strings.Join(mechanisms, " "))
-		}
+	if mechanisms := protocol.authMechanisms(); len(mechanisms) > 0 {
+		replyArgs = append(replyArgs, string(COMMAND_AUTH)+" "+strings.Join(mechanisms, " "))
 	}
 
 	return ReplyOk(replyArgs...)
 }
 
-func (protocol *Protocol) AUTH(command *Command) *Reply {
-	protocol.Message.Helo = command.args
-	logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
+func (protocol *Protocol) MAIL(command *Command) *Reply {
+	from, err := protocol.ParseMAIL(command.args)
+	if err != nil {
+		return ReplyMailbox404(err.Error())
+	}
+	protocol.Message.From = from
 
-	return ReplyOk()
+	return ReplyOk("Sender " + protocol.Message.From + " ok")
+}
+
+func (protocol *Protocol) RCPT(command *Command) *Reply {
+	if protocol.validation.MaximumReceivers > 0 && len(protocol.Message.To) >= protocol.validation.MaximumReceivers {
+		return ReplyExceededStorage("Maximum receivers extended")
+	}
+	to, err := protocol.ParseRCPT(command.args)
+	if err != nil {
+		return ReplyMailbox404(err.Error())
+	}
+	protocol.Message.To = append(protocol.Message.To, to)
+
+	return ReplyOk("Receiver " + to + " ok")
+}
+
+func (protocol *Protocol) authMechanisms() []string {
+	if protocol.AuthenticationMechanismsCallback != nil {
+		return protocol.AuthenticationMechanismsCallback()
+	}
+	return []string{}
+}
+
+func (protocol *Protocol) parseAuthMechanism(args string) string {
+	parts := strings.SplitN(args, " ", 2)
+
+	return parts[0]
+}
+
+func (protocol *Protocol) ParseMAIL(mail string) (string, error) {
+	match := regexp.MustCompile(`(?i:From):\s*<([^>]+)>`).FindStringSubmatch(mail)
+
+	if len(match) != 2 {
+		return "", errors.New("Invalid syntax in MAIL command")
+	}
+
+	return match[1], nil
+}
+
+func (protocol *Protocol) ParseRCPT(mail string) (string, error) {
+	match := regexp.MustCompile(`(?i:To):\s*<([^>]+)>`).FindStringSubmatch(mail)
+
+	if len(match) != 2 {
+		return "", errors.New("Invalid syntax in MAIL command")
+	}
+
+	return match[1], nil
 }
