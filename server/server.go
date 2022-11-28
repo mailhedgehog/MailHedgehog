@@ -4,6 +4,7 @@ import (
 	"github.com/mailpiggy/MailPiggy/authentication"
 	"github.com/mailpiggy/MailPiggy/config"
 	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailpiggy/MailPiggy/server/http"
 	"github.com/mailpiggy/MailPiggy/server/smtp"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/storage"
@@ -49,13 +50,13 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 }
 
 func Start(context *serverContext.Context) {
-	logManager().Warning("TODO: SMTP Implement", context.Config.Smtp.Port)
 	logManager().Warning("TODO: HTTP Implement", context.Config.Http.Port)
 	logManager().Warning("TODO: UI Implement", context.Config.Http.Path)
 
 	exitChannel = make(chan int)
 
 	go smtp.Listen(context, exitChannel)
+	go http.Listen(context, exitChannel)
 
 	for {
 		select {
