@@ -73,10 +73,14 @@ func (protocol *Protocol) resetState() {
 func (protocol *Protocol) SayHi(identification string) *Reply {
 	identification = strings.TrimSpace(identification)
 	if len(identification) > 0 {
-		identification = " " + identification
+		identification = identification + " "
+	}
+	hostname := protocol.Hostname
+	if len(hostname) > 0 {
+		hostname = hostname + " "
 	}
 	protocol.State = STATE_CONVERSATION
-	return ReplyServiceReady(protocol.Hostname + identification + " Service ready")
+	return ReplyServiceReady(hostname + identification + "Service ready")
 }
 
 func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {

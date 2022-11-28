@@ -21,6 +21,14 @@ func (t *T) AssertNotError(err error) {
 	}
 }
 
+func (t *T) AssertNil(val interface{}) {
+	if reflect.ValueOf(val).IsNil() {
+		return
+	}
+	t.Helper()
+	t.Errorf("Value is not nil. got: %s", val)
+}
+
 func (t *T) ExpectError(err error) {
 	if err == nil {
 		t.Helper()
@@ -38,7 +46,7 @@ func (t *T) AssertEqualsInt(expected, actual int) {
 func (t *T) AssertEqualsString(expected, actual string) {
 	if actual != expected {
 		t.Helper()
-		t.Errorf("Values not equal expected: %s, got: %s", expected, actual)
+		t.Errorf("Values not equal expected: '%s', got: '%s'", expected, actual)
 	}
 }
 
