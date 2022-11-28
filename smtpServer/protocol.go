@@ -182,7 +182,7 @@ func (protocol *Protocol) EHLO(command *Command) *Reply {
 }
 
 func (protocol *Protocol) MAIL(command *Command) *Reply {
-	from, err := protocol.ParseMAIL(command.args)
+	from, err := protocol.ParseFROM(command.args)
 	if err != nil {
 		return ReplyMailbox404(err.Error())
 	}
@@ -217,7 +217,7 @@ func (protocol *Protocol) parseAuthMechanism(args string) string {
 	return parts[0]
 }
 
-func (protocol *Protocol) ParseMAIL(mail string) (string, error) {
+func (protocol *Protocol) ParseFROM(mail string) (string, error) {
 	match := regexp.MustCompile(`(?i:From):\s*<([^>]+)>`).FindStringSubmatch(mail)
 
 	if len(match) != 2 {

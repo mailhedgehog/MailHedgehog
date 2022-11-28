@@ -41,7 +41,7 @@ func init() {
 }
 
 func TestAuthFile(t *testing.T) {
-	auth := CreateFileAuthentiacation(filePath)
+	auth := CreateFileAuthentication(filePath)
 
 	(*gounit.T)(t).AssertEqualsInt(3, len(auth.users))
 
@@ -56,19 +56,19 @@ func TestAuthFile(t *testing.T) {
 }
 
 func TestAuthorised(t *testing.T) {
-	auth := CreateFileAuthentiacation(filePath)
+	auth := CreateFileAuthentication(filePath)
 
-	(*gounit.T)(t).AssertTrue(auth.Authorised(HTTP, "user1", "test1"))
-	(*gounit.T)(t).AssertTrue(auth.Authorised(SMTP, "user1", "test2"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(HTTP, "user1", "test1"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(SMTP, "user1", "test2"))
 
-	(*gounit.T)(t).AssertTrue(auth.Authorised(HTTP, "user2", "test1"))
-	(*gounit.T)(t).AssertTrue(auth.Authorised(HTTP, "user2", "test1"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(HTTP, "user2", "test1"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(HTTP, "user2", "test1"))
 
-	(*gounit.T)(t).AssertTrue(auth.Authorised(HTTP, "user4", "test1"))
-	(*gounit.T)(t).AssertTrue(auth.Authorised(HTTP, "user4", "test1"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(HTTP, "user4", "test1"))
+	(*gounit.T)(t).AssertTrue(auth.Authenticate(HTTP, "user4", "test1"))
 
-	(*gounit.T)(t).AssertFalse(auth.Authorised(HTTP, "user4", "foo"))
-	(*gounit.T)(t).AssertFalse(auth.Authorised(SMTP, "user4", "bar"))
-	(*gounit.T)(t).AssertFalse(auth.Authorised(HTTP, "userX", "test1"))
-	(*gounit.T)(t).AssertFalse(auth.Authorised(SMTP, "userX", "test1"))
+	(*gounit.T)(t).AssertFalse(auth.Authenticate(HTTP, "user4", "foo"))
+	(*gounit.T)(t).AssertFalse(auth.Authenticate(SMTP, "user4", "bar"))
+	(*gounit.T)(t).AssertFalse(auth.Authenticate(HTTP, "userX", "test1"))
+	(*gounit.T)(t).AssertFalse(auth.Authenticate(SMTP, "userX", "test1"))
 }

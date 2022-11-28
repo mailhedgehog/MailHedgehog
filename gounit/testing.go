@@ -42,13 +42,6 @@ func (t *T) AssertEqualsString(expected, actual string) {
 	}
 }
 
-func (t *T) AssertEqualsBool(expected, actual bool) {
-	if actual != expected {
-		t.Helper()
-		t.Errorf("Values not equal expected: %t, got: %t", expected, actual)
-	}
-}
-
 func (t *T) AssertGreaterInt(first, second int) {
 	if first <= second {
 		t.Helper()

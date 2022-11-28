@@ -18,5 +18,5 @@ func (context *Context) SmtpBindAddr() string {
 }
 
 func (context *Context) HttpBindAddr() string {
-	return context.Config.Smtp.Host + ":" + fmt.Sprint(context.Config.Smtp.Port)
+	return context.Config.Http.Host + ":" + fmt.Sprint(context.Config.Http.Port)
 }
