@@ -33,3 +33,18 @@ func TestHttpBindAddr(t *testing.T) {
 	context.Config.Http.Host = "foo.bar"
 	(*gounit.T)(t).AssertEqualsString("foo.bar:123", context.HttpBindAddr())
 }
+
+func TestPathWithPrefix(t *testing.T) {
+	(*gounit.T)(t).AssertEqualsString("", context.Config.Http.Path)
+	(*gounit.T)(t).AssertEqualsString("/", context.PathWithPrefix(""))
+	(*gounit.T)(t).AssertEqualsString("/", context.PathWithPrefix("/"))
+	(*gounit.T)(t).AssertEqualsString("/foo", context.PathWithPrefix("/foo"))
+	(*gounit.T)(t).AssertEqualsString("/foo/bar/baz", context.PathWithPrefix("foo/bar/baz"))
+
+	context.Config.Http.Path = "hello/test"
+	(*gounit.T)(t).AssertEqualsString("hello/test", context.Config.Http.Path)
+	(*gounit.T)(t).AssertEqualsString("/hello/test/", context.PathWithPrefix(""))
+	(*gounit.T)(t).AssertEqualsString("/hello/test/", context.PathWithPrefix("/"))
+	(*gounit.T)(t).AssertEqualsString("/hello/test/foo", context.PathWithPrefix("/foo"))
+	(*gounit.T)(t).AssertEqualsString("/hello/test/foo/bar/baz", context.PathWithPrefix("foo/bar/baz"))
+}

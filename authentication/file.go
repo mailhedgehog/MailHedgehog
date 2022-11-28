@@ -12,8 +12,7 @@ import (
 
 // FileAuth represents the authentication handler using file
 type FileAuth struct {
-	users             map[string]userInfo
-	authenticatedUser *AuthenticatedUser
+	users map[string]userInfo
 }
 
 func CreateFileAuthentication(authFilePath string) *FileAuth {
@@ -23,14 +22,8 @@ func CreateFileAuthentication(authFilePath string) *FileAuth {
 	return authFile
 }
 
-func (fileAuth *FileAuth) AuthenticatedUser() *AuthenticatedUser {
-	return fileAuth.authenticatedUser
-}
-
 func (fileAuth *FileAuth) Authenticate(authType AuthenticationType, username string, password string) bool {
-	fileAuth.setAuthenticatedUser("")
 	if fileAuth.users == nil {
-		fileAuth.setAuthenticatedUser(username)
 		return true
 	}
 
@@ -48,15 +41,7 @@ func (fileAuth *FileAuth) Authenticate(authType AuthenticationType, username str
 		return false
 	}
 
-	fileAuth.setAuthenticatedUser(username)
 	return true
-}
-
-func (fileAuth *FileAuth) setAuthenticatedUser(username string) {
-	fileAuth.authenticatedUser = nil
-	if len(username) > 0 {
-		fileAuth.authenticatedUser = &AuthenticatedUser{Username: username}
-	}
 }
 
 // AuthFile scan file and add users to memory

@@ -45,44 +45,42 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	defer connection.Close()
 	logManager().Debug("Initialising session")
 
-	smtProtocol := smtpServer.CreateProtocol(
-		context.Config.Hostname,
-		&smtpServer.Validation{
-			MaximumLineLength: context.Config.Smtp.Validation.MaximumLineLength,
-			MaximumReceivers:  context.Config.Smtp.Validation.MaximumReceivers,
-		},
-	)
+	session := &Session{
+		context: context,
+		protocol: smtpServer.CreateProtocol(
+			context.Config.Hostname,
+			&smtpServer.Validation{
+				MaximumLineLength: context.Config.Smtp.Validation.MaximumLineLength,
+				MaximumReceivers:  context.Config.Smtp.Validation.MaximumReceivers,
+			},
+		),
+		reader: io.Reader(connection),
+		writer: io.Writer(connection),
 
-	smtProtocol.AuthenticationMechanismsCallback = func() []string { return []string{AUTH_MECHANISM_PLAIN} }
-	smtProtocol.MessageReceivedCallback = func(message *dto.SMTPMessage) (string, error) {
+		LoggedUsername: "",
+	}
+
+	session.protocol.AuthenticationMechanismsCallback = func() []string { return []string{AUTH_MECHANISM_PLAIN} }
+	session.protocol.MessageReceivedCallback = func(message *dto.SMTPMessage) (string, error) {
 		formattedMessage := message.Parse()
 
-		room := ""
-		if context.Authentication.AuthenticatedUser() != nil {
-			room = context.Authentication.AuthenticatedUser().Username
-		}
-		
-		id, err := context.Storage.Store(room, formattedMessage)
+		id, err := context.Storage.Store(session.LoggedUsername, formattedMessage)
 		logManager().Warning("TODO: add websocket") //TODO
 
 		return string(id), err
 	}
-	smtProtocol.CreateCustomSceneCallback = func(sceneName string) smtpServer.Scene {
+	session.protocol.CreateCustomSceneCallback = func(sceneName string) smtpServer.Scene {
 		switch sceneName {
 		case "AUTH_PLAIN":
 			return &AuthPlainScene{
 				authentication: context.Authentication,
+				authenticated: func(username string) {
+					session.LoggedUsername = username
+				},
 			}
 
 		}
 		return nil
-	}
-
-	session := &Session{
-		context:  context,
-		protocol: smtProtocol,
-		reader:   io.Reader(connection),
-		writer:   io.Writer(connection),
 	}
 
 	session.Start("")

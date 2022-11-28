@@ -10,6 +10,7 @@ import (
 
 type AuthPlainScene struct {
 	authentication authentication.Authentication
+	authenticated  func(username string)
 	protocol       *smtpServer.Protocol
 }
 
@@ -26,18 +27,6 @@ func (scene *AuthPlainScene) HandleLine(receivedLine string) *smtpServer.Reply {
 	return scene.replyAfterCheckCredentials(receivedLine)
 }
 
-func (scene *AuthPlainScene) checkEncodedCredentials(encodedCredentials string) bool {
-	encodedCredentials = strings.TrimSpace(encodedCredentials)
-	val, _ := base64.StdEncoding.DecodeString(encodedCredentials)
-	parts := strings.Split(string(val), string(rune(0)))
-
-	if len(parts) < 3 {
-		return false
-	}
-
-	return scene.authentication.Authenticate(authentication.SMTP, parts[1], parts[2])
-}
-
 func (scene *AuthPlainScene) replyAfterCheckCredentials(encodedCredentials string) *smtpServer.Reply {
 	scene.protocol.State = smtpServer.STATE_CONVERSATION
 
@@ -46,6 +35,9 @@ func (scene *AuthPlainScene) replyAfterCheckCredentials(encodedCredentials strin
 		return smtpServer.ReplyAuthFailed()
 	}
 
+	if scene.authenticated != nil {
+		scene.authenticated(username)
+	}
 	return smtpServer.ReplyAuthOk()
 }
 

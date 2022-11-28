@@ -15,6 +15,8 @@ type Session struct {
 	writer   io.Writer
 
 	receivedLine string
+
+	LoggedUsername string
 }
 
 func (session *Session) Start(identification string) {
