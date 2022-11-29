@@ -1,10 +1,10 @@
 <template>
-ssss
+  Settings
 </template>
 
 <script>
 export default {
-  name: "About"
+  name: "Settings"
 }
 </script>
 
