@@ -1,0 +1,18 @@
+.btn {
+  @apply relative inline-flex items-center;
+  @apply transition-all duration-500;
+  &--default {
+    @apply rounded-md border;
+    @apply px-4 py-2 text-sm font-medium;
+    @apply border-gray-300 hover:border-gray-500 hover:dark:border-gray-400;
+    @apply bg-white dark:bg-gray-800 hover:bg-gray-50 hover:dark:bg-gray-800;
+    @apply text-gray-700 dark:text-gray-300 hover:text-gray-500 hover:dark:text-gray-400;
+  }
+  &--primary {
+    @apply rounded-md border;
+    @apply px-4 py-2 text-sm font-medium;
+    @apply border-primary-600 dark:border-primary-700 hover:border-primary-700 hover:dark:border-primary-700;
+    @apply bg-primary-600 dark:bg-primary-700 hover:bg-primary-600 hover:dark:bg-primary-700;
+    @apply text-primary-50 dark:text-primary-50 hover:text-white hover:dark:text-white;
+  }
+}
