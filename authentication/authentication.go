@@ -17,7 +17,9 @@ func logManager() *logger.Logger {
 
 // Authentication interface represents a backend flow to store or retrieve messages
 type Authentication interface {
-	// Authenticate check us credentials valid
+	// RequiresAuthentication check is supports auth
+	RequiresAuthentication() bool
+	// Authenticate check is credentials valid
 	Authenticate(authType AuthenticationType, username string, password string) bool
 }
 

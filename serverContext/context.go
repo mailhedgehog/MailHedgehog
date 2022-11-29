@@ -1,6 +1,7 @@
 package serverContext
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
@@ -41,4 +42,23 @@ func (context *Context) GetHttpSession(c *fiber.Ctx) *session.Session {
 	logger.PanicIfError(err)
 
 	return sess
+}
+
+func (context *Context) GetHttpAuthenticatedUser(ctx *fiber.Ctx) (string, error) {
+	httpSession := context.GetHttpSession(ctx)
+	username := ""
+	usernameValue := httpSession.Get("CurrentUser")
+	if usernameValue != nil {
+		username = fmt.Sprintf("%v", usernameValue)
+	}
+	if len(username) > 0 {
+		return username, nil
+	}
+	return "", errors.New("user not found")
+}
+
+func (context *Context) SetHttpAuthenticatedUser(ctx *fiber.Ctx, username string) error {
+	httpSession := context.GetHttpSession(ctx)
+	httpSession.Set("CurrentUser", username)
+	return httpSession.Save()
 }

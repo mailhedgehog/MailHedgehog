@@ -16,6 +16,7 @@ import (
 	"github.com/mailpiggy/MailPiggy/storage"
 	"os"
 	"strings"
+	"time"
 )
 
 var configuredLogger *logger.Logger
@@ -53,7 +54,7 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 		panic("Incorrect authentication type, Supports: file")
 	}
 
-	context.HttpSession = session.New()
+	context.HttpSession = session.New(session.Config{Expiration: 10 * time.Minute})
 
 	return context
 }
@@ -67,7 +68,9 @@ func Start(context *serverContext.Context) {
 	go smtp.Listen(context, exitChannel)
 
 	httpApp := fiber.New()
-	httpApp.Use(httpAuthentication(context))
+	if context.Authentication.RequiresAuthentication() {
+		httpApp.Use(httpAuthentication(context))
+	}
 	api.CreateAPIRoutes(context, httpApp)
 	ui.CreateUIRoutes(context, httpApp)
 
@@ -90,14 +93,9 @@ func httpAuthentication(context *serverContext.Context) func(ctx *fiber.Ctx) err
 			return ctx.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		httpSession := context.GetHttpSession(ctx)
-		username := ""
-		usernameValue := context.GetHttpSession(ctx).Get("CurrentUser")
-		if usernameValue != nil {
-			username = fmt.Sprintf("%v", usernameValue)
-		}
+		username, err := context.GetHttpAuthenticatedUser(ctx)
 
-		if len(username) <= 0 {
+		if err != nil {
 			// Set a custom header on all responses:
 			auth := ctx.Get(fiber.HeaderAuthorization)
 
@@ -123,16 +121,14 @@ func httpAuthentication(context *serverContext.Context) func(ctx *fiber.Ctx) err
 			}
 
 			// Get the username and password
-			username := credentials[:index]
+			username = credentials[:index]
 			password := credentials[index+1:]
 
 			if !context.Authentication.Authenticate(authentication.HTTP, username, password) {
 				return Unauthorized()
 			}
 
-			httpSession.Set("CurrentUser", username)
-			err = httpSession.Save()
-			if err != nil {
+			if context.SetHttpAuthenticatedUser(ctx, username) != nil {
 				logManager().Error(fmt.Sprintf("Error on saving session %s", err.Error()))
 				return Unauthorized()
 			}

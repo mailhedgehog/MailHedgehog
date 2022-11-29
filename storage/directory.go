@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"sort"
@@ -47,7 +47,7 @@ func (directory *Directory) RoomDirectory(room Room) string {
 }
 
 func (directory *Directory) Store(room Room, message *dto.Message) (dto.MessageID, error) {
-	b, err := ioutil.ReadAll(message.Raw.Bytes())
+	b, err := io.ReadAll(message.Raw.Bytes())
 	if err != nil {
 		return "", err
 	}
@@ -56,36 +56,13 @@ func (directory *Directory) Store(room Room, message *dto.Message) (dto.MessageI
 	}
 
 	path := filepath.Join(directory.RoomDirectory(room), string(message.ID))
-	err = ioutil.WriteFile(path, b, 0660)
+	err = os.WriteFile(path, b, 0660)
 	logManager().Debug(fmt.Sprintf("New message saved at %s", path))
 
 	return message.ID, err
 }
 
-func (directory *Directory) List(room Room, offset, limit int) ([]dto.Message, error) {
-	if offset < 0 || limit < 0 {
-		return nil, errors.New("offset and limit should be >= 0")
-	}
-
-	dir, err := os.Open(directory.RoomDirectory(room))
-	if err != nil {
-		return nil, err
-	}
-	defer dir.Close()
-
-	n, err := dir.Readdir(0)
-	if err != nil {
-		return nil, err
-	}
-
-	sort.Slice(n, func(i, j int) bool {
-		return n[i].ModTime().After(n[j].ModTime())
-	})
-
-	return directory.parseList(room, n, offset, limit)
-}
-
-func (directory *Directory) Search(room Room, query SearchQuery, offset, limit int) ([]dto.Message, int, error) {
+func (directory *Directory) List(room Room, query SearchQuery, offset, limit int) ([]dto.Message, int, error) {
 	if offset < 0 || limit < 0 {
 		return nil, 0, errors.New("offset and limit should be >= 0")
 	}
@@ -162,7 +139,7 @@ func (directory *Directory) parseList(room string, n []os.FileInfo, offset, limi
 	n = n[offset:endIndex]
 
 	for _, fileinfo := range n {
-		b, err := ioutil.ReadFile(filepath.Join(directory.RoomDirectory(room), fileinfo.Name()))
+		b, err := os.ReadFile(filepath.Join(directory.RoomDirectory(room), fileinfo.Name()))
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +168,7 @@ func (directory *Directory) Delete(room Room, messageId dto.MessageID) error {
 }
 
 func (directory *Directory) Load(room Room, messageId dto.MessageID) (*dto.Message, error) {
-	b, err := ioutil.ReadFile(filepath.Join(directory.RoomDirectory(room), string(messageId)))
+	b, err := os.ReadFile(filepath.Join(directory.RoomDirectory(room), string(messageId)))
 	if err != nil {
 		return nil, err
 	}

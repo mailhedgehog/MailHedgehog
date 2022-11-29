@@ -1,0 +1,14 @@
+smtp:
+  port: 1025
+http:
+  port: 8025
+  path: box
+storage:
+  use: directory
+  per_room_limit: 100
+  directory:
+    path: ""
+authentication:
+  use: file
+  file:
+    path: "auth.file"

@@ -28,11 +28,9 @@ func SetPerRoomLimit(limit int) {
 type Storage interface {
 	// Store `message` to specific `room`
 	Store(room Room, message *dto.Message) (dto.MessageID, error)
-	// List retrieve list of messages starting with `offset` index and count limited by `limit`
-	List(room Room, offset, limit int) ([]dto.Message, error)
-	// Search retrieve list of messages based on `query` starting with `offset` index and count limited by `limit`
+	// List retrieve list of messages based on `query` starting with `offset` index and count limited by `limit`
 	// `query` - represents of key->value map, where key is search parameter
-	Search(room Room, query SearchQuery, offset, limit int) ([]dto.Message, int, error)
+	List(room Room, query SearchQuery, offset, limit int) ([]dto.Message, int, error)
 	// Count total messages in storage
 	Count(room Room) int
 	// Delete delete specific message from storage by `messageId`

@@ -22,8 +22,12 @@ func CreateFileAuthentication(authFilePath string) *FileAuth {
 	return authFile
 }
 
+func (fileAuth *FileAuth) RequiresAuthentication() bool {
+	return fileAuth.users != nil
+}
+
 func (fileAuth *FileAuth) Authenticate(authType AuthenticationType, username string, password string) bool {
-	if fileAuth.users == nil {
+	if !fileAuth.RequiresAuthentication() {
 		return true
 	}
 

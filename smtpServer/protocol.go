@@ -25,6 +25,7 @@ type ConversationState string
 
 const (
 	STATE_CONVERSATION = ConversationState("conversation")
+	STATE_WAITING_AUTH = ConversationState("waiting_auth")
 	STATE_DATA         = ConversationState("data")
 	STATE_CUSTOM_SCENE = ConversationState("custom_scene")
 )
@@ -136,6 +137,10 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 
 	logManager().Debug(fmt.Sprintf("Handle command: '%s', with args: '%s'", command.verb, command.args))
 
+	if protocol.State == STATE_WAITING_AUTH && command.verb != COMMAND_AUTH {
+		return ReplyAuthFailed()
+	}
+
 	switch command.verb {
 	case COMMAND_HELO:
 		return protocol.HELO(command)
@@ -169,6 +174,10 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 func (protocol *Protocol) HELO(command *Command) *Reply {
 	protocol.Message.Helo = command.args
 
+	if mechanisms := protocol.authMechanisms(); len(mechanisms) > 0 {
+		protocol.State = STATE_WAITING_AUTH
+	}
+
 	return ReplyOk("Hello " + command.args)
 }
 
@@ -179,6 +188,7 @@ func (protocol *Protocol) EHLO(command *Command) *Reply {
 	logManager().Warning("TODO: add tls support") // TODO
 
 	if mechanisms := protocol.authMechanisms(); len(mechanisms) > 0 {
+		protocol.State = STATE_WAITING_AUTH
 		replyArgs = append(replyArgs, string(COMMAND_AUTH)+" "+strings.Join(mechanisms, " "))
 	}
 

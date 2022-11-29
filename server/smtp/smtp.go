@@ -60,7 +60,9 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 		LoggedUsername: "",
 	}
 
-	session.protocol.AuthenticationMechanismsCallback = func() []string { return []string{AUTH_MECHANISM_PLAIN} }
+	if context.Authentication.RequiresAuthentication() {
+		session.protocol.AuthenticationMechanismsCallback = func() []string { return []string{AUTH_MECHANISM_PLAIN} }
+	}
 	session.protocol.MessageReceivedCallback = func(message *dto.SMTPMessage) (string, error) {
 		formattedMessage := message.Parse()
 
