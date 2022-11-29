@@ -17,9 +17,10 @@ type AppConfig struct {
 		} `yaml:"validation"`
 	} `yaml:"smtp"`
 	Http struct {
-		Host string `yaml:"host"`
-		Port int    `yaml:"port"`
-		Path string `yaml:"path"`
+		Host       string `yaml:"host"`
+		Port       int    `yaml:"port"`
+		Path       string `yaml:"path"`
+		AssetsRoot string `yaml:"assets_root"`
 	} `yaml:"http"`
 	Storage struct {
 		Use          string `yaml:"use"`
@@ -71,6 +72,9 @@ func (config *AppConfig) withDefaults() {
 		config.Smtp.Port = 1025
 	}
 
+	if len(config.Http.AssetsRoot) <= 0 {
+		config.Http.AssetsRoot = "./public"
+	}
 	if len(config.Http.Host) <= 0 {
 		config.Http.Host = "0.0.0.0"
 	}

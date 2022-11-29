@@ -16,5 +16,9 @@ func logManager() *logger.Logger {
 }
 
 func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
-	logManager().Warning("Implement UI")
+	ui := httpApp.Group(context.PathWithPrefix(""), func(c *fiber.Ctx) error {
+		return c.Next()
+	})
+
+	ui.Static("/", context.Config.Http.AssetsRoot)
 }

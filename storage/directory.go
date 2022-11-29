@@ -92,6 +92,7 @@ func (directory *Directory) List(room Room, query SearchQuery, offset, limit int
 				continue
 			}
 			for criteria, queryValue := range query {
+				queryValue = strings.ToLower(queryValue)
 				switch criteria {
 				case "to":
 					for _, t := range msg.To {
