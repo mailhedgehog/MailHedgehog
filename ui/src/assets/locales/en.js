@@ -1,11 +1,20 @@
 export default {
-    inbox: {
-        hello: 'Hello, "{msg}"',
-    },
-    colorMode: {
-        title: 'Color mode',
-        light: 'Light',
-        dark: 'Dark',
-        system: 'System',
-    },
-}
+  menu: {
+    logout: 'Logout',
+  },
+  colorMode: {
+    title: 'Color mode',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
+  },
+  locales: {
+    title: 'Language',
+    en: 'English',
+    ua: 'Ukrainian',
+    fr: 'French',
+  },
+  inbox: {
+    hello: 'Hello, "{msg}"',
+  },
+};

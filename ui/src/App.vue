@@ -184,50 +184,10 @@
           id="header-search"
           class="flex flex-1"
         />
-        <div class="ml-4 flex items-center md:ml-6">
+        <div class="ml-4 flex items-center md:ml-6 space-x-3">
           <ColorModeSelect />
-
-
-          <!-- Profile dropdown -->
-          <Menu
-            as="div"
-            class="relative ml-3"
-          >
-            <div>
-              <MenuButton
-                class="flex max-w-xs items-center rounded-full bg-white dark:bg-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 lg:rounded-md lg:p-2 lg:hover:bg-gray-50 lg:hover:dark:bg-gray-800"
-              >
-                <img
-                  class="h-8 w-8 rounded-full"
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
-                >
-                <ChevronDownIcon
-                  class="ml-1 h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-600"
-                  aria-hidden="true"
-                />
-              </MenuButton>
-            </div>
-            <transition
-              enter-active-class="transition ease-out duration-100"
-              enter-from-class="transform opacity-0 scale-95"
-              enter-to-class="transform opacity-100 scale-100"
-              leave-active-class="transition ease-in duration-75"
-              leave-from-class="transform opacity-100 scale-100"
-              leave-to-class="transform opacity-0 scale-95"
-            >
-              <MenuItems
-                class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-700 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-              >
-                <MenuItem v-slot="{ active }">
-                  <a
-                    href="#"
-                    :class="[active ? 'bg-gray-100 dark:bg-gray-800' : '', 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-400']"
-                  >Logout</a>
-                </MenuItem>
-              </MenuItems>
-            </transition>
-          </Menu>
+          <LangModeSelect />
+          <ProfileDropdown />
         </div>
       </div>
     </div>
@@ -239,7 +199,6 @@
 
 <script lang="ts">
 import { ref } from 'vue';
-import ColorModeSelect from '@/components/Header/ColorModeSelect.vue'
 import {
   Dialog,
   DialogPanel,
@@ -264,6 +223,7 @@ import {
   ShieldCheckIcon,
   UserGroupIcon,
   XMarkIcon,
+  UserCircleIcon,
 } from '@heroicons/vue/24/outline';
 import {
   BanknotesIcon,
@@ -273,10 +233,15 @@ import {
   ChevronRightIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/vue/20/solid';
+import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
+import LangModeSelect from '@/components/Header/LangModeSelect.vue';
+import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
 
 export default {
   components: {
     ColorModeSelect,
+    LangModeSelect,
+    ProfileDropdown,
     Dialog,
     DialogPanel,
     Menu,
@@ -304,6 +269,7 @@ export default {
     ChevronDownIcon,
     ChevronRightIcon,
     MagnifyingGlassIcon,
+    UserCircleIcon,
   },
   setup() {
     const navigation = [
@@ -317,7 +283,6 @@ export default {
 
     const sidebarOpen = ref(false);
 
-    /*    const SetLocale = inject('SetLocale');*/
     return {
       navigation,
       secondaryNavigation,
