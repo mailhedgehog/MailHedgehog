@@ -16,5 +16,8 @@ export default {
   },
   inbox: {
     hello: 'Hello, "{msg}"',
+    pageTitle: 'Inbox',
+    clear: 'Clear inbox',
+    search: 'Search emails',
   },
 };

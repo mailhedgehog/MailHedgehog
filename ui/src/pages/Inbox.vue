@@ -2,32 +2,25 @@
   <!-- Page header -->
   <div class="lg:-mt-px bg-white dark:bg-gray-900 shadow dark:shadow-gray-500">
     <div class="px-4 sm:px-6 lg:mx-auto lg:max-w-6xl lg:px-8">
-      <div class="py-6 md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-          <!-- Profile -->
-          <div class="flex items-center">
-            <div>
-              <div class="flex items-center">
-                <h1 class="ml-3 text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 sm:truncate sm:leading-9"
-                >
-                  {{ $t('inbox.hello', { msg: 'vtp' }) }}
-                </h1>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="mt-6 flex justify-end space-x-3 md:mt-0 md:ml-4">
+      <div class="py-6 flex items-center justify-between">
+        <h1
+          class="ml-3 text-xl md:text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 truncate sm:leading-9"
+        >
+          {{ $t('inbox.hello', {msg: 'vtp'}) }}
+          {{ $t('inbox.pageTitle') }}
+        </h1>
+        <div class="flex justify-end ml-4">
           <button
             type="button"
-            class="btn btn--default"
+            class="btn btn--default whitespace-nowrap"
+            :title="$t('inbox.clear')"
           >
-            Add money
-          </button>
-          <button
-            type="button"
-            class="btn btn--primary"
-          >
-            Send money
+            <TrashIcon class="w-4 h-4 md:mr-2" />
+            <span
+              class="hidden md:inline"
+            >
+              {{ $t('inbox.clear') }}
+            </span>
           </button>
         </div>
       </div>
@@ -35,50 +28,62 @@
   </div>
 
   <div class="mt-8">
-    <h2
-      class="
-          mx-auto mt-8 max-w-6xl px-4
-          text-lg font-medium leading-6
-          text-gray-900 dark:text-gray-100
-          sm:px-6 lg:px-8"
-    >
-      Emails
-    </h2>
-
-    <!-- Activity list (smallest breakpoint only) -->
-    <div class="shadow dark:shadow-gray-500 sm:hidden">
+    <!-- List (smallest breakpoint only) -->
+    <div class="shadow dark:shadow-gray-500 md:hidden">
       <ul
         role="list"
-        class="mt-2 divide-y divide-gray-200 overflow-hidden shadow dark:shadow-gray-500 sm:hidden"
+        class="mt-2 divide-y divide-gray-200 overflow-hidden shadow dark:shadow-gray-500"
       >
         <li
-          v-for="transaction in transactions"
-          :key="transaction.id"
+          v-for="email in emails"
+          :key="email.id"
         >
-          <a
-            :href="transaction.href"
+          <div
             class="block bg-white dark:bg-gray-800 px-4 py-4 hover:bg-gray-50"
           >
             <span class="flex items-center space-x-4">
               <span class="flex flex-1 space-x-2 truncate">
-                <BanknotesIcon
-                  class="h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-300"
-                  aria-hidden="true"
-                />
                 <span class="flex flex-col truncate text-sm text-gray-500 dark:text-gray-400">
-                  <span class="truncate">{{ transaction.name }}</span>
-                  <span><span class="font-medium text-gray-900 dark:text-gray-100">{{ transaction.amount }}</span>
-                    {{ transaction.currency }}
+                  <span
+                    v-if="email.from"
+                    class="truncate"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">From</span>
+                    {{ email.from.name }}({{ email.from.email }})
                   </span>
-                  <time :datetime="transaction.datetime">{{ transaction.date }}</time>
+                  <span
+                    v-if="email.to[0]"
+                    class="truncate"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">To</span>
+                    {{ email.to[0].name }}({{ email.to[0].email }})
+                  </span>
+                  <span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">Subject</span>
+                    {{ email.subject }}
+                  </span>
+                  <span>
+                    <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">Received at</span>
+                    <time
+                      v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                      :datetime="email.received_at"
+                    >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                    </time>
+                  </span>
                 </span>
               </span>
-              <ChevronRightIcon
-                class="h-5 w-5 flex-shrink-0 text-gray-400"
-                aria-hidden="true"
-              />
+              <div class="space-y-2">
+                <EyeIcon
+                  class="h-5 w-5 flex-shrink-0 text-gray-400"
+                  aria-hidden="true"
+                />
+                <TrashIcon
+                  class="h-5 w-5 flex-shrink-0 text-gray-400"
+                  aria-hidden="true"
+                />
+              </div>
             </span>
-          </a>
+          </div>
         </li>
       </ul>
 
@@ -103,11 +108,11 @@
       </nav>
     </div>
 
-    <!-- Activity table (small breakpoint and up) -->
-    <div class="hidden sm:block">
-      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <!-- List (small breakpoint and up) -->
+    <div class="hidden md:block">
+      <div class="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
         <div class="mt-2 flex flex-col">
-          <div class="min-w-full overflow-hidden overflow-x-auto align-middle shadow sm:rounded-lg">
+          <div class="min-w-full overflow-hidden overflow-x-auto align-middle shadow md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
               <thead>
                 <tr>
@@ -115,61 +120,91 @@
                     class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                     scope="col"
                   >
-                    Transaction
+                    From
                   </th>
                   <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
+                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                     scope="col"
                   >
-                    Amount
+                    To
                   </th>
                   <th
-                    class="hidden bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 md:block"
+                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                     scope="col"
                   >
-                    Status
+                    Subject
                   </th>
                   <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-right text-sm font-semibold text-gray-900 dark:text-gray-100"
+                    class="whitespace-nowrap bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                     scope="col"
                   >
-                    Date
+                    Received at
+                  </th>
+                  <th
+                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right"
+                    scope="col"
+                  >
+                    Actions
                   </th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white dark:bg-gray-800">
                 <tr
-                  v-for="transaction in transactions"
-                  :key="transaction.id"
+                  v-for="email in emails"
+                  :key="email.id"
                   class="bg-white dark:bg-gray-800"
                 >
-                  <td class="w-full max-w-0 whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                    <div class="flex">
-                      <a
-                        :href="transaction.href"
-                        class="group inline-flex space-x-2 truncate text-sm"
-                      >
-                        <BanknotesIcon
-                          class="h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-100"
-                          aria-hidden="true"
-                        />
-                        <p class="truncate text-gray-500 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-gray-100">{{ transaction.name }}</p>
-                      </a>
+                  <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    <template v-if="email.from">
+                      <div class="truncate">
+                        {{ email.from.name }}asd asd asd as d
+                      </div>
+                      <div class="truncate">
+                        <a
+                          :href="`mailto:${email.from.email}`"
+                          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                        >
+                          {{ email.from.email }}as as dasd as d
+                        </a>
+                      </div>
+                    </template>
+                    <div v-else>
+                      n/a
                     </div>
                   </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500 dark:text-gray-400">
-                    <span class="font-medium text-gray-900 dark:text-gray-100">{{ transaction.amount }}</span>
-                    {{ transaction.currency }}
+                  <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    <template v-if="email.to[0]">
+                      <div class="truncate">
+                        {{ email.to[0].name }}asd asd asd asd asd aa
+                      </div>
+                      <div class="truncate">
+                        <a
+                          :href="`mailto:${email.to[0].email}`"
+                          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                        >
+                          {{ email.to[0].email }}asd asd as af
+                        </a>
+                      </div>
+                    </template>
+                    <div v-else>
+                      n/a
+                    </div>
                   </td>
-                  <td class="hidden whitespace-nowrap px-6 py-4 text-sm text-gray-500 md:block">
-                    <span
-                      :class="[statusStyles[transaction.status], 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize']"
-                    >{{
-                      transaction.status
-                    }}</span>
+                  <td class="w-full max-w-0 whitespace-nowrap truncate px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    {{ email.subject }} asd asd asd asd asd asd as dfadfsdkjf hskdj fhskdj fhksjd hfksjd fh
                   </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-right text-sm text-gray-500 dark:text-gray-400">
-                    <time :datetime="transaction.datetime">{{ transaction.date }}</time>
+                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <time
+                      v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                      :datetime="email.received_at"
+                    >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                    </time>
+                  </td>
+                  <td
+                    class="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 flex justify-end space-x-1"
+                  >
+                    <EyeIcon class="w-5 h-5" />
+                    <TrashIcon class="w-5 h-5" />
                   </td>
                 </tr>
               </tbody>
@@ -215,13 +250,14 @@
   <Teleport to="#header-search">
     <form
       class="flex w-full md:ml-0"
-      action="#"
       method="GET"
     >
       <label
         for="search-field"
         class="sr-only"
-      >Search</label>
+      >
+        {{ $t('inbox.search') }}
+      </label>
       <div class="relative w-full text-gray-400 focus-within:text-gray-600">
         <div
           class="pointer-events-none absolute inset-y-0 left-0 flex items-center"
@@ -235,8 +271,13 @@
         <input
           id="search-field"
           name="search-field"
-          class="block h-full w-full border-transparent py-2 pl-8 pr-3 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
-          placeholder="Search transactions"
+          class="block h-full w-full  py-2 pl-8 pr-3  sm:text-sm
+          focus:outline-none focus:ring-0
+          border-transparent focus:border-transparent
+          placeholder-gray-500
+          bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+          "
+          :placeholder="$t('inbox.search')"
           type="search"
         >
       </div>
@@ -245,105 +286,51 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import moment from 'moment';
 import {
-  Dialog,
-  DialogPanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  TransitionChild,
-  TransitionRoot,
-} from '@headlessui/vue';
-import {
-  Bars3CenterLeftIcon,
-  BellIcon,
-  ClockIcon,
-  CogIcon,
-  CreditCardIcon,
-  DocumentChartBarIcon,
-  HomeIcon,
-  QuestionMarkCircleIcon,
-  ScaleIcon,
-  ShieldCheckIcon,
-  UserGroupIcon,
-  XMarkIcon,
-} from '@heroicons/vue/24/outline';
-import {
-  BanknotesIcon,
-  BuildingOfficeIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
+  EyeIcon,
+  TrashIcon,
   MagnifyingGlassIcon,
-} from '@heroicons/vue/20/solid';
+} from '@heroicons/vue/24/outline';
 
 export default {
   name: 'Inbox',
   components: {
-    Dialog,
-    DialogPanel,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    TransitionChild,
-    TransitionRoot,
-    Bars3CenterLeftIcon,
-    BellIcon,
-    ClockIcon,
-    CogIcon,
-    CreditCardIcon,
-    DocumentChartBarIcon,
-    HomeIcon,
-    QuestionMarkCircleIcon,
-    ScaleIcon,
-    ShieldCheckIcon,
-    UserGroupIcon,
-    XMarkIcon,
-    BanknotesIcon,
-    BuildingOfficeIcon,
-    CheckCircleIcon,
-    ChevronDownIcon,
-    ChevronRightIcon,
+    TrashIcon,
+    EyeIcon,
     MagnifyingGlassIcon,
   },
   setup() {
-    const navigation = [
-      {
-        name: 'Inbox', href: '#', icon: HomeIcon, current: true,
-      },
-    ];
-    const secondaryNavigation = [
-      { name: 'Settings', href: '#', icon: CogIcon },
-    ];
-    const transactions = [
+    const emails = [
       {
         id: 1,
-        name: 'Payment to Molly Sanders',
-        href: '#',
-        amount: '$20,000',
-        currency: 'USD',
-        status: 'success',
-        date: 'July 11, 2020',
-        datetime: '2020-07-11',
+        from: {
+          name: 'Some name',
+          email: 'test@test.com',
+        },
+        to: [
+          {
+            name: 'Some name',
+            email: 'test@test.com',
+          },
+          {
+            name: 'Some name',
+            email: 'test@test.com',
+          },
+          {
+            name: 'Some name',
+            email: 'test@test.com',
+          },
+        ],
+        subject: 'Example subject',
+        received_at: '2021-01-02 12:30:00',
+        size: 1342423,
       },
-      // More transactions...
     ];
-    const statusStyles = {
-      success: 'bg-green-100 text-green-800',
-      processing: 'bg-yellow-100 text-yellow-800',
-      failed: 'bg-gray-100 text-gray-800',
-    };
 
-    const sidebarOpen = ref(false);
     return {
-      navigation,
-      secondaryNavigation,
-      transactions,
-      statusStyles,
-      sidebarOpen,
+      emails,
+      moment,
     };
   },
 };

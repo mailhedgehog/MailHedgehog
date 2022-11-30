@@ -81,23 +81,6 @@
                   {{ item.name }}
                 </a>
               </div>
-              <div class="mt-6 pt-6">
-                <div class="space-y-1 px-2">
-                  <a
-                    v-for="item in secondaryNavigation"
-                    :key="item.name"
-                    :href="item.href"
-                    class="group flex items-center rounded-md px-2 py-2 text-base font-medium text-primary-100 hover:bg-primary-600 hover:text-white"
-                  >
-                    <component
-                      :is="item.icon"
-                      class="mr-4 h-6 w-6 text-primary-200"
-                      aria-hidden="true"
-                    />
-                    {{ item.name }}
-                  </a>
-                </div>
-              </div>
             </nav>
           </DialogPanel>
         </TransitionChild>
@@ -141,23 +124,6 @@
             />
             {{ item.name }}
           </router-link>
-        </div>
-        <div class="mt-6 pt-6">
-          <div class="space-y-1 px-2">
-            <router-link
-              v-for="item in secondaryNavigation"
-              :key="item.name"
-              :to="item.href"
-              class="group flex items-center rounded-md px-2 py-2 text-sm font-medium leading-6 text-primary-100 hover:bg-primary-600 hover:text-white"
-            >
-              <component
-                :is="item.icon"
-                class="mr-4 h-6 w-6 text-primary-200"
-                aria-hidden="true"
-              />
-              {{ item.name }}
-            </router-link>
-          </div>
         </div>
       </nav>
     </div>
@@ -276,8 +242,6 @@ export default {
       {
         name: 'Inbox', href: '/', icon: HomeIcon, current: true,
       },
-    ];
-    const secondaryNavigation = [
       { name: 'Settings', href: 'settings', icon: CogIcon },
     ];
 
@@ -285,7 +249,6 @@ export default {
 
     return {
       navigation,
-      secondaryNavigation,
       sidebarOpen,
     };
   },
