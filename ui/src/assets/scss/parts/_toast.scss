@@ -1,0 +1,18 @@
+@import "@/../node_modules/toastedjs/src/sass/toast";
+
+@include toasted-theme('app') {
+
+  background-color: #00d1b2;
+  color: #fff;
+  border-radius: 3px;
+  font-weight: 700;
+
+  @include toasted-theme-type('success', #fff, #23d160);
+
+  @include toasted-theme-type('error', #fff, #a94442);
+
+  @include toasted-theme-type('info', #fff, #3273dc);
+
+  @include toasted-theme-type('warning', #fff, #dc9232);
+
+}

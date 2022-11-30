@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 
+@import "parts/toast";
+@import "parts/tooltip";
 @import "parts/btn";
 @import "parts/icon-select";
 
