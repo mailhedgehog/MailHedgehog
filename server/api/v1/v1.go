@@ -177,11 +177,14 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 		if err == nil {
 			receivedAt = receivedAtInfo.Format("2006-01-02 15:04:05")
 		}
+
+		subject, _ := message.Content.Headers.GetOne("Subject")
+
 		messagesResponse = append(messagesResponse, fiber.Map{
 			"id":          message.ID,
 			"from":        from,
 			"to":          to,
-			"subject":     "",
+			"subject":     subject,
 			"received_at": receivedAt,
 			"size":        len(message.Raw.Data),
 			"yyy":         message.Content.Headers.All(),
