@@ -242,7 +242,7 @@ func (protocol *Protocol) ParseFROM(mail string) (string, error) {
 }
 
 func (protocol *Protocol) ParseRCPT(mail string) (string, error) {
-	match := regexp.MustCompile(`(?i:To):\s*<([^>]+)>`).FindStringSubmatch(mail)
+	match := regexp.MustCompile(`(?i:EmailInfo):\s*<([^>]+)>`).FindStringSubmatch(mail)
 
 	if len(match) != 2 {
 		return "", errors.New("Invalid syntax in MAIL command")

@@ -59,7 +59,7 @@ func (config *AppConfig) withDefaults() {
 	if len(config.Hostname) <= 0 {
 		identification, _ := os.Hostname()
 		if len(identification) <= 0 {
-			config.Hostname = "mailpiggy.local"
+			config.Hostname = "mailhedgehog.local"
 		} else {
 			config.Hostname = identification
 		}

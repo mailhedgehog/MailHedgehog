@@ -19,7 +19,7 @@ type Directory struct {
 
 func CreateDirectoryStorage(path string) *Directory {
 	if len(path) <= 0 {
-		dir, err := os.MkdirTemp("", "mailpiggy_")
+		dir, err := os.MkdirTemp("", "mailhedgehog_")
 		logger.PanicIfError(err)
 		path = dir
 	}

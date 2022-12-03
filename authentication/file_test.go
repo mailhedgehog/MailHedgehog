@@ -10,7 +10,7 @@ import (
 var filePath = ""
 
 func init() {
-	dir, err := os.MkdirTemp("", "mailpiggy_")
+	dir, err := os.MkdirTemp("", "mailhedgehog_")
 	logger.PanicIfError(err)
 
 	filePath = dir + string(os.PathSeparator) + "auth.file"

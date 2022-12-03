@@ -42,7 +42,7 @@ type Path struct {
 
 // Content represents the body content of an SMTP message
 type Content struct {
-	Headers map[string][]string
+	Headers ContentHeaders
 	Body    string
 	Size    int
 	MIME    *MIMEBody
@@ -78,41 +78,16 @@ func (message *SMTPMessage) Parse() *Message {
 		Raw:     message,
 	}
 
-	// find headers
-	var hasMessageID bool
-	var receivedHeaderName string
-	var returnPathHeaderName string
-
-	for k := range msg.Content.Headers {
-		if strings.ToLower(k) == "message-id" {
-			hasMessageID = true
-			continue
-		}
-		if strings.ToLower(k) == "received" {
-			receivedHeaderName = k
-			continue
-		}
-		if strings.ToLower(k) == "return-path" {
-			returnPathHeaderName = k
-			continue
-		}
+	_, err := msg.Content.Headers.GetOne("Message-ID")
+	if err != nil {
+		msg.Content.Headers.Set("Message-ID", []string{string(id)})
 	}
 
-	if !hasMessageID {
-		msg.Content.Headers["Message-ID"] = []string{string(id)}
-	}
+	received, _ := msg.Content.Headers.Get("Received")
+	msg.Content.Headers.Set("Received", append(received, "from "+message.Helo+" by (MailHedgehog)\r\n          id "+string(id)+"; "+time.Now().Format(time.RFC1123Z)))
 
-	if len(receivedHeaderName) > 0 {
-		msg.Content.Headers[receivedHeaderName] = append(msg.Content.Headers[receivedHeaderName], "from "+message.Helo+" by (MailPiggy)\r\n          id "+string(id)+"; "+time.Now().Format(time.RFC1123Z))
-	} else {
-		msg.Content.Headers["Received"] = []string{"from " + message.Helo + " by (MailPiggy)\r\n          id " + string(id) + "; " + time.Now().Format(time.RFC1123Z)}
-	}
-
-	if len(returnPathHeaderName) > 0 {
-		msg.Content.Headers[returnPathHeaderName] = append(msg.Content.Headers[returnPathHeaderName], "<"+message.From+">")
-	} else {
-		msg.Content.Headers["Return-Path"] = []string{"<" + message.From + ">"}
-	}
+	returnPath, _ := msg.Content.Headers.Get("Return-Path")
+	msg.Content.Headers.Set("Return-Path", append(returnPath, "<"+message.From+">"))
 
 	return msg
 }
@@ -196,7 +171,7 @@ func PathFromString(path string) *Path {
 
 // ContentFromString parses SMTP content into separate headers and body
 func ContentFromString(data string) *Content {
-	logManager().Debug(fmt.Sprintf("Parsing Content from string: '%s'", data))
+	// logManager().Debug(fmt.Sprintf("Parsing Content from string: '%s'", data))
 
 	x := strings.SplitN(data, "\r\n\r\n", 2)
 	h := make(map[string][]string, 0)
@@ -223,13 +198,13 @@ func ContentFromString(data string) *Content {
 		}
 		return &Content{
 			Size:    len(data),
-			Headers: h,
+			Headers: ContentHeaders{h},
 			Body:    body,
 		}
 	}
 	return &Content{
 		Size:    len(data),
-		Headers: h,
+		Headers: ContentHeaders{h},
 		Body:    x[0],
 	}
 }
