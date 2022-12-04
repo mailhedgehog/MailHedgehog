@@ -98,13 +98,12 @@ func (headers *ContentHeaders) To() []EmailInfo {
 }
 
 func (headers *ContentHeaders) DateUTC() (time.Time, error) {
-	date, err := headers.GetOne("DateUTC")
+	date, err := headers.GetOne("Date")
 	if err != nil {
 		return time.Time{}, errors.New("date not found")
 	}
 
 	t, err := time.Parse("Mon, _2 Jan 2006 15:04:05 -0700", date)
-
 	if err != nil {
 		return time.Time{}, errors.New("date has not valid format")
 	}

@@ -71,6 +71,7 @@ func Start(context *serverContext.Context) {
 	if context.Authentication.RequiresAuthentication() {
 		httpApp.Use(httpAuthentication(context))
 	}
+
 	api.CreateAPIRoutes(context, httpApp)
 	ui.CreateUIRoutes(context, httpApp)
 

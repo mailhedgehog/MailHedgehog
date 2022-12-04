@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"github.com/mailpiggy/MailPiggy/serverContext"
@@ -70,29 +69,6 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	})
 }
 
-type ValidationError struct {
-	FailedField string
-	Tag         string
-	Value       string
-}
-
-var validate = validator.New()
-
-func ValidateStruct(structToValidate interface{}) []*ValidationError {
-	var errors []*ValidationError
-	err := validate.Struct(structToValidate)
-	if err != nil {
-		for _, err := range err.(validator.ValidationErrors) {
-			var element ValidationError
-			element.FailedField = err.StructNamespace()
-			element.Tag = err.Tag()
-			element.Value = err.Param()
-			errors = append(errors, &element)
-		}
-	}
-	return errors
-}
-
 func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
 
@@ -106,9 +82,10 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 
 	if err := ctx.QueryParser(listQuery); err != nil {
 		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"messages": err.Error(),
+			"messages": UnprocessableEntityResponse(ctx, []*ValidationError{
+				ValidationErrorFromError("query", err),
+			}),
 		})
-
 	}
 
 	if listQuery.Page == 0 {
@@ -120,9 +97,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 
 	errors := ValidateStruct(*listQuery)
 	if errors != nil {
-		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"messages": errors,
-		})
+		return UnprocessableEntityResponse(ctx, errors)
 
 	}
 
@@ -187,7 +162,6 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 			"subject":     subject,
 			"received_at": receivedAt,
 			"size":        len(message.Raw.Data),
-			"yyy":         message.Content.Headers.All(),
 		})
 	}
 

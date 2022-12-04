@@ -2,7 +2,9 @@ import axios from 'axios';
 
 // eslint-disable-next-line import/prefer-default-export
 export function setupAxios() {
-  const instance = axios.create();
+  const instance = axios.create({
+    baseURL: 'http://localhost:8025/api/v1',
+  });
 
   instance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 

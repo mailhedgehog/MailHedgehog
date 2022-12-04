@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/mailpiggy/MailPiggy/logger"
 	v1 "github.com/mailpiggy/MailPiggy/server/api/v1"
 	"github.com/mailpiggy/MailPiggy/serverContext"
@@ -21,6 +22,10 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 	api := httpApp.Group(context.PathWithPrefix("api"), func(c *fiber.Ctx) error {
 		return c.Next()
 	})
+
+	api.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173", // TODO: from config
+	}))
 
 	v1.CreateAPIV1Routes(context, api)
 }

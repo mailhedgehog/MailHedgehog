@@ -14,10 +14,17 @@ export default {
     ua: 'Ukrainian',
     fr: 'French',
   },
+  pagination: {
+    requesting: 'Loading...',
+    prev: 'Previous',
+    next: 'Next',
+    text: 'Showing <span class="font-medium">{from}</span> to <span class="font-medium">{to}</span> of <span class="font-medium">{of}</span> results',
+  },
   inbox: {
     hello: 'Hello, "{msg}"',
     pageTitle: 'Inbox',
     clear: 'Clear inbox',
     search: 'Search emails',
+    empty: 'No emails found',
   },
 };

@@ -15,7 +15,7 @@
             class="btn btn--default whitespace-nowrap"
             :title="$t('inbox.clear')"
           >
-            <TrashIcon class="w-4 h-4 md:mr-2" />
+            <TrashIcon class="w-4 h-4 md:mr-2"/>
             <span
               class="hidden md:inline"
             >
@@ -109,104 +109,128 @@
     </div>
 
     <!-- List (small breakpoint and up) -->
-    <div class="hidden md:block">
-      <div class="mx-auto max-w-6xl px-4 md:px-6 lg:px-8">
+    <div
+      v-if="pagination"
+      class="hidden md:block"
+    >
+      <div
+        v-if="pagination.isEmpty()"
+        class=""
+      >
+        <h3 class="ml-3 text-lg md:text-xl text-center text-gray-900 dark:text-gray-100 select-none">
+          <template v-if="isRequesting">
+            {{ $t('pagination.requesting') }}
+          </template>
+          <template v-else>
+            {{ $t('inbox.empty') }}
+          </template>
+        </h3>
+      </div>
+      <div
+        v-else
+        class="mx-auto max-w-6xl px-4 md:px-6 lg:px-8 transition-all duration-200"
+        :class="{
+          'pointer-events-none opacity-75': isRequesting
+        }"
+      >
         <div class="mt-2 flex flex-col">
           <div class="min-w-full overflow-hidden overflow-x-auto align-middle shadow md:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200">
               <thead>
-                <tr>
-                  <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
-                    scope="col"
-                  >
-                    From
-                  </th>
-                  <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
-                    scope="col"
-                  >
-                    To
-                  </th>
-                  <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
-                    scope="col"
-                  >
-                    Subject
-                  </th>
-                  <th
-                    class="whitespace-nowrap bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
-                    scope="col"
-                  >
-                    Received at
-                  </th>
-                  <th
-                    class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right"
-                    scope="col"
-                  >
-                    Actions
-                  </th>
-                </tr>
+              <tr>
+                <th
+                  class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  scope="col"
+                >
+                  From
+                </th>
+                <th
+                  class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  scope="col"
+                >
+                  To
+                </th>
+                <th
+                  class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  scope="col"
+                >
+                  Subject
+                </th>
+                <th
+                  class="whitespace-nowrap bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  scope="col"
+                >
+                  Received at
+                </th>
+                <th
+                  class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right"
+                  scope="col"
+                >
+                  Actions
+                </th>
+              </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white dark:bg-gray-800">
-                <tr
-                  v-for="email in emails"
-                  :key="email.id"
-                  class="bg-white dark:bg-gray-800"
+              <tr
+                v-for="email in emails"
+                :key="email.id"
+                class="bg-white dark:bg-gray-800"
+              >
+                <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <template v-if="email.from">
+                    <div class="truncate">
+                      {{ email.from.name }}
+                    </div>
+                    <div class="truncate">
+                      <a
+                        :href="`mailto:${email.from.email}`"
+                        class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                      >
+                        {{ email.from.email }}
+                      </a>
+                    </div>
+                  </template>
+                  <div v-else>
+                    n/a
+                  </div>
+                </td>
+                <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                  <template v-if="email.to[0]">
+                    <div class="truncate">
+                      {{ email.to[0].name }}
+                    </div>
+                    <div class="truncate">
+                      <a
+                        :href="`mailto:${email.to[0].email}`"
+                        class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                      >
+                        {{ email.to[0].email }}
+                      </a>
+                    </div>
+                  </template>
+                  <div v-else>
+                    n/a
+                  </div>
+                </td>
+                <td
+                  class="w-full max-w-0 whitespace-nowrap truncate px-6 py-4 text-sm text-gray-900 dark:text-gray-100"
                 >
-                  <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                    <template v-if="email.from">
-                      <div class="truncate">
-                        {{ email.from.name }}asd asd asd as d
-                      </div>
-                      <div class="truncate">
-                        <a
-                          :href="`mailto:${email.from.email}`"
-                          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
-                        >
-                          {{ email.from.email }}as as dasd as d
-                        </a>
-                      </div>
-                    </template>
-                    <div v-else>
-                      n/a
-                    </div>
-                  </td>
-                  <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                    <template v-if="email.to[0]">
-                      <div class="truncate">
-                        {{ email.to[0].name }}asd asd asd asd asd aa
-                      </div>
-                      <div class="truncate">
-                        <a
-                          :href="`mailto:${email.to[0].email}`"
-                          class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
-                        >
-                          {{ email.to[0].email }}asd asd as af
-                        </a>
-                      </div>
-                    </template>
-                    <div v-else>
-                      n/a
-                    </div>
-                  </td>
-                  <td class="w-full max-w-0 whitespace-nowrap truncate px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
-                    {{ email.subject }} asd asd asd asd asd asd as dfadfsdkjf hskdj fhskdj fhksjd hfksjd fh
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    <time
-                      v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
-                      :datetime="email.received_at"
-                    >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
-                    </time>
-                  </td>
-                  <td
-                    class="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 flex justify-end space-x-1"
-                  >
-                    <EyeIcon class="w-5 h-5" />
-                    <TrashIcon class="w-5 h-5" />
-                  </td>
-                </tr>
+                  {{ email.subject }}
+                </td>
+                <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <time
+                    v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                    :datetime="email.received_at"
+                  >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                  </time>
+                </td>
+                <td
+                  class="whitespace-nowrap px-6 py-4 text-sm text-right text-gray-500 dark:text-gray-400 flex justify-end space-x-1"
+                >
+                  <EyeIcon class="w-5 h-5"/>
+                  <TrashIcon class="w-5 h-5"/>
+                </td>
+              </tr>
               </tbody>
             </table>
             <!-- Pagination -->
@@ -215,31 +239,26 @@
               aria-label="Pagination"
             >
               <div class="hidden sm:block">
-                <p class="text-sm text-gray-700 dark:text-gray-200">
-                  Showing
-                  {{ ' ' }}
-                  <span class="font-medium">1</span>
-                  {{ ' ' }}
-                  to
-                  {{ ' ' }}
-                  <span class="font-medium">10</span>
-                  {{ ' ' }}
-                  of
-                  {{ ' ' }}
-                  <span class="font-medium">20</span>
-                  {{ ' ' }}
-                  results
-                </p>
+                <p
+                  class="text-sm text-gray-700 dark:text-gray-200"
+                  v-html="$t('pagination.text', {from: pagination.getFrom(), to: pagination.getTo(), of: pagination.getTotal()})"
+                />
               </div>
               <div class="flex flex-1 justify-between sm:justify-end">
-                <a
-                  href="#"
+                <button
+                  :disabled="pagination.isOnFirst()"
                   class="btn btn--default"
-                >Previous</a>
-                <a
-                  href="#"
+                  @click.prevent="goToDirection('prev')"
+                >
+                  {{ $t('pagination.prev') }}
+                </button>
+                <button
+                  :disabled="pagination.isOnLast()"
                   class="ml-3 btn btn--default"
-                >Next</a>
+                  @click.prevent="goToDirection('next')"
+                >
+                  {{ $t('pagination.next') }}
+                </button>
               </div>
             </nav>
           </div>
@@ -270,6 +289,7 @@
         </div>
         <input
           id="search-field"
+          v-model="queryParams.search"
           name="search-field"
           class="block h-full w-full  py-2 pl-8 pr-3  sm:text-sm
           focus:outline-none focus:ring-0
@@ -285,13 +305,15 @@
   </Teleport>
 </template>
 
-<script>
+<script lang="ts">
+import {ref, onMounted, watch} from 'vue';
 import moment from 'moment';
 import {
   EyeIcon,
   TrashIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline';
+import Pagination from '@/utils/pagination';
 
 export default {
   name: 'Inbox',
@@ -301,35 +323,77 @@ export default {
     MagnifyingGlassIcon,
   },
   setup() {
-    const emails = [
-      {
-        id: 1,
-        from: {
-          name: 'Some name',
-          email: 'test@test.com',
-        },
-        to: [
-          {
-            name: 'Some name',
-            email: 'test@test.com',
-          },
-          {
-            name: 'Some name',
-            email: 'test@test.com',
-          },
-          {
-            name: 'Some name',
-            email: 'test@test.com',
-          },
-        ],
-        subject: 'Example subject',
-        received_at: '2021-01-02 12:30:00',
-        size: 1342423,
-      },
-    ];
+    const queryParams = ref({
+      page: 1,
+      per_page: 1,
+      search: '',
+    });
+    const isRequesting = ref(false);
+    const emails = ref([]);
+    const pagination = ref(new Pagination());
+
+    let searchTimeout: NodeJS.Timeout | null = null;
+    watch(() => queryParams.value.search, () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+        searchTimeout = null;
+      }
+      searchTimeout = setTimeout(() => {
+        getEmails(1);
+      }, 500);
+    }, {deep: true});
+
+    const getEmails = (page: number) => {
+      isRequesting.value = true;
+      queryParams.value.page = page;
+      MailHedgehog.request()
+        .get('emails', {
+          params: queryParams.value,
+        })
+        .then((response) => {
+          if (response.data?.data) {
+            emails.value = response.data?.data;
+          } else {
+            emails.value = [];
+          }
+          if (response.data?.meta?.pagination) {
+            pagination.value = new Pagination(
+              response.data?.meta?.pagination.current_page,
+              response.data?.meta?.pagination.per_page,
+              response.data?.meta?.pagination.last_page,
+              response.data?.meta?.pagination.from,
+              response.data?.meta?.pagination.to,
+              response.data?.meta?.pagination.total,
+            );
+          } else {
+            pagination.value = new Pagination();
+          }
+        })
+        .finally(() => {
+          isRequesting.value = false;
+        });
+    };
+
+    onMounted(() => {
+      getEmails(1);
+    });
+
+    const goToPage = (page: number) => {
+      if (pagination.value.hasPage(page)) {
+        getEmails(page);
+      }
+    };
+
+    const goToDirection = (direction = 'next') => {
+      getEmails(pagination.value.getPageFromDirection(direction));
+    };
 
     return {
+      isRequesting,
       emails,
+      pagination,
+      queryParams,
+      goToDirection,
       moment,
     };
   },
