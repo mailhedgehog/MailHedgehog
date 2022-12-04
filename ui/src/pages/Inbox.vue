@@ -353,6 +353,7 @@
 import { ref, onMounted, watch } from 'vue';
 import moment from 'moment';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router'
 import {
   EyeIcon,
   TrashIcon,
@@ -361,6 +362,7 @@ import {
 import Pagination from '../utils/pagination';
 
 const { t } = useI18n();
+const router = useRouter()
 
 const queryParams = ref({
   page: 1,
@@ -440,6 +442,10 @@ const clearInbox = () => {
     .catch(() => {
       isRequesting.value = false;
     });
+};
+
+const showEmail = (emailId) => {
+  router.push({ name: 'email', params: { id: emailId } })
 };
 
 const deleteEmail = (emailId) => {

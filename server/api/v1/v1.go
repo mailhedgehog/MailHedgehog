@@ -41,10 +41,7 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	v1.Get("/emails", apiV1.getEmails)
 	v1.Delete("/emails", apiV1.deleteEmails)
 
-	v1.Get("/emails/:id", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Show message")
-	})
+	v1.Get("/emails/:id", apiV1.showEmail)
 	v1.Delete("/emails/:id", apiV1.deleteEmail)
 	v1.Post("/emails/:id/release", func(c *fiber.Ctx) error {
 		logManager().Error("Not implemented")
@@ -184,6 +181,20 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 
 	return ctx.Status(200).JSON(fiber.Map{
 		"message": "Emails cleared",
+	})
+}
+
+func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	email, err := apiV1.context.Storage.Load(username, dto.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"data": email,
 	})
 }
 
