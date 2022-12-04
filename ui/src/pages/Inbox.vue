@@ -6,8 +6,8 @@
         <h1
           class="ml-3 text-xl md:text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 truncate sm:leading-9"
         >
-          {{ $t('inbox.hello', {msg: 'vtp'}) }}
-          {{ $t('inbox.pageTitle') }}
+          {{ t('inbox.hello', {msg: 'vtp'}) }}
+          {{ t('inbox.pageTitle') }}
         </h1>
         <div
           class="flex justify-end ml-4 transition-all duration-200"
@@ -17,7 +17,7 @@
         >
           <button
             v-if="pagination && !pagination.isEmpty()"
-            v-tooltip="$t('inbox.clear')"
+            v-tooltip="t('inbox.clear')"
             type="button"
             class="btn btn--default whitespace-nowrap"
             @click.prevent="clearInbox()"
@@ -26,7 +26,7 @@
             <span
               class="hidden md:inline"
             >
-              {{ $t('inbox.clear') }}
+              {{ t('inbox.clear') }}
             </span>
           </button>
         </div>
@@ -41,10 +41,10 @@
     >
       <h3 class="ml-3 text-lg md:text-xl text-center text-gray-900 dark:text-gray-100 select-none">
         <template v-if="isRequesting">
-          {{ $t('pagination.requesting') }}
+          {{ t('pagination.requesting') }}
         </template>
         <template v-else>
-          {{ $t('inbox.empty') }}
+          {{ t('inbox.empty') }}
         </template>
       </h3>
     </div>
@@ -76,7 +76,7 @@
                       class="truncate"
                     >
                       <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
-                        {{ $t('email.from') }}
+                        {{ t('email.from') }}
                       </span>
                       {{ email.from.name }}({{ email.from.email }})
                     </span>
@@ -85,19 +85,19 @@
                       class="truncate"
                     >
                       <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
-                        {{ $t('email.to') }}
+                        {{ t('email.to') }}
                       </span>
                       {{ email.to[0].name }}({{ email.to[0].email }})
                     </span>
                     <span>
                       <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
-                        {{ $t('email.subject') }}
+                        {{ t('email.subject') }}
                       </span>
                       {{ email.subject }}
                     </span>
                     <span>
                       <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
-                        {{ $t('email.received_at') }}
+                        {{ t('email.received_at') }}
                       </span>
                       <time
                         v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
@@ -108,14 +108,34 @@
                   </span>
                 </span>
                 <div class="space-y-2">
-                  <EyeIcon
-                    class="h-5 w-5 flex-shrink-0 text-gray-400"
-                    aria-hidden="true"
-                  />
-                  <TrashIcon
-                    class="h-5 w-5 flex-shrink-0 text-gray-400"
-                    aria-hidden="true"
-                  />
+                  <a
+                    class="
+                        cursor-pointer block
+                        transition-all duration-500
+                        text-gray-500 dark:text-gray-400
+                        hover:text-gray-700 hover:dark:text-gray-300
+                      "
+                    @click.prevent="showEmail(email.id)"
+                  >
+                    <EyeIcon
+                      class="h-5 w-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                  </a>
+                  <a
+                    class="
+                        cursor-pointer block
+                        transition-all duration-500
+                        text-gray-500 dark:text-gray-400
+                        hover:text-gray-700 hover:dark:text-gray-300
+                      "
+                    @click.prevent="deleteEmail(email.id)"
+                  >
+                    <TrashIcon
+                      class="h-5 w-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                  </a>
                 </div>
               </span>
             </div>
@@ -132,14 +152,14 @@
               class="btn btn--default"
               @click.prevent="goToDirection('prev')"
             >
-              {{ $t('pagination.prev') }}
+              {{ t('pagination.prev') }}
             </button>
             <button
               :disabled="pagination.isOnLast()"
               class="ml-3 btn btn--default"
               @click.prevent="goToDirection('next')"
             >
-              {{ $t('pagination.next') }}
+              {{ t('pagination.next') }}
             </button>
           </div>
         </nav>
@@ -164,31 +184,31 @@
                       class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                       scope="col"
                     >
-                      {{ $t('email.from') }}
+                      {{ t('email.from') }}
                     </th>
                     <th
                       class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                       scope="col"
                     >
-                      {{ $t('email.to') }}
+                      {{ t('email.to') }}
                     </th>
                     <th
                       class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                       scope="col"
                     >
-                      {{ $t('email.subject') }}
+                      {{ t('email.subject') }}
                     </th>
                     <th
                       class="whitespace-nowrap bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
                       scope="col"
                     >
-                      {{ $t('email.received_at') }}
+                      {{ t('email.received_at') }}
                     </th>
                     <th
                       class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right"
                       scope="col"
                     >
-                      {{ $t('pagination.actions') }}
+                      {{ t('pagination.actions') }}
                     </th>
                   </tr>
                 </thead>
@@ -213,7 +233,7 @@
                         </div>
                       </template>
                       <div v-else>
-                        {{ $t('email.notAvailable') }}
+                        {{ t('email.notAvailable') }}
                       </div>
                     </td>
                     <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
@@ -231,7 +251,7 @@
                         </div>
                       </template>
                       <div v-else>
-                        {{ $t('email.notAvailable') }}
+                        {{ t('email.notAvailable') }}
                       </div>
                     </td>
                     <td
@@ -258,7 +278,10 @@
                       "
                         @click.prevent="showEmail(email.id)"
                       >
-                        <EyeIcon class="w-5 h-5" />
+                        <EyeIcon
+                          class="w-5 h-5"
+                          aria-hidden="true"
+                        />
                       </a>
                       <a
                         class="
@@ -269,7 +292,10 @@
                       "
                         @click.prevent="deleteEmail(email.id)"
                       >
-                        <TrashIcon class="w-5 h-5" />
+                        <TrashIcon
+                          class="w-5 h-5"
+                          aria-hidden="true"
+                        />
                       </a>
                     </td>
                   </tr>
@@ -283,7 +309,7 @@
                 <div class="hidden sm:block">
                   <p
                     class="text-sm text-gray-700 dark:text-gray-200"
-                    v-html="$t('pagination.text', {from: pagination.getFrom(), to: pagination.getTo(), of: pagination.getTotal()})"
+                    v-html="t('pagination.text', {from: pagination.getFrom(), to: pagination.getTo(), of: pagination.getTotal()})"
                   />
                 </div>
                 <div class="flex flex-1 justify-between sm:justify-end">
@@ -292,14 +318,14 @@
                     class="btn btn--default"
                     @click.prevent="goToDirection('prev')"
                   >
-                    {{ $t('pagination.prev') }}
+                    {{ t('pagination.prev') }}
                   </button>
                   <button
                     :disabled="pagination.isOnLast()"
                     class="ml-3 btn btn--default"
                     @click.prevent="goToDirection('next')"
                   >
-                    {{ $t('pagination.next') }}
+                    {{ t('pagination.next') }}
                   </button>
                 </div>
               </nav>
@@ -319,7 +345,7 @@
         for="search-field"
         class="sr-only"
       >
-        {{ $t('inbox.search') }}
+        {{ t('inbox.search') }}
       </label>
       <div class="relative w-full text-gray-400 focus-within:text-gray-600">
         <div
@@ -341,7 +367,7 @@
           placeholder-gray-500
           bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
           "
-          :placeholder="$t('inbox.search')"
+          :placeholder="t('inbox.search')"
           type="search"
         >
       </div>
@@ -353,7 +379,7 @@
 import { ref, onMounted, watch } from 'vue';
 import moment from 'moment';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router'
+import { useRouter } from 'vue-router';
 import {
   EyeIcon,
   TrashIcon,
@@ -362,7 +388,7 @@ import {
 import Pagination from '../utils/pagination';
 
 const { t } = useI18n();
-const router = useRouter()
+const router = useRouter();
 
 const queryParams = ref({
   page: 1,
@@ -445,7 +471,7 @@ const clearInbox = () => {
 };
 
 const showEmail = (emailId) => {
-  router.push({ name: 'email', params: { id: emailId } })
+  router.push({ name: 'email', params: { id: emailId } });
 };
 
 const deleteEmail = (emailId) => {
