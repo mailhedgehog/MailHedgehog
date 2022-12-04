@@ -46,31 +46,16 @@
   </Menu>
 </template>
 
-<script lang="ts">
+<script setup>
 import {
   Menu,
   MenuButton,
   MenuItem,
   MenuItems,
 } from '@headlessui/vue';
-import { inject } from 'vue';
+import {inject} from 'vue';
 
-export default {
-  name: 'LangModeSelect',
-  components: {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-  },
-  setup() {
-    const ALLOWED_LOCALES = ['en', 'ua', 'fr'];
-    const SetLocale = inject('SetLocale');
 
-    return {
-      ALLOWED_LOCALES,
-      SetLocale,
-    };
-  },
-};
+const ALLOWED_LOCALES = ['en', 'ua', 'fr'];
+const SetLocale = inject('SetLocale');
 </script>

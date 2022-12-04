@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/storage"
@@ -38,19 +39,13 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	}
 
 	v1.Get("/emails", apiV1.getEmails)
+	v1.Delete("/emails", apiV1.deleteEmails)
 
-	v1.Delete("/emails", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Delete messages")
-	})
 	v1.Get("/emails/:id", func(c *fiber.Ctx) error {
 		logManager().Error("Not implemented")
 		return c.SendString("Show message")
 	})
-	v1.Delete("/emails/:id", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Delete message")
-	})
+	v1.Delete("/emails/:id", apiV1.deleteEmail)
 	v1.Post("/emails/:id/release", func(c *fiber.Ctx) error {
 		logManager().Error("Not implemented")
 		return c.SendString("Release one message")
@@ -81,10 +76,8 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	listQuery := new(ListQuery)
 
 	if err := ctx.QueryParser(listQuery); err != nil {
-		return ctx.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
-			"messages": UnprocessableEntityResponse(ctx, []*ValidationError{
-				ValidationErrorFromError("query", err),
-			}),
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
 		})
 	}
 
@@ -112,15 +105,15 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	from := (listQuery.Page - 1) * listQuery.PerPage
 	messages, totalCount, err := apiV1.context.Storage.List(username, query, from, listQuery.PerPage)
 	if err != nil {
-		return ctx.Status(500).JSON(fiber.Map{
-			"error": err.Error(),
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
 		})
 	}
 
 	if totalCount > 0 {
 		from += 1
 	}
-	to := from + listQuery.PerPage
+	to := from + listQuery.PerPage - 1
 	if totalCount < to {
 		to = totalCount
 	}
@@ -177,5 +170,33 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 				"total":        totalCount,
 			},
 		},
+	})
+}
+
+func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	err := apiV1.context.Storage.DeleteRoom(username)
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"message": "Emails cleared",
+	})
+}
+
+func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	err := apiV1.context.Storage.Delete(username, dto.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	return ctx.Status(200).JSON(fiber.Map{
+		"message": "Email deleted",
 	})
 }

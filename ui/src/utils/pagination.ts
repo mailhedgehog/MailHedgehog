@@ -39,12 +39,16 @@ class Pagination {
     return this.currentPage == this.lastPage;
   }
 
+  count(): number {
+    return this.getFrom() - this.getTo();
+  }
+
   getFrom(): number {
-    return this.total;
+    return this.from;
   }
 
   getTo(): number {
-    return this.total;
+    return this.to;
   }
 
   getTotal(): number {

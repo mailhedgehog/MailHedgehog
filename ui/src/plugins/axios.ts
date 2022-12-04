@@ -1,7 +1,7 @@
-import axios from 'axios';
+import axios, {AxiosInstance} from 'axios';
 
 // eslint-disable-next-line import/prefer-default-export
-export function setupAxios() {
+export function setupAxios(): AxiosInstance {
   const instance = axios.create({
     baseURL: 'http://localhost:8025/api/v1',
   });
