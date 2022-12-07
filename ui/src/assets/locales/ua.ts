@@ -1,5 +1,5 @@
 export default {
-    inbox: {
-        hello: 'Привіт, "{msg}"'
-    }
-}
+  inbox: {
+    hello: 'Привіт, "{msg}"',
+  },
+};

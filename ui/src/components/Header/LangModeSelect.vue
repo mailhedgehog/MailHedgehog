@@ -53,8 +53,7 @@ import {
   MenuItem,
   MenuItems,
 } from '@headlessui/vue';
-import {inject} from 'vue';
-
+import { inject } from 'vue';
 
 const ALLOWED_LOCALES = ['en', 'ua', 'fr'];
 const SetLocale = inject('SetLocale');

@@ -5,7 +5,9 @@ import Settings from '../pages/Settings.vue';
 
 const routes = [
   { path: '/:pathMatch(.*)*', redirect: '/', name: 'notFound' },
-  { path: '/', component: Inbox, alias: '/emails', name: 'emails' },
+  {
+    path: '/', component: Inbox, alias: '/emails', name: 'emails',
+  },
   { path: '/emails/:id', component: Email, name: 'email' },
   { path: '/settings', component: Settings },
 ];

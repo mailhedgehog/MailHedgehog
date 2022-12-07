@@ -194,7 +194,9 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(200).JSON(fiber.Map{
-		"data": email,
+		"data": fiber.Map{
+			"headers": email.Content.Headers.All(),
+		},
 	})
 }
 
