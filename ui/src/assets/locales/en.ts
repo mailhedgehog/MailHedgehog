@@ -1,6 +1,14 @@
 export default {
   menu: {
+    inbox: 'Inbox',
+    settings: 'Settings',
     logout: 'Logout',
+  },
+  sidebar: {
+    open: 'Open sidebar',
+  },
+  response: {
+    error: 'Server response error',
   },
   colorMode: {
     title: 'Color mode',
@@ -23,6 +31,10 @@ export default {
   },
   email: {
     notAvailable: 'n/a',
+    headersTitle: 'Email headers',
+    headersSubtitle: 'An Email Header is metadata that accompanies every email and contains detailed information',
+    hintHideHeaders: 'Show only important headers',
+    hintShowHeaders: 'Show all headers',
     from: 'From',
     to: 'To',
     subject: 'Subject',
@@ -35,6 +47,15 @@ export default {
     release: 'Release',
     releaseHint: 'Release email forward',
     back: 'Back',
+    tab: {
+      html: 'HTML',
+      plain: 'Plain text',
+      source: 'Source',
+      attachments: 'Attachments',
+    },
+    htmlEmpty: 'Email not contains HTML content',
+    plainEmpty: 'Email not contains plain text content',
+    noAttachments: 'Email has not attachments',
   },
   inbox: {
     hello: 'Hello, "{msg}"',

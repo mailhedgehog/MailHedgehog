@@ -112,17 +112,24 @@
         <div class="space-y-1 px-2">
           <router-link
             v-for="item in navigation"
+            v-slot="{ href, navigate, isActive, isExactActive }"
             :key="item.name"
+            custom
             :to="item.href"
-            :class="[item.current ? 'bg-primary-800 text-white' : 'text-primary-100 hover:text-white hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
-            :aria-current="item.current ? 'page' : undefined"
           >
-            <component
-              :is="item.icon"
-              class="mr-4 h-6 w-6 flex-shrink-0 text-primary-200"
-              aria-hidden="true"
-            />
-            {{ item.name }}
+            <a
+              :href="href"
+              :class="[isActive ? 'bg-primary-800 text-white' : 'text-primary-100 hover:text-white hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
+              :aria-current="isActive ? 'page' : undefined"
+              @click="navigate"
+            >
+              <component
+                :is="item.icon"
+                class="mr-4 h-6 w-6 flex-shrink-0 text-primary-200"
+                aria-hidden="true"
+              />
+              {{ item.name }}
+            </a>
           </router-link>
         </div>
       </nav>
@@ -135,10 +142,12 @@
     >
       <button
         type="button"
-        class="border-r border-gray-200 dark:border-gray-700 px-4 text-gray-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
+        class="border-r border-gray-200 dark:border-gray-700
+        px-4 text-gray-400
+        focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
         @click="sidebarOpen = true"
       >
-        <span class="sr-only">Open sidebar</span>
+        <span class="sr-only">{{ t('sidebar.open') }}</span>
         <Bars3CenterLeftIcon
           class="h-6 w-6"
           aria-hidden="true"
@@ -163,95 +172,30 @@
   </div>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import { ref } from 'vue';
 import {
   Dialog,
   DialogPanel,
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
   TransitionChild,
   TransitionRoot,
 } from '@headlessui/vue';
 import {
   Bars3CenterLeftIcon,
-  BellIcon,
-  ClockIcon,
-  CogIcon,
-  ComputerDesktopIcon,
-  CreditCardIcon,
-  DocumentChartBarIcon,
-  HomeIcon,
-  QuestionMarkCircleIcon,
-  ScaleIcon,
-  ShieldCheckIcon,
-  UserGroupIcon,
   XMarkIcon,
-  UserCircleIcon,
+  InboxArrowDownIcon,
 } from '@heroicons/vue/24/outline';
-import {
-  BanknotesIcon,
-  BuildingOfficeIcon,
-  CheckCircleIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/vue/20/solid';
+import { useI18n } from 'vue-i18n';
 import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
 import LangModeSelect from '@/components/Header/LangModeSelect.vue';
 import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
 
-export default {
-  components: {
-    ColorModeSelect,
-    LangModeSelect,
-    ProfileDropdown,
-    Dialog,
-    DialogPanel,
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    TransitionChild,
-    TransitionRoot,
-    Bars3CenterLeftIcon,
-    BellIcon,
-    ClockIcon,
-    CogIcon,
-    ComputerDesktopIcon,
-    CreditCardIcon,
-    DocumentChartBarIcon,
-    HomeIcon,
-    QuestionMarkCircleIcon,
-    ScaleIcon,
-    ShieldCheckIcon,
-    UserGroupIcon,
-    XMarkIcon,
-    BanknotesIcon,
-    BuildingOfficeIcon,
-    CheckCircleIcon,
-    ChevronDownIcon,
-    ChevronRightIcon,
-    MagnifyingGlassIcon,
-    UserCircleIcon,
-  },
-  setup() {
-    const navigation = [
-      {
-        name: 'Inbox', href: '/', icon: HomeIcon, current: true,
-      },
-      { name: 'Settings', href: 'settings', icon: CogIcon },
-    ];
+const { t } = useI18n();
 
-    const sidebarOpen = ref(false);
+const navigation = [
+  { name: t('menu.inbox'), href: '/', icon: InboxArrowDownIcon },
+];
 
-    return {
-      navigation,
-      sidebarOpen,
-    };
-  },
-};
+const sidebarOpen = ref(false);
 
 </script>

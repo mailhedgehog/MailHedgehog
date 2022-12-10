@@ -12,6 +12,7 @@ const routes = [
   { path: '/settings', component: Settings },
 ];
 
+// eslint-disable-next-line import/prefer-default-export
 export function setupRouter() {
   return createRouter({
     history: createWebHistory(),

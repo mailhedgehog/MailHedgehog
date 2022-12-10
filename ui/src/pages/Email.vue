@@ -48,23 +48,12 @@
               <button
                 v-tooltip="t('email.downloadHint')"
                 type="button"
-                class="btn btn--default rounded-r-none rounded-l-none"
+                class="btn btn--default rounded-r-md rounded-l-none"
                 @click.prevent="downloadEmail"
               >
                 <DocumentArrowDownIcon class="md:mr-2 h-5 w-5" />
                 <span class="hidden md:inline">
                   {{ t('email.download') }}
-                </span>
-              </button>
-              <button
-                v-tooltip="t('email.releaseHint')"
-                type="button"
-                class="btn btn--default rounded-r-md rounded-l-none"
-                @click.prevent="releaseEmail"
-              >
-                <PaperAirplaneIcon class="md:mr-2 h-5 w-5" />
-                <span class="hidden md:inline">
-                  {{ t('email.release') }}
                 </span>
               </button>
             </span>
@@ -75,15 +64,17 @@
     <div
       class="px-4 sm:px-6 lg:px-8"
     >
-      <div class="overflow-hidden bg-white dark:bg-gray-900 border border-gray-300 shadow dark:shadow-gray-500 sm:rounded-lg mb-6">
+      <div
+        class="overflow-hidden bg-white dark:bg-gray-900 border border-gray-300 shadow dark:shadow-gray-500 sm:rounded-lg mb-6"
+      >
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 flex justify-between">
             <div>
-              Email headers
+              {{ t('email.headersTitle') }}
             </div>
             <div>
               <a
-                v-tooltip="isAllHeaders?'Show only important headers':'Show all headers'"
+                v-tooltip="isAllHeaders?t('email.hintHideHeaders'):t('email.hintShowHeaders')"
                 class="cursor-pointer"
                 @click.prevent="isAllHeaders = !isAllHeaders"
               >
@@ -99,7 +90,7 @@
             </div>
           </h3>
           <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-            An Email Header is metadata that accompanies every email and contains detailed information
+            {{ t('email.headersSubtitle') }}
           </p>
         </div>
         <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
@@ -136,26 +127,189 @@
           </dl>
         </div>
       </div>
+      <div>
+        <div class="sm:hidden">
+          <select
+            id="tabs"
+            v-model="currentTab"
+            name="tabs"
+            class="block w-full rounded border-gray-300 dark:border-gray-600 py-2 pl-3 pr-10 text-base
+            focus:border-primary-500 focus:primary-none focus:ring-primary-500 sm:text-sm"
+          >
+            <option
+              v-for="tab in tabs"
+              :key="tab.id"
+              :value="tab.id"
+              :selected="currentTab"
+            >
+              {{ tab.name }}
+            </option>
+          </select>
+        </div>
+        <div class="hidden sm:block">
+          <div class="border-b border-gray-200 dark:border-gray-400">
+            <nav
+              class="-mb-px flex space-x-8"
+              aria-label="Tabs"
+            >
+              <a
+                v-for="tab in tabs"
+                :key="tab.id"
+                href="#"
+                class="whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-500"
+                :class="[currentTab === tab.id ? 'border-primary-500 text-primary-600' : 'cursor-pointer border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-300 hover:border-gray-200 hover:dark:border-gray-400']"
+                :aria-current="currentTab === tab.id ? 'page' : undefined"
+                @click.prevent="currentTab = tab.id"
+              >
+                {{ tab.name }}
+                <span
+                  v-if="tab.id==='attachments' && email?.attachments?.length !== undefined"
+                  class="inline-block ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors duration-500"
+                  :class="[currentTab === tab.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100']"
+                >
+                  {{ email?.attachments?.length }}
+                </span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+      <div v-if="email">
+        <div
+          v-if="currentTab === 'html'"
+          class="py-6"
+        >
+          <iframe
+            v-if="email.html"
+            id="preview-html"
+            :height="iframeHeight"
+            :srcdoc="email.html"
+            class="w-full border border-gray-200 dark:border-gray-400"
+            @load="resizeIframe"
+          />
+          <div
+            v-else
+            class="flex justify-center items-center"
+          >
+            <ExclamationTriangleIcon
+              class="text-primary-500 h-8 w-8"
+            />
+            <div class="ml-4 text-gray-900 dark:text-gray-100">
+              {{ t('email.htmlEmpty') }}
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="currentTab === 'plain'"
+          class="py-6"
+        >
+          <div
+            v-if="email.plain"
+            class="text-gray-900 dark:text-gray-100"
+          >
+            <pre class="overflow-auto">{{ email.plain }}</pre>
+          </div>
+          <div
+            v-else
+            class="flex justify-center items-center"
+          >
+            <ExclamationTriangleIcon
+              class="text-primary-500 h-8 w-8"
+            />
+            <div class="ml-4 text-gray-900 dark:text-gray-100">
+              {{ t('email.plainEmpty') }}
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="currentTab === 'source'"
+          class="py-6"
+        >
+          <div
+            class="text-gray-900 dark:text-gray-100"
+          >
+            <pre class="overflow-auto">{{ email.source }}</pre>
+          </div>
+        </div>
+        <div
+          v-if="currentTab === 'attachments'"
+          class="py-6"
+        >
+          <div
+            v-if="email?.attachments?.length > 0"
+          >
+            <ul
+              role="list"
+              class="divide-y divide-gray-200 rounded-md border border-gray-200"
+            >
+              <li
+                v-for="(attachment, index) in email?.attachments"
+                :key="index"
+                class="flex items-center justify-between py-3 pl-3 pr-4 text-sm"
+              >
+                <div class="flex w-0 flex-1 items-center">
+                  <PaperClipIcon
+                    class="text-gray-400 dark:text-gray-500 flex-shrink-0 h-5 w-5"
+                  />
+                  <span class="ml-2 w-0 flex-1 text-gray-900 dark:text-gray-100 truncate">
+                    <span>
+                      {{ attachment.filename }}
+                    </span>
+                    <span
+                      v-if="attachment.contentType"
+                      class="ml-2"
+                    >
+                      ({{ attachment.contentType }})
+                    </span>
+                  </span>
+                </div>
+                <div class="ml-4 flex-shrink-0">
+                  <a
+                    class="cursor-pointer font-medium text-primary-500 hover:text-primary-600 transition-colors duration-500"
+                    @click.prevent="downloadEmailAttachment(attachment)"
+                  >
+                    <ArrowDownTrayIcon
+                      class="md:hidden flex-shrink-0 h-5 w-5"
+                    />
+                    <span class="hidden md:inline">
+                      {{ t('email.download') }}
+                    </span>
+                  </a>
+                </div>
+              </li>
+            </ul>
+          </div>
+          <div
+            v-else
+            class="flex justify-center items-center"
+          >
+            <ExclamationTriangleIcon
+              class="text-primary-500 h-8 w-8"
+            />
+            <div class="ml-4 text-gray-900 dark:text-gray-100">
+              {{ t('email.noAttachments') }}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-  <div
-    class="bg-white px-4 sm:px-6 lg:px-8"
-  >
-    <pre>{{ JSON.stringify(email, null, 2) }}</pre>
-  </div>
 </template>
-
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
-import { computed, onMounted, ref } from 'vue';
+import {
+  computed, nextTick, onMounted, ref,
+} from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
   ArrowSmallLeftIcon,
   TrashIcon,
   DocumentArrowDownIcon,
-  PaperAirplaneIcon,
   EyeIcon,
   EyeSlashIcon,
+  PaperClipIcon,
+  ArrowDownTrayIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -188,20 +342,42 @@ onMounted(() => {
   getEmail(route.params.id);
 });
 
+const goBack = () => {
+  router.push({ name: 'emails', params: {} });
+};
+
 const deleteEmail = () => {
-  alert('TODO: delete');
+  isRequesting.value = true;
+  window.MailHedgehog.request()
+    .delete(`emails/${email.value.id}`)
+    .then(() => {
+      window.MailHedgehog.success(t('email.deleted'));
+      nextTick(() => goBack());
+    })
+    .catch(() => {
+      window.MailHedgehog.error(t('response.error'));
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+};
+
+const downloadBlobFile = (data, contentType, filename) => {
+  const blob = new Blob([data], { type: contentType });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+  link.remove();
 };
 
 const downloadEmail = () => {
-  alert('TODO: download');
+  downloadBlobFile(email.value.source, 'text/plain', `${email.value.id}.eml`);
 };
 
-const releaseEmail = () => {
-  alert('TODO: release');
-};
-
-const goBack = () => {
-  router.push({ name: 'emails', params: {} });
+const downloadEmailAttachment = (attachment) => {
+  downloadBlobFile(attachment.data, attachment.contentType, attachment.filename);
 };
 
 const isAllHeaders = ref(false);
@@ -229,5 +405,32 @@ const headers = computed(() => {
 
   return headersList;
 });
+
+const currentTab = ref('html');
+const tabs = [
+  {
+    id: 'html',
+    name: t('email.tab.html'),
+  },
+  {
+    id: 'plain',
+    name: t('email.tab.plain'),
+  },
+  {
+    id: 'source',
+    name: t('email.tab.source'),
+  },
+  {
+    id: 'attachments',
+    name: t('email.tab.attachments'),
+  },
+];
+
+const iframeHeight = ref('0rem');
+const resizeIframe = (event) => {
+  const obj = event.currentTarget;
+  const newHeight = obj.contentWindow.document.documentElement.scrollHeight + 2;
+  iframeHeight.value = `${newHeight}px`;
+};
 
 </script>

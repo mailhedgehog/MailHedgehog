@@ -1,0 +1,25 @@
+/* Customize website's scrollbar like Mac OS
+Not supports in Firefox and IE */
+
+/* total width */
+::-webkit-scrollbar {
+  background-color: transparent;
+  width: 10px;
+  height: 10px;
+}
+
+/* background of the scrollbar except button or resizer */
+::-webkit-scrollbar-track {
+  @apply bg-primary-300;
+}
+
+/* scrollbar itself */
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-800;
+  border-radius: 0;
+  border: 4px solid transparent;
+}
+/* set button(top and bottom of the scrollbar) */
+::-webkit-scrollbar-button {
+  display: none;
+}

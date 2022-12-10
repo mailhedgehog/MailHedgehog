@@ -1,12 +1,16 @@
 package v1
 
 import (
+	"fmt"
+	"github.com/DusanKasan/parsemail"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/storage"
+	"io"
 	"math"
+	"strings"
 )
 
 var configuredLogger *logger.Logger
@@ -193,9 +197,36 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
+	parsedEmail, err := parsemail.Parse(strings.NewReader(email.Raw.Data)) // returns Email struct and error
+	if err != nil {
+		// handle error
+	}
+
+	attachments := []fiber.Map{}
+	for _, a := range parsedEmail.Attachments {
+		buf := new(strings.Builder)
+		_, err := io.Copy(buf, a.Data)
+		if err != nil {
+			// handle error
+		}
+		fmt.Println()
+		attachments = append(attachments, fiber.Map{
+			"filename":    a.Filename,
+			"contentType": a.ContentType,
+			"data":        buf.String(),
+		})
+	}
+
+	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
+
 	return ctx.Status(200).JSON(fiber.Map{
 		"data": fiber.Map{
-			"headers": email.Content.Headers.All(),
+			"id":          email.ID,
+			"headers":     email.Content.Headers.All(),
+			"html":        parsedEmail.HTMLBody,
+			"plain":       parsedEmail.TextBody,
+			"source":      email.Raw.Data,
+			"attachments": attachments,
 		},
 	})
 }
