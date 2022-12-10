@@ -43,12 +43,14 @@
               <div class="absolute top-0 right-0 -mr-12 pt-2">
                 <button
                   type="button"
-                  class="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                  class="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-50 focus:dark:ring-gray-900"
                   @click="sidebarOpen = false"
                 >
-                  <span class="sr-only">Close sidebar</span>
+                  <span class="sr-only">
+                    {{ t('sidebar.close') }}
+                  </span>
                   <XMarkIcon
-                    class="h-6 w-6 text-white"
+                    class="h-6 w-6 text-gray-50"
                     aria-hidden="true"
                   />
                 </button>
@@ -70,7 +72,7 @@
                   v-for="item in navigation"
                   :key="item.name"
                   :href="item.href"
-                  :class="[item.current ? 'bg-primary-800 text-white' : 'text-primary-100 hover:text-white hover:bg-primary-600', 'group flex items-center px-2 py-2 text-base font-medium rounded-md']"
+                  :class="[item.current ? 'bg-primary-800 text-gray-50' : 'text-primary-100 hover:text-gray-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-base font-medium rounded-md']"
                   :aria-current="item.current ? 'page' : undefined"
                 >
                   <component
@@ -98,12 +100,15 @@
   <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
     <!-- Sidebar component, swap this element with another sidebar if you like -->
     <div class="flex flex-grow flex-col overflow-y-auto bg-primary-700 pt-5 pb-4">
-      <div class="flex flex-shrink-0 items-center px-4">
+      <div class="flex flex-shrink-0 justify-center items-center px-4">
         <img
-          class="h-8 w-auto"
-          src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
-          alt="Easywire logo"
+          class="h-8 w-auto mr-2"
+          src="/MailHedgehog.svg"
+          :alt="t('app.title')"
         >
+        <div class="text-context-100 font-bold text-sm sm:text-base">
+          {{ t('app.title') }}
+        </div>
       </div>
       <nav
         class="mt-5 flex flex-1 flex-col divide-y divide-primary-800 overflow-y-auto"
@@ -112,14 +117,14 @@
         <div class="space-y-1 px-2">
           <router-link
             v-for="item in navigation"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+            v-slot="{ href, navigate, isActive }"
             :key="item.name"
             custom
             :to="item.href"
           >
             <a
               :href="href"
-              :class="[isActive ? 'bg-primary-800 text-white' : 'text-primary-100 hover:text-white hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
+              :class="[isActive ? 'bg-primary-800 text-gray-50' : 'text-primary-100 hover:text-gray-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
               :aria-current="isActive ? 'page' : undefined"
               @click="navigate"
             >
@@ -136,9 +141,9 @@
     </div>
   </div>
 
-  <div class="flex flex-1 flex-col lg:pl-64">
+  <div class="min-h-screen flex flex-1 flex-col lg:pl-64">
     <div
-      class="flex h-16 flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 lg:border-none z-10 shadow dark:shadow-gray-500"
+      class="flex h-16 flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 lg:border-none z-10 shadow dark:shadow-gray-500"
     >
       <button
         type="button"
@@ -166,9 +171,28 @@
         </div>
       </div>
     </div>
-    <main class="flex-1 pb-8 overflow-hidden">
+    <main class="flex-grow flex-1 pb-8 overflow-hidden">
       <router-view />
     </main>
+    <div class="py-4 px-4 sm:px-6 flex justify-between items-center shadow dark:shadow-gray-500 text-gray-900 dark:text-gray-100">
+      <div class="text-sm">
+        <span class="mr-0">
+          ©
+        </span>
+        <a
+          href="https://think.studio/"
+          class="underline transition-colors duration-500 hover:text-primary-600"
+          target="_blank"
+        >
+          Think One Communications Ltd
+        </a>
+      </div>
+      <div class="hidden sm:block text-sm text-gray-300 dark:text-gray-700 select-none">
+        <div class="sr-only">
+          #StandWithUkraine
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

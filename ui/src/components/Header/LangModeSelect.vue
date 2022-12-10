@@ -55,6 +55,6 @@ import {
 } from '@headlessui/vue';
 import { inject } from 'vue';
 
-const ALLOWED_LOCALES = ['en', 'ua', 'fr'];
+const ALLOWED_LOCALES = ['en', 'fr', 'uk'];
 const SetLocale = inject('SetLocale');
 </script>

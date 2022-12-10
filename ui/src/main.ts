@@ -6,7 +6,7 @@ import FloatingVue from 'floating-vue';
 import { createApp } from 'vue';
 import { AxiosInstance, AxiosResponse, AxiosRequestConfig } from 'axios';
 import enMessages from './assets/locales/en';
-import uaMessages from './assets/locales/ua';
+import ukMessages from './assets/locales/uk';
 import frMessages from './assets/locales/fr';
 import { setupAxios } from './plugins/axios';
 import { setupRouter } from './plugins/router';
@@ -21,7 +21,7 @@ const i18n = setupI18n({
   warnHtmlMessage: false,
   messages: {
     en: enMessages,
-    ua: uaMessages,
+    uk: ukMessages,
     fr: frMessages,
   },
 });

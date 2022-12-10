@@ -7,7 +7,7 @@
   >
     <div
       class="
-        bg-white dark:bg-gray-900
+        bg-gray-50 dark:bg-gray-900
         px-4 sm:px-6 lg:px-8
         shadow dark:shadow-gray-500
         mb-6 md:mb-8
@@ -65,7 +65,7 @@
       class="px-4 sm:px-6 lg:px-8"
     >
       <div
-        class="overflow-hidden bg-white dark:bg-gray-900 border border-gray-300 shadow dark:shadow-gray-500 sm:rounded-lg mb-6"
+        class="overflow-hidden bg-gray-50 dark:bg-gray-900 border border-gray-300 shadow dark:shadow-gray-500 sm:rounded-lg mb-6"
       >
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 flex justify-between">

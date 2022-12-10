@@ -1,6 +1,6 @@
 <template>
   <!-- Page header -->
-  <div class="lg:-mt-px bg-white dark:bg-gray-900 shadow dark:shadow-gray-500">
+  <div class="lg:-mt-px bg-gray-50 dark:bg-gray-900 shadow dark:shadow-gray-500">
     <div class="px-4 sm:px-6 lg:mx-auto lg:max-w-6xl lg:px-8">
       <div class="py-6 flex items-center justify-between">
         <h1
@@ -66,7 +66,7 @@
             :key="email.id"
           >
             <div
-              class="block bg-white dark:bg-gray-800 px-4 py-4 hover:bg-gray-50"
+              class="block bg-gray-50 dark:bg-gray-800 px-4 py-4 hover:bg-gray-50"
             >
               <span class="flex items-center space-x-4">
                 <span class="flex flex-1 space-x-2 truncate">
@@ -102,7 +102,7 @@
                       <time
                         v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
                       </time>
                     </span>
                   </span>
@@ -143,7 +143,7 @@
         </ul>
 
         <nav
-          class="flex items-center justify-between border-t border-gray-200 bg-white dark:bg-gray-800 px-4 py-3"
+          class="flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-3"
           aria-label="Pagination"
         >
           <div class="flex flex-1 justify-between">
@@ -212,11 +212,11 @@
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-white dark:bg-gray-800">
+                <tbody class="divide-y divide-gray-200 bg-gray-50 dark:bg-gray-800">
                   <tr
                     v-for="email in emails"
                     :key="email.id"
-                    class="bg-white dark:bg-gray-800"
+                    class="bg-gray-50 dark:bg-gray-800"
                   >
                     <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                       <template v-if="email.from">
@@ -263,7 +263,7 @@
                       <time
                         v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
                       </time>
                     </td>
                     <td
@@ -303,7 +303,7 @@
               </table>
               <!-- Pagination -->
               <nav
-                class="flex items-center justify-between border-t border-gray-200 bg-white dark:bg-gray-800 px-4 py-3 sm:px-6"
+                class="flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6"
                 aria-label="Pagination"
               >
                 <div class="hidden sm:block">
@@ -365,7 +365,7 @@
           focus:outline-none focus:ring-0
           border-transparent focus:border-transparent
           placeholder-gray-500
-          bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100
+          bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100
           "
           :placeholder="t('inbox.search')"
           type="search"
@@ -378,6 +378,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import moment from 'moment';
+import 'moment/min/locales';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import {
@@ -387,7 +388,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import Pagination from '../utils/pagination';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const router = useRouter();
 
 const queryParams = ref({

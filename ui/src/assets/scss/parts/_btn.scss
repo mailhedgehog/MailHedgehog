@@ -10,7 +10,7 @@
     @apply rounded-md border;
     @apply px-4 py-2 text-sm font-medium;
     @apply border-gray-300;
-    @apply bg-white dark:bg-gray-800;
+    @apply bg-gray-50 dark:bg-gray-800;
     @apply text-gray-700 dark:text-gray-300;
     &:not(:disabled) {
       @apply hover:border-gray-500 hover:dark:border-gray-400;
@@ -28,7 +28,7 @@
     &:not(:disabled) {
       @apply hover:border-primary-700 hover:dark:border-primary-700;
       @apply hover:bg-primary-600 hover:dark:bg-primary-700;
-      @apply hover:text-white hover:dark:text-white;
+      @apply hover:text-gray-50 hover:dark:text-gray-50;
     }
   }
 }

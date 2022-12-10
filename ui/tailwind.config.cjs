@@ -12,6 +12,7 @@ module.exports = {
     extend: {
       colors: {
         primary: colors.red,
+        context: colors.gray,
       },
     },
   },

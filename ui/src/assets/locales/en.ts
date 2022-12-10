@@ -1,11 +1,14 @@
 export default {
+  app: {
+    title: 'MailHedgehog',
+  },
   menu: {
     inbox: 'Inbox',
-    settings: 'Settings',
     logout: 'Logout',
   },
   sidebar: {
     open: 'Open sidebar',
+    close: 'Close sidebar',
   },
   response: {
     error: 'Server response error',
@@ -19,7 +22,7 @@ export default {
   locales: {
     title: 'Language',
     en: 'English',
-    ua: 'Ukrainian',
+    uk: 'Ukrainian',
     fr: 'French',
   },
   pagination: {
@@ -44,8 +47,6 @@ export default {
     deleted: 'Email deleted',
     download: 'Download',
     downloadHint: 'Download email as file',
-    release: 'Release',
-    releaseHint: 'Release email forward',
     back: 'Back',
     tab: {
       html: 'HTML',
@@ -61,7 +62,7 @@ export default {
     hello: 'Hello, "{msg}"',
     pageTitle: 'Inbox',
     clear: 'Clear inbox',
-    cleared: 'Inbox cleard',
+    cleared: 'Inbox cleared',
     search: 'Search emails',
     empty: 'No emails found',
   },
