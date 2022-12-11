@@ -12,6 +12,7 @@ import (
 	"github.com/mailpiggy/MailPiggy/server/api"
 	"github.com/mailpiggy/MailPiggy/server/smtp"
 	"github.com/mailpiggy/MailPiggy/server/ui"
+	"github.com/mailpiggy/MailPiggy/server/websocket"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/storage"
 	"os"
@@ -71,6 +72,7 @@ func Start(context *serverContext.Context) {
 
 	api.CreateAPIRoutes(context, httpApp)
 	ui.CreateUIRoutes(context, httpApp)
+	websocket.CreateWebsocket(context, httpApp)
 
 	logManager().Debug(fmt.Sprintf("HTTP Binding to address %s", context.HttpBindAddr()))
 	go logger.PanicIfError(httpApp.Listen(context.HttpBindAddr()))

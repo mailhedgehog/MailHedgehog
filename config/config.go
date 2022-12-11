@@ -24,6 +24,9 @@ type AppConfig struct {
 		AllowOrigins string `yaml:"allow_origins"`
 		AssetsRoot   string `yaml:"assets_root"`
 	} `yaml:"http"`
+	Websocket struct {
+		MaxConnection int `yaml:"max_connection"`
+	} `yaml:"websocket"`
 	Storage struct {
 		Use          string `yaml:"use"`
 		PerRoomLimit int    `yaml:"per_room_limit"`
@@ -85,6 +88,10 @@ func (config *AppConfig) withDefaults() {
 	}
 	if len(config.Http.AllowOrigins) <= 0 {
 		config.Http.AllowOrigins = fmt.Sprintf("http://%s:%d", config.Http.Host, config.Http.Port)
+	}
+
+	if config.Websocket.MaxConnection <= 0 {
+		config.Websocket.MaxConnection = 50
 	}
 
 	if len(config.Storage.Use) <= 0 {

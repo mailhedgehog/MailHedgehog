@@ -382,7 +382,7 @@
 
 <script setup>
 import {
-  ref, onMounted, watch, computed,
+  ref, onMounted, watch, computed, inject,
 } from 'vue';
 import moment from 'moment';
 // FIXME: locales not works
@@ -400,6 +400,7 @@ import Pagination from '../utils/pagination.ts';
 const { t, locale } = useI18n();
 const router = useRouter();
 const store = useStore();
+const emitter = inject('emitter');
 
 const queryParams = ref({
   page: 1,
@@ -459,6 +460,8 @@ watch(() => queryParams.value.search, () => {
 onMounted(() => {
   getEmails(1);
 });
+
+emitter.on('new_message', () => getEmails());
 
 const goToDirection = (direction = 'next') => {
   getEmails(pagination.value.getPageFromDirection(direction));

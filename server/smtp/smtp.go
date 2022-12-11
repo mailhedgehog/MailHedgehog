@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mailpiggy/MailPiggy/dto"
 	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailpiggy/MailPiggy/server/websocket"
 	"github.com/mailpiggy/MailPiggy/serverContext"
 	"github.com/mailpiggy/MailPiggy/smtpServer"
 	"io"
@@ -67,7 +68,11 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 		formattedMessage := message.Parse()
 
 		id, err := context.Storage.Store(session.LoggedUsername, formattedMessage)
-		logManager().Warning("TODO: add websocket") //TODO
+
+		websocket.BroadcastToClient <- websocket.BroadcastMessage{
+			Room:    session.LoggedUsername,
+			Message: `{"flow": "system", "type": "new_message"}`,
+		}
 
 		return string(id), err
 	}

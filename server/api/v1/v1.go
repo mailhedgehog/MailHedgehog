@@ -50,11 +50,6 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/emails/:id", apiV1.showEmail)
 	v1.Delete("/emails/:id", apiV1.deleteEmail)
-
-	v1.Get("/websocket", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("websocket")
-	})
 }
 
 func (apiV1 *ApiV1) showUser(ctx *fiber.Ctx) error {

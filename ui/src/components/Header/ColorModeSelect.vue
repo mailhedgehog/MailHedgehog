@@ -81,7 +81,7 @@
   </Menu>
 </template>
 
-<script lang="ts">
+<script lang="ts" setup>
 import {
   Menu,
   MenuButton,
@@ -95,55 +95,37 @@ import {
 } from '@heroicons/vue/24/outline';
 import { onMounted, ref } from 'vue';
 
-export default {
-  name: 'ColorModeSelect',
-  components: {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    SunIcon,
-    MoonIcon,
-    ComputerDesktopIcon,
-  },
-  setup() {
-    const mode = ref('');
-    const setMode = (newMode: string) => {
-      mode.value = newMode;
-      localStorage.setItem('ColorMode', mode.value);
+const mode = ref('');
+const setMode = (newMode: string) => {
+  mode.value = newMode;
+  localStorage.setItem('ColorMode', mode.value);
 
-      switch (mode.value) {
-        case 'light':
-          document.querySelector('html')?.classList.remove('dark');
-          break;
-        case 'dark':
-          document.querySelector('html')?.classList.add('dark');
-          break;
-        default:
-          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.querySelector('html')?.classList.add('dark');
-          } else {
-            document.querySelector('html')?.classList.remove('dark');
-          }
-          break;
+  switch (mode.value) {
+    case 'light':
+      document.querySelector('html')?.classList.remove('dark');
+      break;
+    case 'dark':
+      document.querySelector('html')?.classList.add('dark');
+      break;
+    default:
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector('html')?.classList.add('dark');
+      } else {
+        document.querySelector('html')?.classList.remove('dark');
       }
-    };
-
-    onMounted(() => {
-      const ALLOWED_COLOR_MODES = ['system', 'light', 'dark'];
-      let storedMode = localStorage.getItem('ColorMode') || '';
-      if (!ALLOWED_COLOR_MODES.includes(storedMode)) {
-        // eslint-disable-next-line prefer-destructuring
-        storedMode = ALLOWED_COLOR_MODES[0];
-      }
-
-      setMode(storedMode);
-    });
-
-    return {
-      mode,
-      setMode,
-    };
-  },
+      break;
+  }
 };
+
+onMounted(() => {
+  const ALLOWED_COLOR_MODES = ['system', 'light', 'dark'];
+  let storedMode = localStorage.getItem('ColorMode') || '';
+  if (!ALLOWED_COLOR_MODES.includes(storedMode)) {
+    // eslint-disable-next-line prefer-destructuring
+    storedMode = ALLOWED_COLOR_MODES[0];
+  }
+
+  setMode(storedMode);
+});
+
 </script>

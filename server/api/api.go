@@ -23,6 +23,7 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
+	logManager().Debug(context.Config.Http.AllowOrigins)
 	api.Use(cors.New(cors.Config{
 		AllowOrigins: context.Config.Http.AllowOrigins,
 	}))

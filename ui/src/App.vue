@@ -106,6 +106,7 @@
           class="flex flex-1"
         />
         <div class="ml-4 flex items-center md:ml-6 space-x-3">
+          <WebsocketConnector />
           <ColorModeSelect />
           <LangModeSelect />
           <ProfileDropdown v-if="user" />
@@ -154,6 +155,7 @@ import {
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import AppNavigation from '@/components/Header/AppNavigation.vue';
+import WebsocketConnector from '@/components/Header/WebsocketConnector.vue';
 import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
 import LangModeSelect from '@/components/Header/LangModeSelect.vue';
 import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';

@@ -3,6 +3,7 @@ import './assets/scss/app.scss';
 import Toast, { PluginOptions, POSITION, useToast } from 'vue-toastification';
 import FloatingVue from 'floating-vue';
 import { createApp } from 'vue';
+import mitt from 'mitt';
 import { Axios, AxiosResponse } from 'axios';
 import enMessages from './assets/locales/en';
 import ukMessages from './assets/locales/uk';
@@ -27,6 +28,7 @@ const i18n = setupI18n({
 
 const router = setupRouter();
 const store = setupStore();
+const emitter = mitt();
 
 const app = createApp(App);
 
@@ -42,6 +44,7 @@ const options: PluginOptions = {
 app.use(Toast, options);
 
 app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
+app.provide('emitter', emitter);
 
 class MailHedgehog {
   $toast: any;

@@ -6,7 +6,7 @@
   "scripts": {
     "eslint": "./node_modules/.bin/eslint src/ --ext .js,.ts,.vue --fix",
     "dev": "vite",
-    "build": "vue-tsc && vite build --emptyOutDir",
+    "build": "vue-tsc && vite build --emptyOutDir  --mode production",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -16,6 +16,7 @@
     "axios": "^1.2.0",
     "floating-vue": "^2.0.0-beta.20",
     "lodash": "^4.17.21",
+    "mitt": "^3.0.0",
     "moment": "^2.29.4",
     "postcss": "^8.4.19",
     "sass": "^1.56.1",
