@@ -1,10 +1,10 @@
 <template>
   <!-- Page header -->
-  <div class="lg:-mt-px bg-gray-50 dark:bg-gray-900 shadow dark:shadow-gray-500">
+  <div class="lg:-mt-px bg-context-50 dark:bg-context-900 shadow dark:shadow-context-500">
     <div class="px-4 sm:px-6 lg:mx-auto lg:max-w-6xl lg:px-8">
       <div class="py-6 flex items-center justify-between">
         <h1
-          class="ml-3 text-xl md:text-2xl font-bold leading-7 text-gray-900 dark:text-gray-100 truncate sm:leading-9"
+          class="ml-3 text-xl md:text-2xl font-bold leading-7 text-context-900 dark:text-context-100 truncate sm:leading-9"
         >
           {{ t('inbox.hello', {msg: 'vtp'}) }}
           {{ t('inbox.pageTitle') }}
@@ -39,7 +39,7 @@
       v-if="pagination.isEmpty()"
       class=""
     >
-      <h3 class="ml-3 text-lg md:text-xl text-center text-gray-900 dark:text-gray-100 select-none">
+      <h3 class="ml-3 text-lg md:text-xl text-center text-context-900 dark:text-context-100 select-none">
         <template v-if="isRequesting">
           {{ t('pagination.requesting') }}
         </template>
@@ -52,30 +52,30 @@
       <!-- List (smallest breakpoint only) -->
       <div
         v-if="pagination"
-        class="shadow dark:shadow-gray-500 md:hidden"
+        class="shadow dark:shadow-context-500 md:hidden"
         :class="{
           'pointer-events-none opacity-75': isRequesting
         }"
       >
         <ul
           role="list"
-          class="mt-2 divide-y divide-gray-200 overflow-hidden shadow dark:shadow-gray-500"
+          class="mt-2 divide-y divide-context-200 overflow-hidden shadow dark:shadow-context-500"
         >
           <li
             v-for="email in emails"
             :key="email.id"
           >
             <div
-              class="block bg-gray-50 dark:bg-gray-800 px-4 py-4 hover:bg-gray-50"
+              class="block bg-context-50 dark:bg-context-800 px-4 py-4 hover:bg-context-50"
             >
               <span class="flex items-center space-x-4">
                 <span class="flex flex-1 space-x-2 truncate">
-                  <span class="flex flex-col truncate text-sm text-gray-500 dark:text-gray-400">
+                  <span class="flex flex-col truncate text-sm text-context-500 dark:text-context-400">
                     <span
                       v-if="email.from"
                       class="truncate"
                     >
-                      <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
+                      <span class="font-medium text-context-900 dark:text-context-100 mr-2">
                         {{ t('email.from') }}
                       </span>
                       {{ email.from.name }}({{ email.from.email }})
@@ -84,19 +84,19 @@
                       v-if="email.to[0]"
                       class="truncate"
                     >
-                      <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
+                      <span class="font-medium text-context-900 dark:text-context-100 mr-2">
                         {{ t('email.to') }}
                       </span>
                       {{ email.to[0].name }}({{ email.to[0].email }})
                     </span>
                     <span>
-                      <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
+                      <span class="font-medium text-context-900 dark:text-context-100 mr-2">
                         {{ t('email.subject') }}
                       </span>
                       {{ email.subject }}
                     </span>
                     <span>
-                      <span class="font-medium text-gray-900 dark:text-gray-100 mr-2">
+                      <span class="font-medium text-context-900 dark:text-context-100 mr-2">
                         {{ t('email.received_at') }}
                       </span>
                       <time
@@ -112,8 +112,8 @@
                     class="
                         cursor-pointer block
                         transition-all duration-500
-                        text-gray-500 dark:text-gray-400
-                        hover:text-gray-700 hover:dark:text-gray-300
+                        text-context-500 dark:text-context-400
+                        hover:text-context-700 hover:dark:text-context-300
                       "
                     @click.prevent="showEmail(email.id)"
                   >
@@ -126,8 +126,8 @@
                     class="
                         cursor-pointer block
                         transition-all duration-500
-                        text-gray-500 dark:text-gray-400
-                        hover:text-gray-700 hover:dark:text-gray-300
+                        text-context-500 dark:text-context-400
+                        hover:text-context-700 hover:dark:text-context-300
                       "
                     @click.prevent="deleteEmail(email.id)"
                   >
@@ -143,7 +143,7 @@
         </ul>
 
         <nav
-          class="flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-3"
+          class="flex items-center justify-between border-t border-context-200 bg-context-50 dark:bg-context-800 px-4 py-3"
           aria-label="Pagination"
         >
           <div class="flex flex-1 justify-between">
@@ -177,48 +177,48 @@
         >
           <div class="mt-2 flex flex-col">
             <div class="min-w-full overflow-hidden overflow-x-auto align-middle shadow md:rounded-lg">
-              <table class="min-w-full divide-y divide-gray-200">
+              <table class="min-w-full divide-y divide-context-200">
                 <thead>
                   <tr>
                     <th
-                      class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                      class="bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm font-semibold text-context-900 dark:text-context-100"
                       scope="col"
                     >
                       {{ t('email.from') }}
                     </th>
                     <th
-                      class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                      class="bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm font-semibold text-context-900 dark:text-context-100"
                       scope="col"
                     >
                       {{ t('email.to') }}
                     </th>
                     <th
-                      class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                      class="bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm font-semibold text-context-900 dark:text-context-100"
                       scope="col"
                     >
                       {{ t('email.subject') }}
                     </th>
                     <th
-                      class="whitespace-nowrap bg-gray-50 dark:bg-gray-700 px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100"
+                      class="whitespace-nowrap bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm font-semibold text-context-900 dark:text-context-100"
                       scope="col"
                     >
                       {{ t('email.received_at') }}
                     </th>
                     <th
-                      class="bg-gray-50 dark:bg-gray-700 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 text-right"
+                      class="bg-context-50 dark:bg-context-700 px-6 py-3 text-sm font-semibold text-context-900 dark:text-context-100 text-right"
                       scope="col"
                     >
                       {{ t('pagination.actions') }}
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-gray-50 dark:bg-gray-800">
+                <tbody class="divide-y divide-context-200 bg-context-50 dark:bg-context-800">
                   <tr
                     v-for="email in emails"
                     :key="email.id"
-                    class="bg-gray-50 dark:bg-gray-800"
+                    class="bg-context-50 dark:bg-context-800"
                   >
-                    <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-context-900 dark:text-context-100">
                       <template v-if="email.from">
                         <div class="truncate">
                           {{ email.from.name }}
@@ -226,7 +226,7 @@
                         <div class="truncate">
                           <a
                             :href="`mailto:${email.from.email}`"
-                            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                            class="text-context-500 dark:text-context-400 hover:text-context-700 hover:dark:text-context-200 transition-all duration-500"
                           >
                             {{ email.from.email }}
                           </a>
@@ -236,7 +236,7 @@
                         {{ t('email.notAvailable') }}
                       </div>
                     </td>
-                    <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-context-900 dark:text-context-100">
                       <template v-if="email.to[0]">
                         <div class="truncate">
                           {{ email.to[0].name }}
@@ -244,7 +244,7 @@
                         <div class="truncate">
                           <a
                             :href="`mailto:${email.to[0].email}`"
-                            class="text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-200 transition-all duration-500"
+                            class="text-context-500 dark:text-context-400 hover:text-context-700 hover:dark:text-context-200 transition-all duration-500"
                           >
                             {{ email.to[0].email }}
                           </a>
@@ -255,11 +255,11 @@
                       </div>
                     </td>
                     <td
-                      class="w-full max-w-0 whitespace-nowrap truncate px-6 py-4 text-sm text-gray-900 dark:text-gray-100"
+                      class="w-full max-w-0 whitespace-nowrap truncate px-6 py-4 text-sm text-context-900 dark:text-context-100"
                     >
                       {{ email.subject }}
                     </td>
-                    <td class="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    <td class="whitespace-nowrap px-6 py-4 text-sm text-context-500 dark:text-context-400">
                       <time
                         v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
@@ -273,8 +273,8 @@
                         class="
                         cursor-pointer
                         transition-all duration-500
-                        text-gray-500 dark:text-gray-400
-                        hover:text-gray-700 hover:dark:text-gray-300
+                        text-context-500 dark:text-context-400
+                        hover:text-context-700 hover:dark:text-context-300
                       "
                         @click.prevent="showEmail(email.id)"
                       >
@@ -287,8 +287,8 @@
                         class="
                         cursor-pointer
                         transition-all duration-500
-                        text-gray-500 dark:text-gray-400
-                        hover:text-gray-700 hover:dark:text-gray-300
+                        text-context-500 dark:text-context-400
+                        hover:text-context-700 hover:dark:text-context-300
                       "
                         @click.prevent="deleteEmail(email.id)"
                       >
@@ -303,12 +303,12 @@
               </table>
               <!-- Pagination -->
               <nav
-                class="flex items-center justify-between border-t border-gray-200 bg-gray-50 dark:bg-gray-800 px-4 py-3 sm:px-6"
+                class="flex items-center justify-between border-t border-context-200 bg-context-50 dark:bg-context-800 px-4 py-3 sm:px-6"
                 aria-label="Pagination"
               >
                 <div class="hidden sm:block">
                   <p
-                    class="text-sm text-gray-700 dark:text-gray-200"
+                    class="text-sm text-context-700 dark:text-context-200"
                     v-html="t('pagination.text', {from: pagination.getFrom(), to: pagination.getTo(), of: pagination.getTotal()})"
                   />
                 </div>
@@ -347,7 +347,7 @@
       >
         {{ t('inbox.search') }}
       </label>
-      <div class="relative w-full text-gray-400 focus-within:text-gray-600">
+      <div class="relative w-full text-context-400 focus-within:text-context-600">
         <div
           class="pointer-events-none absolute inset-y-0 left-0 flex items-center"
           aria-hidden="true"
@@ -364,8 +364,8 @@
           class="block h-full w-full  py-2 pl-8 pr-3  sm:text-sm
           focus:outline-none focus:ring-0
           border-transparent focus:border-transparent
-          placeholder-gray-500
-          bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100
+          placeholder-context-500
+          bg-context-50 dark:bg-context-900 text-context-900 dark:text-context-100
           "
           :placeholder="t('inbox.search')"
           type="search"
@@ -378,6 +378,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 import moment from 'moment';
+// FIXME: locales not works
 import 'moment/min/locales';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';

@@ -9,13 +9,13 @@
   &--default {
     @apply rounded-md border;
     @apply px-4 py-2 text-sm font-medium;
-    @apply border-gray-300;
-    @apply bg-gray-50 dark:bg-gray-800;
-    @apply text-gray-700 dark:text-gray-300;
+    @apply border-context-300;
+    @apply bg-context-50 dark:bg-context-800;
+    @apply text-context-700 dark:text-context-300;
     &:not(:disabled) {
-      @apply hover:border-gray-500 hover:dark:border-gray-400;
-      @apply hover:bg-gray-50 hover:dark:bg-gray-800;
-      @apply hover:text-gray-500 hover:dark:text-gray-400;
+      @apply hover:border-context-500 hover:dark:border-context-400;
+      @apply hover:bg-context-50 hover:dark:bg-context-800;
+      @apply hover:text-context-500 hover:dark:text-context-400;
     }
   }
 
@@ -28,7 +28,7 @@
     &:not(:disabled) {
       @apply hover:border-primary-700 hover:dark:border-primary-700;
       @apply hover:bg-primary-600 hover:dark:bg-primary-700;
-      @apply hover:text-gray-50 hover:dark:text-gray-50;
+      @apply hover:text-context-50 hover:dark:text-context-50;
     }
   }
 }

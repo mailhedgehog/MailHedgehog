@@ -4,22 +4,22 @@
   &__menu-btn {
     @apply rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-offset-2;
     @apply focus:ring-primary-500;
-    @apply bg-gray-50 dark:bg-gray-900;
-    @apply text-gray-400 dark:text-gray-600;
-    @apply hover:text-gray-500 hover:dark:text-gray-500;
+    @apply bg-context-50 dark:bg-context-900;
+    @apply text-context-400 dark:text-context-600;
+    @apply hover:text-context-500 hover:dark:text-context-500;
   }
 
   &__menu {
     @apply absolute right-0 z-10 mt-2 origin-top-right rounded-md py-1 ring-1 ring-opacity-5 focus:outline-none;
-    @apply bg-gray-50 dark:bg-gray-700;
+    @apply bg-context-50 dark:bg-context-700;
     @apply shadow-lg dark:shadow-lg;
-    @apply ring-black dark:ring-gray-50;
+    @apply ring-black dark:ring-context-50;
   }
 
   &__menu-item {
-    @apply cursor-pointer block px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-400 flex items-center;
+    @apply cursor-pointer block px-4 py-2 text-sm font-medium text-context-700 dark:text-context-400 flex items-center;
     &--active {
-      @apply bg-gray-100 dark:bg-gray-800;
+      @apply bg-context-100 dark:bg-context-800;
     }
   }
 

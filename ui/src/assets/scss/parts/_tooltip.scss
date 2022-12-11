@@ -1,15 +1,15 @@
 .v-popper {
   &__inner {
-    @apply bg-primary-600 border-primary-600 text-gray-50 text-sm px-2 py-1 #{!important};
+    @apply bg-primary-600 border-primary-600 text-context-50 text-sm px-2 py-1 #{!important};
   }
 
   &__arrow-inner {
     visibility: visible;
-    @apply border-primary-600 #{!important};
+    @apply border-context-600 #{!important};
   }
 
   &__arrow-outer {
-    @apply border-primary-600 #{!important};
+    @apply border-context-600 #{!important};
   }
 
   /* Transition */

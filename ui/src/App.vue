@@ -17,7 +17,7 @@
         leave-from="opacity-100"
         leave-to="opacity-0"
       >
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-75" />
+        <div class="fixed inset-0 bg-context-600 bg-opacity-75" />
       </TransitionChild>
 
       <div class="fixed inset-0 z-40 flex">
@@ -43,14 +43,16 @@
               <div class="absolute top-0 right-0 -mr-12 pt-2">
                 <button
                   type="button"
-                  class="ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-gray-50 focus:dark:ring-gray-900"
+                  class="ml-1 flex h-10 w-10 items-center justify-center rounded-full
+                  focus:outline-none focus:ring-2 focus:ring-inset
+                  focus:ring-context-50 focus:dark:ring-context-900"
                   @click="sidebarOpen = false"
                 >
                   <span class="sr-only">
                     {{ t('sidebar.close') }}
                   </span>
                   <XMarkIcon
-                    class="h-6 w-6 text-gray-50"
+                    class="h-6 w-6 text-context-50"
                     aria-hidden="true"
                   />
                 </button>
@@ -72,7 +74,7 @@
                   v-for="item in navigation"
                   :key="item.name"
                   :href="item.href"
-                  :class="[item.current ? 'bg-primary-800 text-gray-50' : 'text-primary-100 hover:text-gray-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-base font-medium rounded-md']"
+                  :class="[item.current ? 'bg-primary-800 text-context-50' : 'text-primary-100 hover:text-context-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-base font-medium rounded-md']"
                   :aria-current="item.current ? 'page' : undefined"
                 >
                   <component
@@ -124,7 +126,7 @@
           >
             <a
               :href="href"
-              :class="[isActive ? 'bg-primary-800 text-gray-50' : 'text-primary-100 hover:text-gray-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
+              :class="[isActive ? 'bg-primary-800 text-context-50' : 'text-primary-100 hover:text-context-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
               :aria-current="isActive ? 'page' : undefined"
               @click="navigate"
             >
@@ -141,14 +143,15 @@
     </div>
   </div>
 
-  <div class="min-h-screen flex flex-1 flex-col lg:pl-64">
+  <div class="min-h-screen flex flex-1 flex-col lg:pl-64 bg-context-100 dark:bg-context-900">
     <div
-      class="flex h-16 flex-shrink-0 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 lg:border-none z-10 shadow dark:shadow-gray-500"
+      class="flex h-16 flex-shrink-0 border-b border-context-200 dark:border-context-700
+      bg-context-50 dark:bg-context-900 lg:border-none z-10 shadow dark:shadow-context-500"
     >
       <button
         type="button"
-        class="border-r border-gray-200 dark:border-gray-700
-        px-4 text-gray-400
+        class="border-r border-context-200 dark:border-context-700
+        px-4 text-context-400
         focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 lg:hidden"
         @click="sidebarOpen = true"
       >
@@ -174,7 +177,9 @@
     <main class="flex-grow flex-1 pb-8 overflow-hidden">
       <router-view />
     </main>
-    <div class="py-4 px-4 sm:px-6 flex justify-between items-center shadow dark:shadow-gray-500 text-gray-900 dark:text-gray-100">
+    <div
+      class="py-4 px-4 sm:px-6 flex justify-between items-center shadow dark:shadow-context-500 text-context-900 dark:text-context-100"
+    >
       <div class="text-sm">
         <span class="mr-0">
           ©
@@ -187,7 +192,7 @@
           Think One Communications Ltd
         </a>
       </div>
-      <div class="hidden sm:block text-sm text-gray-300 dark:text-gray-700 select-none">
+      <div class="hidden sm:block text-sm text-context-300 dark:text-context-700 select-none">
         <div class="sr-only">
           #StandWithUkraine
         </div>

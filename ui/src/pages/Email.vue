@@ -7,9 +7,9 @@
   >
     <div
       class="
-        bg-gray-50 dark:bg-gray-900
+        bg-context-50 dark:bg-context-900
         px-4 sm:px-6 lg:px-8
-        shadow dark:shadow-gray-500
+        shadow dark:shadow-context-500
         mb-6 md:mb-8
       "
     >
@@ -65,10 +65,10 @@
       class="px-4 sm:px-6 lg:px-8"
     >
       <div
-        class="overflow-hidden bg-gray-50 dark:bg-gray-900 border border-gray-300 shadow dark:shadow-gray-500 sm:rounded-lg mb-6"
+        class="overflow-hidden bg-context-50 dark:bg-context-900 border border-context-300 shadow dark:shadow-context-500 sm:rounded-lg mb-6"
       >
         <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100 flex justify-between">
+          <h3 class="text-lg font-medium leading-6 text-context-900 dark:text-context-100 flex justify-between">
             <div>
               {{ t('email.headersTitle') }}
             </div>
@@ -89,21 +89,21 @@
               </a>
             </div>
           </h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-1 max-w-2xl text-sm text-context-500 dark:text-context-400">
             {{ t('email.headersSubtitle') }}
           </p>
         </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl class="sm:divide-y sm:divide-gray-200 sm:dark:divide-gray-300">
+        <div class="border-t border-context-200 px-4 py-5 sm:p-0">
+          <dl class="sm:divide-y sm:divide-context-200 sm:dark:divide-context-300">
             <div
               v-for="(headerValues, headerName) in headers"
               :key="headerName"
               class="py-4 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-5 sm:px-6"
             >
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
+              <dt class="text-sm font-medium text-context-500 dark:text-context-400">
                 {{ headerName }}
               </dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100 sm:col-span-2 sm:mt-0">
+              <dd class="mt-1 text-sm text-context-900 dark:text-context-100 sm:col-span-2 sm:mt-0">
                 <div
                   v-if="headerValues.length === 1"
                 >
@@ -112,7 +112,7 @@
                 <ul
                   v-else
                   role="list"
-                  class="divide-y divide-gray-200 dark:divide-gray-200 rounded-md border border-gray-200 dark:border-gray-200"
+                  class="divide-y divide-context-200 dark:divide-context-200 rounded-md border border-context-200 dark:border-context-200"
                 >
                   <li
                     v-for="(headerValue, index) in headerValues"
@@ -133,7 +133,7 @@
             id="tabs"
             v-model="currentTab"
             name="tabs"
-            class="block w-full rounded border-gray-300 dark:border-gray-600 py-2 pl-3 pr-10 text-base
+            class="block w-full rounded border-context-300 dark:border-context-600 py-2 pl-3 pr-10 text-base
             focus:border-primary-500 focus:primary-none focus:ring-primary-500 sm:text-sm"
           >
             <option
@@ -147,7 +147,7 @@
           </select>
         </div>
         <div class="hidden sm:block">
-          <div class="border-b border-gray-200 dark:border-gray-400">
+          <div class="border-b border-context-200 dark:border-context-400">
             <nav
               class="-mb-px flex space-x-8"
               aria-label="Tabs"
@@ -157,7 +157,7 @@
                 :key="tab.id"
                 href="#"
                 class="whitespace-nowrap flex py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-500"
-                :class="[currentTab === tab.id ? 'border-primary-500 text-primary-600' : 'cursor-pointer border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 hover:dark:text-gray-300 hover:border-gray-200 hover:dark:border-gray-400']"
+                :class="[currentTab === tab.id ? 'border-primary-500 text-primary-600' : 'cursor-pointer border-transparent text-context-500 dark:text-context-400 hover:text-context-700 hover:dark:text-context-300 hover:border-context-200 hover:dark:border-context-400']"
                 :aria-current="currentTab === tab.id ? 'page' : undefined"
                 @click.prevent="currentTab = tab.id"
               >
@@ -165,7 +165,7 @@
                 <span
                   v-if="tab.id==='attachments' && email?.attachments?.length !== undefined"
                   class="inline-block ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors duration-500"
-                  :class="[currentTab === tab.id ? 'bg-primary-100 text-primary-600' : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100']"
+                  :class="[currentTab === tab.id ? 'bg-primary-100 text-primary-600' : 'bg-context-200 dark:bg-context-700 text-context-900 dark:text-context-100']"
                 >
                   {{ email?.attachments?.length }}
                 </span>
@@ -184,7 +184,7 @@
             id="preview-html"
             :height="iframeHeight"
             :srcdoc="email.html"
-            class="w-full border border-gray-200 dark:border-gray-400"
+            class="w-full border border-context-200 dark:border-context-400"
             @load="resizeIframe"
           />
           <div
@@ -194,7 +194,7 @@
             <ExclamationTriangleIcon
               class="text-primary-500 h-8 w-8"
             />
-            <div class="ml-4 text-gray-900 dark:text-gray-100">
+            <div class="ml-4 text-context-900 dark:text-context-100">
               {{ t('email.htmlEmpty') }}
             </div>
           </div>
@@ -205,7 +205,7 @@
         >
           <div
             v-if="email.plain"
-            class="text-gray-900 dark:text-gray-100"
+            class="text-context-900 dark:text-context-100"
           >
             <pre class="overflow-auto">{{ email.plain }}</pre>
           </div>
@@ -216,7 +216,7 @@
             <ExclamationTriangleIcon
               class="text-primary-500 h-8 w-8"
             />
-            <div class="ml-4 text-gray-900 dark:text-gray-100">
+            <div class="ml-4 text-context-900 dark:text-context-100">
               {{ t('email.plainEmpty') }}
             </div>
           </div>
@@ -226,7 +226,7 @@
           class="py-6"
         >
           <div
-            class="text-gray-900 dark:text-gray-100"
+            class="text-context-900 dark:text-context-100"
           >
             <pre class="overflow-auto">{{ email.source }}</pre>
           </div>
@@ -240,7 +240,7 @@
           >
             <ul
               role="list"
-              class="divide-y divide-gray-200 rounded-md border border-gray-200"
+              class="divide-y divide-context-200 rounded-md border border-context-200"
             >
               <li
                 v-for="(attachment, index) in email?.attachments"
@@ -249,9 +249,9 @@
               >
                 <div class="flex w-0 flex-1 items-center">
                   <PaperClipIcon
-                    class="text-gray-400 dark:text-gray-500 flex-shrink-0 h-5 w-5"
+                    class="text-context-400 dark:text-context-500 flex-shrink-0 h-5 w-5"
                   />
-                  <span class="ml-2 w-0 flex-1 text-gray-900 dark:text-gray-100 truncate">
+                  <span class="ml-2 w-0 flex-1 text-context-900 dark:text-context-100 truncate">
                     <span>
                       {{ attachment.filename }}
                     </span>
@@ -286,7 +286,7 @@
             <ExclamationTriangleIcon
               class="text-primary-500 h-8 w-8"
             />
-            <div class="ml-4 text-gray-900 dark:text-gray-100">
+            <div class="ml-4 text-context-900 dark:text-context-100">
               {{ t('email.noAttachments') }}
             </div>
           </div>

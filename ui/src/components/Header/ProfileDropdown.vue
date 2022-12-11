@@ -11,7 +11,7 @@
           class="w-8 h-8"
         />
         <ChevronDownIcon
-          class="ml-1 h-5 w-5 flex-shrink-0 text-gray-400 dark:text-gray-600"
+          class="ml-1 h-5 w-5 flex-shrink-0 text-context-400 dark:text-context-600"
           aria-hidden="true"
         />
       </MenuButton>
