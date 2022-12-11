@@ -10,6 +10,7 @@ import (
 	"github.com/mailpiggy/MailPiggy/storage"
 	"io"
 	"math"
+	"net/http"
 	"strings"
 )
 
@@ -34,6 +35,8 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 		return c.Next()
 	})
 
+	v1.Get("/user", apiV1.showUser)
+
 	if context.Authentication.RequiresAuthentication() {
 		v1.Get("/logout", func(c *fiber.Ctx) error {
 			context.GetHttpSession(c).Destroy()
@@ -47,21 +50,24 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/emails/:id", apiV1.showEmail)
 	v1.Delete("/emails/:id", apiV1.deleteEmail)
-	v1.Post("/emails/:id/release", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Release one message")
-	})
-	v1.Get("/emails/:id/download", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Download one message")
-	})
-	v1.Get("/emails/:id/attachment/:attachmentId/download", func(c *fiber.Ctx) error {
-		logManager().Error("Not implemented")
-		return c.SendString("Download attachment")
-	})
+
 	v1.Get("/websocket", func(c *fiber.Ctx) error {
 		logManager().Error("Not implemented")
 		return c.SendString("websocket")
+	})
+}
+
+func (apiV1 *ApiV1) showUser(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+
+	if len(username) <= 0 {
+		return ctx.Status(http.StatusResetContent).JSON(fiber.Map{})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"data": fiber.Map{
+			"username": username,
+		},
 	})
 }
 
@@ -159,7 +165,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(200).JSON(fiber.Map{
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"data": messagesResponse,
 		"meta": fiber.Map{
 			"pagination": fiber.Map{
@@ -183,7 +189,7 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(200).JSON(fiber.Map{
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Emails cleared",
 	})
 }
@@ -219,7 +225,7 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 
 	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
 
-	return ctx.Status(200).JSON(fiber.Map{
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"data": fiber.Map{
 			"id":          email.ID,
 			"headers":     email.Content.Headers.All(),
@@ -240,7 +246,7 @@ func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(200).JSON(fiber.Map{
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Email deleted",
 	})
 }

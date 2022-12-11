@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/mailpiggy/MailPiggy/logger"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -17,10 +18,11 @@ type AppConfig struct {
 		} `yaml:"validation"`
 	} `yaml:"smtp"`
 	Http struct {
-		Host       string `yaml:"host"`
-		Port       int    `yaml:"port"`
-		Path       string `yaml:"path"`
-		AssetsRoot string `yaml:"assets_root"`
+		Host         string `yaml:"host"`
+		Port         int    `yaml:"port"`
+		Path         string `yaml:"path"`
+		AllowOrigins string `yaml:"allow_origins"`
+		AssetsRoot   string `yaml:"assets_root"`
 	} `yaml:"http"`
 	Storage struct {
 		Use          string `yaml:"use"`
@@ -80,6 +82,9 @@ func (config *AppConfig) withDefaults() {
 	}
 	if config.Http.Port <= 0 {
 		config.Http.Port = 8025
+	}
+	if len(config.Http.AllowOrigins) <= 0 {
+		config.Http.AllowOrigins = fmt.Sprintf("http://%s:%d", config.Http.Host, config.Http.Port)
 	}
 
 	if len(config.Storage.Use) <= 0 {

@@ -5,11 +5,11 @@
 
   &__arrow-inner {
     visibility: visible;
-    @apply border-context-600 #{!important};
+    @apply border-primary-600 #{!important};
   }
 
   &__arrow-outer {
-    @apply border-context-600 #{!important};
+    @apply border-primary-600 #{!important};
   }
 
   /* Transition */

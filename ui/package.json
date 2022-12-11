@@ -20,11 +20,11 @@
     "postcss": "^8.4.19",
     "sass": "^1.56.1",
     "tailwindcss": "^3.2.4",
-    "toastedjs": "^0.0.2",
     "vite-tsconfig-paths": "^3.6.0",
     "vue": "^3.2.41",
     "vue-i18n": "9",
     "vue-router": "4",
+    "vue-toastification": "^2.0.0-rc.5",
     "vuex": "^4.1.0"
   },
   "devDependencies": {

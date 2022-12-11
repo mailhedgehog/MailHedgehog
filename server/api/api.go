@@ -24,7 +24,7 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 	})
 
 	api.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:5173", // TODO: from config
+		AllowOrigins: context.Config.Http.AllowOrigins,
 	}))
 
 	v1.CreateAPIV1Routes(context, api)

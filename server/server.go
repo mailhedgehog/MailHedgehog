@@ -60,9 +60,6 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 }
 
 func Start(context *serverContext.Context) {
-	logManager().Warning("TODO: HTTP Implement", context.Config.Http.Port)
-	logManager().Warning("TODO: UI Implement", context.Config.Http.Path)
-
 	exitChannel = make(chan int)
 
 	go smtp.Listen(context, exitChannel)

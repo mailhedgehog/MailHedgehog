@@ -58,34 +58,8 @@
                 </button>
               </div>
             </TransitionChild>
-            <div class="flex flex-shrink-0 items-center px-4">
-              <img
-                class="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=cyan&shade=300"
-                alt="Easywire logo"
-              >
-            </div>
-            <nav
-              class="mt-5 h-full flex-shrink-0 divide-y divide-primary-800 overflow-y-auto"
-              aria-label="Sidebar"
-            >
-              <div class="space-y-1 px-2">
-                <a
-                  v-for="item in navigation"
-                  :key="item.name"
-                  :href="item.href"
-                  :class="[item.current ? 'bg-primary-800 text-context-50' : 'text-primary-100 hover:text-context-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-base font-medium rounded-md']"
-                  :aria-current="item.current ? 'page' : undefined"
-                >
-                  <component
-                    :is="item.icon"
-                    class="mr-4 h-6 w-6 flex-shrink-0 text-primary-200"
-                    aria-hidden="true"
-                  />
-                  {{ item.name }}
-                </a>
-              </div>
-            </nav>
+            <Logo class="px-4" />
+            <AppNavigation />
           </DialogPanel>
         </TransitionChild>
         <div
@@ -102,44 +76,8 @@
   <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
     <!-- Sidebar component, swap this element with another sidebar if you like -->
     <div class="flex flex-grow flex-col overflow-y-auto bg-primary-700 pt-5 pb-4">
-      <div class="flex flex-shrink-0 justify-center items-center px-4">
-        <img
-          class="h-8 w-auto mr-2"
-          src="/MailHedgehog.svg"
-          :alt="t('app.title')"
-        >
-        <div class="text-context-100 font-bold text-sm sm:text-base">
-          {{ t('app.title') }}
-        </div>
-      </div>
-      <nav
-        class="mt-5 flex flex-1 flex-col divide-y divide-primary-800 overflow-y-auto"
-        aria-label="Sidebar"
-      >
-        <div class="space-y-1 px-2">
-          <router-link
-            v-for="item in navigation"
-            v-slot="{ href, navigate, isActive }"
-            :key="item.name"
-            custom
-            :to="item.href"
-          >
-            <a
-              :href="href"
-              :class="[isActive ? 'bg-primary-800 text-context-50' : 'text-primary-100 hover:text-context-50 hover:bg-primary-600', 'group flex items-center px-2 py-2 text-sm leading-6 font-medium rounded-md']"
-              :aria-current="isActive ? 'page' : undefined"
-              @click="navigate"
-            >
-              <component
-                :is="item.icon"
-                class="mr-4 h-6 w-6 flex-shrink-0 text-primary-200"
-                aria-hidden="true"
-              />
-              {{ item.name }}
-            </a>
-          </router-link>
-        </div>
-      </nav>
+      <Logo class="px-4" />
+      <AppNavigation />
     </div>
   </div>
 
@@ -170,7 +108,7 @@
         <div class="ml-4 flex items-center md:ml-6 space-x-3">
           <ColorModeSelect />
           <LangModeSelect />
-          <ProfileDropdown />
+          <ProfileDropdown v-if="user" />
         </div>
       </div>
     </div>
@@ -202,7 +140,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import {
   Dialog,
   DialogPanel,
@@ -212,18 +150,20 @@ import {
 import {
   Bars3CenterLeftIcon,
   XMarkIcon,
-  InboxArrowDownIcon,
 } from '@heroicons/vue/24/outline';
+import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
+import AppNavigation from '@/components/Header/AppNavigation.vue';
 import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
 import LangModeSelect from '@/components/Header/LangModeSelect.vue';
 import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
+import Logo from '@/components/Header/Logo.vue';
+import { User } from './plugins/store';
 
 const { t } = useI18n();
+const store = useStore();
 
-const navigation = [
-  { name: t('menu.inbox'), href: '/', icon: InboxArrowDownIcon },
-];
+const user = computed<User | null>(() => store.getters.getUser);
 
 const sidebarOpen = ref(false);
 

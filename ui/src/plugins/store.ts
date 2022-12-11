@@ -1,25 +1,33 @@
 import { createStore } from 'vuex';
 
+export interface User {
+  username: string;
+}
+
+export interface State {
+  user: User | null
+}
+
 export function setupStore() {
-  return createStore({
+  return createStore<State>({
     state() {
       return {
-        username: 0,
+        user: null,
       };
     },
     getters: {
-      getUsername(state) {
-        return state.username;
+      getUser(state): User | null {
+        return state.user;
       },
     },
     mutations: {
-      SET_USERNAME(state, payload) {
-        state.username += payload;
+      SET_USER(state, payload: User | null) {
+        state.user = payload;
       },
     },
     actions: {
-      setUsername(context, payload) {
-        context.commit('SET_USERNAME', payload);
+      setUser(context, payload: User | null) {
+        context.commit('SET_USER', payload);
       },
     },
   });

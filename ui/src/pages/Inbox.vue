@@ -6,8 +6,12 @@
         <h1
           class="ml-3 text-xl md:text-2xl font-bold leading-7 text-context-900 dark:text-context-100 truncate sm:leading-9"
         >
-          {{ t('inbox.hello', {msg: 'vtp'}) }}
-          {{ t('inbox.pageTitle') }}
+          <template v-if="user">
+            {{ t('inbox.hello', {msg: user.username}) }}
+          </template>
+          <template v-else>
+            {{ t('inbox.pageTitle') }}
+          </template>
         </h1>
         <div
           class="flex justify-end ml-4 transition-all duration-200"
@@ -199,7 +203,8 @@
                       {{ t('email.subject') }}
                     </th>
                     <th
-                      class="whitespace-nowrap bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm font-semibold text-context-900 dark:text-context-100"
+                      class="whitespace-nowrap bg-context-50 dark:bg-context-700 px-6 py-3 text-left text-sm
+                      font-semibold text-context-900 dark:text-context-100"
                       scope="col"
                     >
                       {{ t('email.received_at') }}
@@ -376,21 +381,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import {
+  ref, onMounted, watch, computed,
+} from 'vue';
 import moment from 'moment';
 // FIXME: locales not works
 import 'moment/min/locales';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import {
   EyeIcon,
   TrashIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline';
-import Pagination from '../utils/pagination';
+import Pagination from '../utils/pagination.ts';
 
 const { t, locale } = useI18n();
 const router = useRouter();
+const store = useStore();
 
 const queryParams = ref({
   page: 1,
@@ -401,16 +410,7 @@ const isRequesting = ref(false);
 const emails = ref([]);
 const pagination = ref(new Pagination());
 
-let searchTimeout = null;
-watch(() => queryParams.value.search, () => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout);
-    searchTimeout = null;
-  }
-  searchTimeout = setTimeout(() => {
-    getEmails(1);
-  }, 500);
-}, { deep: true });
+const user = computed(() => store.getters.getUser);
 
 const getEmails = (page = null) => {
   isRequesting.value = true;
@@ -445,15 +445,20 @@ const getEmails = (page = null) => {
     });
 };
 
+let searchTimeout = null;
+watch(() => queryParams.value.search, () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+    searchTimeout = null;
+  }
+  searchTimeout = setTimeout(() => {
+    getEmails(1);
+  }, 500);
+}, { deep: true });
+
 onMounted(() => {
   getEmails(1);
 });
-
-const goToPage = (page) => {
-  if (pagination.value.hasPage(page)) {
-    getEmails(page);
-  }
-};
 
 const goToDirection = (direction = 'next') => {
   getEmails(pagination.value.getPageFromDirection(direction));
@@ -463,7 +468,7 @@ const clearInbox = () => {
   isRequesting.value = true;
   window.MailHedgehog.request()
     .delete('emails')
-    .then((response) => {
+    .then(() => {
       getEmails(1);
       window.MailHedgehog.success(t('inbox.cleared'));
     })
@@ -480,8 +485,8 @@ const deleteEmail = (emailId) => {
   isRequesting.value = true;
   window.MailHedgehog.request()
     .delete(`emails/${emailId}`)
-    .then((response) => {
-      if (pagination.value.count() == 0) {
+    .then(() => {
+      if (pagination.value.count() === 0) {
         goToDirection('prev');
       } else {
         getEmails();

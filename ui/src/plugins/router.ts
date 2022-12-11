@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import Inbox from '../pages/Inbox.vue';
-import Email from '../pages/Email.vue';
-import Settings from '../pages/Settings.vue';
+import { createRouter, createWebHashHistory } from 'vue-router';
+
+const Inbox = () => import(/* webpackChunkName: "page-email" */ '../pages/Inbox.vue');
+const Email = () => import(/* webpackChunkName: "page-email" */ '../pages/Email.vue');
 
 const routes = [
   { path: '/:pathMatch(.*)*', redirect: '/', name: 'notFound' },
@@ -9,13 +9,12 @@ const routes = [
     path: '/', component: Inbox, alias: '/emails', name: 'emails',
   },
   { path: '/emails/:id', component: Email, name: 'email' },
-  { path: '/settings', component: Settings },
 ];
 
 // eslint-disable-next-line import/prefer-default-export
 export function setupRouter() {
   return createRouter({
-    history: createWebHistory(),
+    history: createWebHashHistory(),
     routes,
   });
 }
