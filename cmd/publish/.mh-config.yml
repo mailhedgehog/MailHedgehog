@@ -11,4 +11,4 @@ storage:
 authentication:
   use: file
   file:
-    path: "auth.file"
+    path: ".mh-authfile"

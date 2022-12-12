@@ -13,7 +13,7 @@ func init() {
 	dir, err := os.MkdirTemp("", "mailhedgehog_")
 	logger.PanicIfError(err)
 
-	filePath = dir + string(os.PathSeparator) + "auth.file"
+	filePath = dir + string(os.PathSeparator) + ".mh-authfile"
 	file, err := os.Create(filePath)
 	logger.PanicIfError(err)
 

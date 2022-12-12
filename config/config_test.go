@@ -24,7 +24,7 @@ func TestParseConfigsWithDefault(t *testing.T) {
 }
 
 func TestParseConfigs(t *testing.T) {
-	config := ParseConfig(".config.yml")
+	config := ParseConfig("../cmd/publish/.mh-config.yml")
 
 	(*gounit.T)(t).AssertEqualsInt(1025, config.Smtp.Port)
 
@@ -35,5 +35,5 @@ func TestParseConfigs(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("", config.Storage.Directory.Path)
 
 	(*gounit.T)(t).AssertEqualsString("file", config.Authentication.Use)
-	(*gounit.T)(t).AssertEqualsString("auth.file", config.Authentication.File.Path)
+	(*gounit.T)(t).AssertEqualsString(".mh-authfile", config.Authentication.File.Path)
 }

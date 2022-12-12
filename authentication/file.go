@@ -111,3 +111,9 @@ func (fileAuth *FileAuth) addUserFromFileLine(line string) error {
 
 	return nil
 }
+
+func (fileAuth *FileAuth) UsernamePresent(username string) bool {
+	_, ok := fileAuth.users[username]
+
+	return ok
+}

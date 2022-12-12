@@ -15,7 +15,6 @@ func serveArgs(cmd *cobra.Command, args []string) error {
 }
 
 func serve(cmd *cobra.Command, args []string) {
-	logManager().Debug("SayHi")
 	filePath := ""
 	if len(args) > 0 {
 		filePath = args[0]
