@@ -40,10 +40,14 @@ func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 }
 
 func indexHandler(context *serverContext.Context) func(c *fiber.Ctx) error {
+	baseUrl := context.Config.Http.BaseUrl
+	if len(baseUrl) <= 0 {
+		baseUrl = "//" + context.HttpBindAddr() + context.PathWithPrefix("")
+	}
 	return func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"http": fiber.Map{
-				"baseUrl": "//" + context.HttpBindAddr() + context.PathWithPrefix(""),
+				"baseUrl": baseUrl,
 			},
 		})
 	}
