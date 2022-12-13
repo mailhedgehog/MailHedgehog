@@ -3,8 +3,8 @@ package smtp
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/mailpiggy/MailPiggy/authentication"
-	"github.com/mailpiggy/MailPiggy/smtpServer"
+	"github.com/mailhedgehog/MailHedgehog/authentication"
+	"github.com/mailhedgehog/MailHedgehog/smtpServer"
 	"strings"
 )
 

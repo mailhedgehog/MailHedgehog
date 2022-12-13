@@ -2,8 +2,8 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/dto"
-	"github.com/mailpiggy/MailPiggy/gounit"
+	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
 	"time"
 )

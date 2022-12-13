@@ -3,8 +3,8 @@ package smtpServer
 import (
 	"errors"
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/dto"
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"golang.org/x/exp/slices"
 	"regexp"
 	"strings"

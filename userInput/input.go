@@ -3,7 +3,7 @@ package userInput
 import (
 	"bufio"
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"os"
 	"strings"
 )

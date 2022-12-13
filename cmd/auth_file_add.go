@@ -3,9 +3,9 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/authentication"
-	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/userInput"
+	"github.com/mailhedgehog/MailHedgehog/authentication"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/bcrypt"
 	"os"
@@ -24,7 +24,7 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		authFileName = args[0]
 	}
-	
+
 	roomName, err := userInput.Get("Please input room name:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(roomName, 0, 20)

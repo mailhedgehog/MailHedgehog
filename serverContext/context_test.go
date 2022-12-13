@@ -1,8 +1,8 @@
 package serverContext
 
 import (
-	"github.com/mailpiggy/MailPiggy/config"
-	"github.com/mailpiggy/MailPiggy/gounit"
+	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
 )
 

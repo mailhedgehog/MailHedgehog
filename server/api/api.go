@@ -3,9 +3,9 @@ package api
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/mailpiggy/MailPiggy/logger"
-	v1 "github.com/mailpiggy/MailPiggy/server/api/v1"
-	"github.com/mailpiggy/MailPiggy/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	v1 "github.com/mailhedgehog/MailHedgehog/server/api/v1"
+	"github.com/mailhedgehog/MailHedgehog/serverContext"
 )
 
 var configuredLogger *logger.Logger

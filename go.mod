@@ -1,9 +1,8 @@
-module github.com/mailpiggy/MailPiggy
+module github.com/mailhedgehog/MailHedgehog
 
 go 1.19
 
 require (
-	github.com/DusanKasan/parsemail v1.2.0
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/gofiber/websocket/v2 v2.1.2

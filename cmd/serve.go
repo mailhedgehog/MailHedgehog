@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/mailpiggy/MailPiggy/config"
-	"github.com/mailpiggy/MailPiggy/server"
+	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/server"
 	"github.com/spf13/cobra"
 )
 

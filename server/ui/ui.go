@@ -2,8 +2,8 @@ package ui
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/serverContext"
 )
 
 var configuredLogger *logger.Logger

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/google/uuid"
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"io"
 	"strings"
 	"time"

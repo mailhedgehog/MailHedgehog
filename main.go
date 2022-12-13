@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mailpiggy/MailPiggy/cmd"
+	"github.com/mailhedgehog/MailHedgehog/cmd"
 )
 
 func main() {

@@ -2,12 +2,12 @@ package v1
 
 import (
 	"fmt"
-	"github.com/DusanKasan/parsemail"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailpiggy/MailPiggy/dto"
-	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/serverContext"
-	"github.com/mailpiggy/MailPiggy/storage"
+	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/parseMail"
+	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/storage"
 	"io"
 	"math"
 	"net/http"
@@ -198,7 +198,7 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	parsedEmail, err := parsemail.Parse(strings.NewReader(email.Raw.Data)) // returns Email struct and error
+	parsedEmail, err := parseMail.Parse(strings.NewReader(email.Raw.Data)) // returns Email struct and error
 	if err != nil {
 		// handle error
 	}

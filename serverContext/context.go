@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
-	"github.com/mailpiggy/MailPiggy/authentication"
-	"github.com/mailpiggy/MailPiggy/config"
-	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/storage"
+	"github.com/mailhedgehog/MailHedgehog/authentication"
+	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/storage"
 	"strings"
 )
 

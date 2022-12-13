@@ -1,6 +1,6 @@
 package smtpClient
 
-import "github.com/mailpiggy/MailPiggy/logger"
+import "github.com/mailhedgehog/MailHedgehog/logger"
 
 var configuredLogger *logger.Logger
 

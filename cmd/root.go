@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "MailPiggy",
+	Use:   "MailHedgehog",
 	Short: "Mail storage system",
 	Long:  ``,
 }
@@ -24,7 +24,7 @@ var configuredLogger *logger.Logger
 
 func logManager() *logger.Logger {
 	if configuredLogger == nil {
-		configuredLogger = logger.CreateLogger("MailPiggy")
+		configuredLogger = logger.CreateLogger("MailHedgehog")
 	}
 	return configuredLogger
 }

@@ -2,11 +2,11 @@ package smtp
 
 import (
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/dto"
-	"github.com/mailpiggy/MailPiggy/logger"
-	"github.com/mailpiggy/MailPiggy/server/websocket"
-	"github.com/mailpiggy/MailPiggy/serverContext"
-	"github.com/mailpiggy/MailPiggy/smtpServer"
+	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/server/websocket"
+	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/smtpServer"
 	"io"
 	"net"
 )

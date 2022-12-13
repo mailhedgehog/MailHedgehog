@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"gopkg.in/yaml.v3"
 	"os"
 )

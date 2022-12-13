@@ -2,8 +2,8 @@ package smtp
 
 import (
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/serverContext"
-	"github.com/mailpiggy/MailPiggy/smtpServer"
+	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/smtpServer"
 	"io"
 	"strings"
 )

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strings"

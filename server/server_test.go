@@ -1,10 +1,10 @@
 package server
 
 import (
-	"github.com/mailpiggy/MailPiggy/authentication"
-	"github.com/mailpiggy/MailPiggy/config"
-	"github.com/mailpiggy/MailPiggy/gounit"
-	"github.com/mailpiggy/MailPiggy/storage"
+	"github.com/mailhedgehog/MailHedgehog/authentication"
+	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/gounit"
+	"github.com/mailhedgehog/MailHedgehog/storage"
 	"testing"
 )
 

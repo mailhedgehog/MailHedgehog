@@ -1,7 +1,7 @@
 package authentication
 
 import (
-	"github.com/mailpiggy/MailPiggy/logger"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 )
 
 type AuthenticationType = string

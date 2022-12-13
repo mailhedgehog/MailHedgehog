@@ -1,7 +1,7 @@
 package smtpServer
 
 import (
-	"github.com/mailpiggy/MailPiggy/gounit"
+	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
 )
 
