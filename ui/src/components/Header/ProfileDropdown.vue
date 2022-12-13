@@ -54,6 +54,26 @@ import {
 } from '@heroicons/vue/24/outline';
 
 const logout = () => {
-  window.MailHedgehog.request().post('logout');
+  window.MailHedgehog.request()
+    .post('logout')
+    .finally(() => {
+      const reloadNow = () => {
+        let url = window.MailHedgehog.congValue('http.baseUrl', '')
+          .trim()
+          .replace(/\/+$/, '');
+        url = `${url}/`;
+        window.open(url, '_self');
+      };
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', import.meta.env.VITE_MH_CONFIG_URL, false, 'logout', 'logout');
+      xhr.onload = () => {
+        if (xhr.readyState === 4) {
+          reloadNow();
+        }
+      };
+      xhr.onerror = () => reloadNow();
+      xhr.send(null);
+    });
 };
 </script>
