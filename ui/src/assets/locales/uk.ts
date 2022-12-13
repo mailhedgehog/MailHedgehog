@@ -14,7 +14,7 @@ export default {
     error: 'Помилка відповіді сервера',
   },
   colorMode: {
-    title: 'Режим яркості',
+    title: 'Тема',
     light: 'Світлий',
     dark: 'Темний',
     system: 'Системний',
@@ -44,7 +44,7 @@ export default {
     received_at: 'Отримано о',
     delete: 'Видалити',
     deleteHint: 'Видалити імейл',
-    deleted: 'Імейлу видалено',
+    deleted: 'імейл видалено',
     download: 'Завантажити',
     downloadHint: 'Завантажити імейлу файл',
     back: 'Назад',
@@ -55,7 +55,7 @@ export default {
       attachments: 'Вкладення',
     },
     htmlEmpty: 'Імейл не містить вмісту HTML',
-    plainEmpty: 'Імейл не містить звичайного тексту',
+    plainEmpty: 'Імейл не містить звичайний тексту',
     noAttachments: 'Імейл не має вкладень',
   },
   inbox: {

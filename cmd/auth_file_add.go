@@ -63,7 +63,7 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 			logManager().Critical(err.Error())
 			os.Exit(0)
 		}
-		hashSmtpPassword, err = createPasswordHash(httpPassword)
+		hashSmtpPassword, err = createPasswordHash(smtpPassword)
 		logger.PanicIfError(err)
 	}
 
