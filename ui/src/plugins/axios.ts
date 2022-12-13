@@ -1,9 +1,10 @@
 import axios, { AxiosInstance } from 'axios';
 
 // eslint-disable-next-line import/prefer-default-export
-export function setupAxios(): AxiosInstance {
+export function setupAxios(conf: { baseUrl: string }): AxiosInstance {
+  const url = conf.baseUrl.trim().replace(/\/+$/, '');
   const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: `${url}/api/v1`,
   });
 
   instance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';

@@ -1,6 +1,7 @@
 import 'floating-vue/dist/style.css';
 import './assets/scss/app.scss';
 import Toast, { PluginOptions, POSITION, useToast } from 'vue-toastification';
+import _ from 'lodash';
 import FloatingVue from 'floating-vue';
 import { createApp } from 'vue';
 import mitt from 'mitt';
@@ -11,6 +12,7 @@ import frMessages from './assets/locales/fr';
 import { setupAxios } from './plugins/axios';
 import { setupRouter } from './plugins/router';
 import { setupStore } from './plugins/store';
+import { fetchConfigs } from './plugins/fetchConfigs';
 import { setI18nLanguage, setupI18n } from './plugins/i18n';
 import App from './App.vue';
 
@@ -47,13 +49,23 @@ app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
 app.provide('emitter', emitter);
 
 class MailHedgehog {
+  mhConf: object;
+
   $toast: any;
 
   $axios: Axios;
 
-  constructor() {
+  constructor(mhConf = {}) {
+    this.mhConf = mhConf;
+
     this.$toast = useToast();
-    this.$axios = setupAxios();
+    this.$axios = setupAxios({
+      baseUrl: this.congValue('http.baseUrl', ''),
+    });
+  }
+
+  congValue(key: string, def: any): any {
+    return _.get(this.mhConf, key, def);
   }
 
   request(): Axios {
@@ -84,7 +96,7 @@ declare global {
   }
 }
 
-window.MailHedgehog = new MailHedgehog();
+window.MailHedgehog = new MailHedgehog(fetchConfigs());
 
 router.beforeEach(() => {
   window.MailHedgehog.request()

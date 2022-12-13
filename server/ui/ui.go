@@ -20,5 +20,17 @@ func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
+	ui.Get("/mh-configuration.json", indexHandler(context))
+
 	ui.Static("/", context.Config.Http.AssetsRoot)
+}
+
+func indexHandler(context *serverContext.Context) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"http": fiber.Map{
+				"baseUrl": "//" + context.HttpBindAddr() + context.PathWithPrefix(""),
+			},
+		})
+	}
 }
