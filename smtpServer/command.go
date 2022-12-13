@@ -6,11 +6,13 @@ import (
 
 type CommandName string
 
+// RSET
 const (
 	COMMAND_HELO = CommandName("HELO")
 	COMMAND_EHLO = CommandName("EHLO")
 	COMMAND_AUTH = CommandName("AUTH")
 	COMMAND_MAIL = CommandName("MAIL")
+	COMMAND_RSET = CommandName("RSET")
 	COMMAND_RCPT = CommandName("RCPT")
 	COMMAND_DATA = CommandName("DATA")
 	COMMAND_QUIT = CommandName("QUIT")

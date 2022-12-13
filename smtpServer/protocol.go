@@ -157,6 +157,8 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 			}
 		}
 		return ReplyCommandNotImplemented()
+	case COMMAND_RSET:
+		return protocol.RSET(command)
 	case COMMAND_MAIL:
 		return protocol.MAIL(command)
 	case COMMAND_RCPT:
@@ -193,6 +195,12 @@ func (protocol *Protocol) EHLO(command *Command) *Reply {
 	}
 
 	return ReplyOk(replyArgs...)
+}
+
+func (protocol *Protocol) RSET(command *Command) *Reply {
+	protocol.resetState()
+
+	return ReplyOk("")
 }
 
 func (protocol *Protocol) MAIL(command *Command) *Reply {
