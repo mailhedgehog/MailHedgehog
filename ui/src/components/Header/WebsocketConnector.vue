@@ -54,7 +54,11 @@ const initSocket = () => {
     return;
   }
   disabled.value = true;
-  soc.value = new WebSocket('ws://0.0.0.0:8025/websocket');
+  const url = window.MailHedgehog.congValue('http.baseUrl', '')
+    .trim()
+    .replace(/\/+$/, '')
+    .replace(/(http)(s)?\:\/\//, 'ws$2://');
+  soc.value = new WebSocket(`${url}/websocket`);
 
   soc.value.onopen = () => {
     // nothing to do

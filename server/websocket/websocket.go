@@ -69,7 +69,7 @@ func runWebsocketHub() {
 }
 
 func CreateWebsocket(context *serverContext.Context, httpApp *fiber.App) {
-	httpApp.Use("/websocket", func(ctx *fiber.Ctx) error {
+	httpApp.Use(context.PathWithPrefix("websocket"), func(ctx *fiber.Ctx) error {
 		username, _ := context.GetHttpAuthenticatedUser(ctx)
 		ctx.Locals("room", username)
 		// IsWebSocketUpgrade returns true if the client
