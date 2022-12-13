@@ -77,6 +77,27 @@ func (fileAuth *FileAuth) AuthFile(path string) int {
 	return len(fileAuth.users)
 }
 
+func (fileAuth *FileAuth) WriteToFile(file *os.File) error {
+	file.Truncate(0)
+	for _, userInfo := range fileAuth.users {
+		smtpPass := ""
+		if userInfo.httpPass != userInfo.smtpPass {
+			smtpPass = userInfo.smtpPass
+		}
+		_, err := file.WriteString(fmt.Sprintf(
+			"%s:%s:%s\n",
+			userInfo.username,
+			userInfo.httpPass,
+			smtpPass,
+		))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (fileAuth *FileAuth) addUserFromFileLine(line string) error {
 	line = strings.TrimSpace(line)
 	infoSlice := strings.Split(line, ":")
@@ -108,6 +129,20 @@ func (fileAuth *FileAuth) addUserFromFileLine(line string) error {
 	}
 
 	logManager().Debug(fmt.Sprintf("Processes users: '%s'", infoSlice[0]))
+
+	return nil
+}
+
+func (fileAuth *FileAuth) AddUser(username string, httpPassHash string, smtpPassHash string) error {
+	if len(username) <= 0 || len(httpPassHash) <= 0 {
+		return errors.New("username and httpPassHash required")
+	}
+
+	fileAuth.users[username] = userInfo{
+		username: username,
+		httpPass: httpPassHash,
+		smtpPass: smtpPassHash,
+	}
 
 	return nil
 }

@@ -25,6 +25,11 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 		authFileName = args[0]
 	}
 
+	// If the file doesn't exist, create it, or append to the file
+	file, err := os.OpenFile(authFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	logger.PanicIfError(err)
+	defer file.Close()
+
 	roomName, err := userInput.Get("Please input room name:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(roomName, 0, 20)
@@ -33,7 +38,13 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}
 
-	httpPassword, err := userInput.Get("Please set password for http login:")
+	auth := authentication.CreateFileAuthentication(authFileName)
+	if auth.UsernamePresent(roomName) {
+		logManager().Critical(fmt.Sprintf("Room [%s] already present in credentials list.", roomName))
+		os.Exit(0)
+	}
+
+	httpPassword, err := userInput.GetSilent("Please set password for http login:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(httpPassword, 6, 20)
 	if err != nil {
@@ -44,7 +55,7 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 	logger.PanicIfError(err)
 
 	hashSmtpPassword := []byte{}
-	smtpPassword, err := userInput.Get("Please set password for smtp login(optional, if empty will be used http password):")
+	smtpPassword, err := userInput.GetSilent("Please set password for smtp login(optional, if empty will be used http password):")
 	logger.PanicIfError(err)
 	if len(smtpPassword) > 0 {
 		err = validateMinMaxLength(smtpPassword, 6, 20)
@@ -56,17 +67,17 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 		logger.PanicIfError(err)
 	}
 
-	// If the file doesn't exist, create it, or append to the file
-	file, err := os.OpenFile(authFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	logger.PanicIfError(err)
-
-	auth := authentication.CreateFileAuthentication(authFileName)
-	if auth.UsernamePresent(roomName) {
-		logManager().Critical(fmt.Sprintf("Room [%s] already present in credentials list.", roomName))
+	err = auth.AddUser(roomName, string(hashHttpPassword), string(hashSmtpPassword))
+	if err != nil {
+		logManager().Critical(err.Error())
 		os.Exit(0)
 	}
 
-	_, err = file.WriteString(fmt.Sprintf("%s:%s:%s\n", roomName, hashHttpPassword, hashSmtpPassword))
+	err = auth.WriteToFile(file)
+	if err != nil {
+		logManager().Critical(err.Error())
+		os.Exit(0)
+	}
 	logger.PanicIfError(err)
 
 	logManager().Info(fmt.Sprintf("Room [%s] credentials added.", roomName))
@@ -74,11 +85,11 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 
 func validateMinMaxLength(input string, min int, max int) error {
 	if len(input) <= min {
-		return errors.New(fmt.Sprintf("Input lingth is less or equal than max: %d", min))
+		return errors.New(fmt.Sprintf("Input length is less or equal than max: %d", min))
 	}
 
 	if len(input) > max {
-		return errors.New(fmt.Sprintf("Input lingth is bigger than max: %d", max))
+		return errors.New(fmt.Sprintf("Input length is bigger than max: %d", max))
 	}
 
 	return nil

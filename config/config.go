@@ -77,9 +77,6 @@ func (config *AppConfig) withDefaults() {
 		config.Smtp.Port = 1025
 	}
 
-	if len(config.Http.AssetsRoot) <= 0 {
-		config.Http.AssetsRoot = "./public"
-	}
 	if len(config.Http.Host) <= 0 {
 		config.Http.Host = "0.0.0.0"
 	}

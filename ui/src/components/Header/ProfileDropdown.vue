@@ -41,7 +41,7 @@
   </Menu>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import {
   Menu,
   MenuButton,
@@ -53,24 +53,7 @@ import {
   ChevronDownIcon,
 } from '@heroicons/vue/24/outline';
 
-export default {
-  name: 'ProfileDropdown',
-  components: {
-    Menu,
-    MenuButton,
-    MenuItem,
-    MenuItems,
-    UserCircleIcon,
-    ChevronDownIcon,
-  },
-  setup() {
-    const logout = () => {
-      alert('TODO: implement');
-    };
-
-    return {
-      logout,
-    };
-  },
+const logout = () => {
+  window.MailHedgehog.request().post('logout');
 };
 </script>

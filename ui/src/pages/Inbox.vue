@@ -404,7 +404,7 @@ const emitter = inject('emitter');
 
 const queryParams = ref({
   page: 1,
-  per_page: 2,
+  per_page: 25,
   search: '',
 });
 const isRequesting = ref(false);
@@ -468,6 +468,8 @@ const goToDirection = (direction = 'next') => {
 };
 
 const clearInbox = () => {
+  console.warn('TODO: add confirmation');
+
   isRequesting.value = true;
   window.MailHedgehog.request()
     .delete('emails')
@@ -485,6 +487,8 @@ const showEmail = (emailId) => {
 };
 
 const deleteEmail = (emailId) => {
+  console.warn('TODO: add confirmation');
+
   isRequesting.value = true;
   window.MailHedgehog.request()
     .delete(`emails/${emailId}`)

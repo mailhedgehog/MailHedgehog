@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/mailhedgehog/MailHedgehog/logger"
@@ -23,7 +24,7 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
-	logManager().Debug(context.Config.Http.AllowOrigins)
+	logManager().Debug(fmt.Sprintf("Allow origins: %s", context.Config.Http.AllowOrigins))
 	api.Use(cors.New(cors.Config{
 		AllowOrigins: context.Config.Http.AllowOrigins,
 	}))

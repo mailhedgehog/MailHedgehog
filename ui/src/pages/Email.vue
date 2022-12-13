@@ -347,6 +347,8 @@ const goBack = () => {
 };
 
 const deleteEmail = () => {
+  console.warn('TODO: add confirmation');
+
   isRequesting.value = true;
   window.MailHedgehog.request()
     .delete(`emails/${email.value.id}`)

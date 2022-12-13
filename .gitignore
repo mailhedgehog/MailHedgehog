@@ -1,4 +1,6 @@
 /go.sum
-/public
 /.mh-config.yml
 /.mh-authfile
+/public
+/dist
+/MailHedgehog.zip

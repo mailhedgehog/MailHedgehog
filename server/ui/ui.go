@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"embed"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"net/http"
 )
 
 var configuredLogger *logger.Logger
@@ -15,6 +18,9 @@ func logManager() *logger.Logger {
 	return configuredLogger
 }
 
+//go:embed static/*
+var EmbedDirStatic embed.FS
+
 func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 	ui := httpApp.Group(context.PathWithPrefix(""), func(c *fiber.Ctx) error {
 		return c.Next()
@@ -22,7 +28,15 @@ func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 
 	ui.Get("/mh-configuration.json", indexHandler(context))
 
-	ui.Static("/", context.Config.Http.AssetsRoot)
+	if len(context.Config.Http.AssetsRoot) > 0 {
+		ui.Static("/", context.Config.Http.AssetsRoot)
+	} else {
+		ui.Use("/", filesystem.New(filesystem.Config{
+			Root:       http.FS(EmbedDirStatic),
+			PathPrefix: "static",
+			Browse:     false,
+		}))
+	}
 }
 
 func indexHandler(context *serverContext.Context) func(c *fiber.Ctx) error {

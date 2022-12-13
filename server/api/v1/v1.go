@@ -38,7 +38,7 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	v1.Get("/user", apiV1.showUser)
 
 	if context.Authentication.RequiresAuthentication() {
-		v1.Get("/logout", func(c *fiber.Ctx) error {
+		v1.Post("/logout", func(c *fiber.Ctx) error {
 			context.GetHttpSession(c).Destroy()
 			logManager().Error("Session destroyed")
 			return c.Redirect("//logout:logout@" + context.HttpBindAddr() + context.PathWithPrefix("/"))

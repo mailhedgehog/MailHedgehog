@@ -2,11 +2,17 @@
 
 Development emails previews
 
-## Installation
-
 ## Configuration and usage
 
+```shell
+MailHedgehog init
+```
+
 ## Usage
+
+```shell
+MailHedgehog serve [.mh-config.yml]
+```
 
 ## Credits
 
