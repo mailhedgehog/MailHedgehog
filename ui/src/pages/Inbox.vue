@@ -266,9 +266,9 @@
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-sm text-context-500 dark:text-context-400">
                       <time
-                        v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                        v-if="moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
+                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
                       </time>
                     </td>
                     <td
@@ -396,7 +396,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import Pagination from '../utils/pagination.ts';
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const router = useRouter();
 const store = useStore();
 const emitter = inject('emitter');
