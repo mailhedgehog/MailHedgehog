@@ -106,7 +106,7 @@
                       <time
                         v-if="moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
+                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
                       </time>
                     </span>
                   </span>
@@ -384,9 +384,8 @@
 import {
   ref, onMounted, watch, computed, inject,
 } from 'vue';
-import moment from 'moment';
 // FIXME: locales not works
-import 'moment/min/locales';
+import moment from 'moment';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
