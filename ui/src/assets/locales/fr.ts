@@ -40,7 +40,7 @@ export default {
     hintShowHeaders: 'Afficher tous les en-têtes',
     from: 'De',
     to: 'À',
-    subject: 'Matière',
+    subject: 'Objet',
     received_at: 'Reçu à',
     delete: 'Effacer',
     deleteHint: 'Effacer e-mail',

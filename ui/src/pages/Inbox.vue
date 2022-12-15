@@ -104,9 +104,9 @@
                         {{ t('email.received_at') }}
                       </span>
                       <time
-                        v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                        v-if="moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
+                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').locale(locale).fromNow() }}
                       </time>
                     </span>
                   </span>
