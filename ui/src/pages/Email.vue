@@ -13,7 +13,7 @@
         mb-6 md:mb-8
       "
     >
-      <div class="flex justify-between py-3">
+      <div class="flex justify-between py-3 lg:mx-auto lg:max-w-6xl">
         <!-- Left buttons -->
         <div>
           <div class="isolate inline-flex rounded-md shadow-sm sm:space-x-3 sm:shadow-none">
@@ -65,7 +65,11 @@
       class="px-4 sm:px-6 lg:px-8"
     >
       <div
-        class="overflow-hidden bg-context-50 dark:bg-context-900 border border-context-300 shadow dark:shadow-context-500 sm:rounded-lg mb-6"
+        class="
+          overflow-hidden bg-context-50 dark:bg-context-900 border border-context-300
+          shadow dark:shadow-context-500 sm:rounded-lg mb-6
+          lg:mx-auto lg:max-w-6xl
+        "
       >
         <div class="px-4 py-5 sm:px-6">
           <h3 class="text-lg font-medium leading-6 text-context-900 dark:text-context-100 flex justify-between">
@@ -146,7 +150,7 @@
             </option>
           </select>
         </div>
-        <div class="hidden sm:block">
+        <div class="hidden sm:block lg:mx-auto lg:max-w-6xl">
           <div class="border-b border-context-200 dark:border-context-400">
             <nav
               class="-mb-px flex space-x-8"
@@ -174,7 +178,10 @@
           </div>
         </div>
       </div>
-      <div v-if="email">
+      <div
+        v-if="email"
+        class="lg:mx-auto lg:max-w-6xl"
+      >
         <div
           v-if="currentTab === 'html'"
           class="py-6"
