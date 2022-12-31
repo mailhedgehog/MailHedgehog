@@ -54,10 +54,13 @@ const initSocket = () => {
     return;
   }
   disabled.value = true;
-  const url = window.MailHedgehog.congValue('http.baseUrl', '')
+  let url = window.MailHedgehog.congValue('http.baseUrl', '')
     .trim()
     .replace(/\/+$/, '')
     .replace(/(http)(s)?\:\/\//, 'ws$2://');
+  if (url.startsWith('//')) {
+    url = `ws:${url}`;
+  }
   soc.value = new WebSocket(`${url}/websocket`);
 
   soc.value.onopen = () => {
