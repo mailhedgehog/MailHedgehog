@@ -47,6 +47,10 @@ export default {
     deleted: 'E-mail supprimé',
     download: 'Télécharger',
     downloadHint: 'Télécharger l\'e-mail en tant que fichier',
+    release: 'Transfér',
+    releaseHint: 'Transfér l\'e-mail',
+    released: 'E-mail transféré',
+    cancel: 'Annuler',
     back: 'Retour',
     tab: {
       html: 'HTML',
@@ -65,5 +69,16 @@ export default {
     cleared: 'Boîte de réception effacée',
     search: 'Rechercher des e-mails',
     empty: 'Aucun e-mail trouvé',
+  },
+  release: {
+    host: 'Host',
+    port: 'Port',
+    auth: 'Identifiants',
+    username: 'Nom d\'utilisateur',
+    password: 'Mot de passe',
+    saveToStorage: 'Enregistrer les informations d\'identification sur le stockage local (non sécurisé)',
+    saved: 'Enregistré',
+    deleteSavedToStorage: 'Supprimer les informations d\'identification enregistrées',
+    deleted: 'Supprimé',
   },
 };

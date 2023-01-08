@@ -7,7 +7,7 @@
     "eslint": "./node_modules/.bin/eslint src/ --ext .js,.ts,.vue --fix",
     "dev": "vite",
     "build": "vue-tsc && vite build --emptyOutDir  --mode production",
-    "app-build": "yarn build --outDir \"../server/ui/static\"",
+    "app-build": "yarn build --outDir \"../server/ui/static\" && rm ../server/ui/static/mh-configuration.*.json",
     "preview": "vite preview"
   },
   "dependencies": {

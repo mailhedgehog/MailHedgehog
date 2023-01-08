@@ -47,6 +47,10 @@ export default {
     deleted: 'імейл видалено',
     download: 'Завантажити',
     downloadHint: 'Завантажити імейлу файл',
+    release: 'Переслати',
+    releaseHint: 'Переслати імейл',
+    released: 'Переслано',
+    cancel: 'Скасувати',
     back: 'Назад',
     tab: {
       html: 'HTML',
@@ -65,5 +69,16 @@ export default {
     cleared: 'Вхідні видалені',
     search: 'Пошук імейлів',
     empty: 'Імейлів не знайдено',
+  },
+  release: {
+    host: 'Хост',
+    port: 'Порт',
+    auth: 'Облікові дані',
+    username: 'Ім\'я користувача',
+    password: 'Пароль',
+    saveToStorage: 'Зберегти облікові дані в локальному сховищі (небезпечно)',
+    saved: 'Збережено',
+    deleteSavedToStorage: 'Видалити збережені облікові дані',
+    deleted: 'Видалено',
   },
 };

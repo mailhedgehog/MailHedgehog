@@ -7,6 +7,7 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/parseMail"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"github.com/mailhedgehog/MailHedgehog/smtpClient"
 	"github.com/mailhedgehog/MailHedgehog/storage"
 	"io"
 	"math"
@@ -50,6 +51,8 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/emails/:id", apiV1.showEmail)
 	v1.Delete("/emails/:id", apiV1.deleteEmail)
+
+	v1.Post("/emails/:id/release", apiV1.releaseEmail)
 }
 
 func (apiV1 *ApiV1) showUser(ctx *fiber.Ctx) error {
@@ -243,5 +246,54 @@ func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 
 	return ctx.Status(http.StatusOK).JSON(fiber.Map{
 		"message": "Email deleted",
+	})
+}
+
+func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	email, err := apiV1.context.Storage.Load(username, dto.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	type ReleaseQuery struct {
+		Host     string `query:"host" validate:""`
+		Port     int    `query:"port" validate:"min=1,max=9999"`
+		Username string `query:"username" validate:"omitempty"`
+		Password string `query:"password" validate:"omitempty"`
+	}
+
+	releaseQuery := new(ReleaseQuery)
+
+	if err := ctx.BodyParser(releaseQuery); err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	smtpHost := fmt.Sprintf("%s:%d", releaseQuery.Host, releaseQuery.Port)
+	var client *smtpClient.SmtpClient
+	if len(releaseQuery.Username) > 0 {
+		client = smtpClient.NewClient(smtpHost, "plain", []string{
+			"",
+			releaseQuery.Username,
+			releaseQuery.Password,
+			releaseQuery.Host,
+		})
+	} else {
+		client = smtpClient.NewClient(smtpHost, "", []string{})
+	}
+
+	err = client.SendMail(email)
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	return ctx.Status(http.StatusOK).JSON(fiber.Map{
+		"message": "Email released",
 	})
 }

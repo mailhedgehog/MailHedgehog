@@ -48,12 +48,23 @@
               <button
                 v-tooltip="t('email.downloadHint')"
                 type="button"
-                class="btn btn--default rounded-r-md rounded-l-none"
+                class="btn btn--default rounded-none"
                 @click.prevent="downloadEmail"
               >
                 <DocumentArrowDownIcon class="md:mr-2 h-5 w-5" />
                 <span class="hidden md:inline">
                   {{ t('email.download') }}
+                </span>
+              </button>
+              <button
+                v-tooltip="t('email.releaseHint')"
+                type="button"
+                class="btn btn--default rounded-r-md rounded-l-none"
+                @click.prevent="isOpenReleaseModal = true"
+              >
+                <PaperAirplaneIcon class="md:mr-2 h-5 w-5" />
+                <span class="hidden md:inline">
+                  {{ t('email.release') }}
                 </span>
               </button>
             </span>
@@ -146,7 +157,7 @@
               :value="tab.id"
               :selected="currentTab"
             >
-              {{ tab.name }}
+              {{ t(`email.tab.${tab.id}`) }}
             </option>
           </select>
         </div>
@@ -165,7 +176,7 @@
                 :aria-current="currentTab === tab.id ? 'page' : undefined"
                 @click.prevent="currentTab = tab.id"
               >
-                {{ tab.name }}
+                {{ t(`email.tab.${tab.id}`) }}
                 <span
                   v-if="tab.id==='attachments' && email?.attachments?.length !== undefined"
                   class="inline-block ml-3 py-0.5 px-2.5 rounded-full text-xs font-medium transition-colors duration-500"
@@ -301,6 +312,170 @@
       </div>
     </div>
   </div>
+  <TransitionRoot
+    as="template"
+    :show="isOpenReleaseModal"
+  >
+    <Dialog
+      as="div"
+      class="relative z-10"
+      :class="{'pointer-events-none': isRequesting}"
+      @close="isOpenReleaseModal = false"
+    >
+      <TransitionChild
+        as="template"
+        enter="ease-out duration-300"
+        enter-from="opacity-0"
+        enter-to="opacity-100"
+        leave="ease-in duration-200"
+        leave-from="opacity-100"
+        leave-to="opacity-0"
+      >
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+      </TransitionChild>
+
+      <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <TransitionChild
+            as="template"
+            enter="ease-out duration-300"
+            enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enter-to="opacity-100 translate-y-0 sm:scale-100"
+            leave="ease-in duration-200"
+            leave-from="opacity-100 translate-y-0 sm:scale-100"
+            leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <DialogPanel
+              class="
+            bg-context-50 dark:bg-context-900
+            relative transform overflow-hidden
+            rounded-lg px-4 pt-5 pb-4
+            text-left shadow-xl transition-all
+            sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
+            >
+              <div>
+                <div class="text-center sm:mt-5">
+                  <DialogTitle
+                    as="h3"
+                    class="text-lg font-medium leading-6 text-context-900 dark:text-context-100"
+                  >
+                    {{ t('email.releaseHint') }}
+                  </DialogTitle>
+                  <div
+                    class="
+                    mt-6
+                    text-left
+                    text-context-900 dark:text-context-100
+                    "
+                  >
+                    <div
+                      class="space-y-6"
+                    >
+                      <div>
+                        <label
+                          for="host"
+                          class="form-label"
+                        >
+                          {{ t('release.host') }}
+                        </label>
+                        <div class="mt-1 flex">
+                          <input
+                            id="host"
+                            v-model="releaseForm.host"
+                            name="host"
+                            type="text"
+                            autocomplete="host"
+                            required
+                            class="form-input rounded-r-none"
+                            placeholder="smtp.provider.com"
+                          >
+                          <input
+                            id="port"
+                            v-model="releaseForm.port"
+                            v-tooltip="t('release.port')"
+                            name="port"
+                            type="number"
+                            min="1"
+                            max="9999"
+                            step="1"
+                            autocomplete="port"
+                            required
+                            class="form-input rounded-l-none w-20"
+                            placeholder="25"
+                          >
+                        </div>
+                      </div><div>
+                        <label
+                          for="smtp-username"
+                          class="form-label"
+                        >
+                          {{ t('release.auth') }}
+                        </label>
+                        <div class="mt-1">
+                          <input
+                            id="smtp-username"
+                            v-model="releaseForm.username"
+                            name="smtp-username"
+                            type="text"
+                            autocomplete="smtp-username"
+                            class="form-input rounded-b-none"
+                            :placeholder="t('release.username')"
+                          >
+                          <input
+                            id="smtp-password"
+                            v-model="releaseForm.password"
+                            name="smtp-password"
+                            type="password"
+                            autocomplete="smtp-password"
+                            class="form-input rounded-t-none"
+                            :placeholder="t('release.password')"
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6 sm:mt-8 flex items-center justify-between">
+                <button
+                  type="button"
+                  class="btn btn--default"
+                  @click="isOpenReleaseModal = false"
+                >
+                  {{ t('email.cancel') }}
+                </button>
+                <div class="flex space-x-2 mx-2">
+                  <a
+                    v-tooltip="t('release.saveToStorage')"
+                    href="#"
+                    class="font-medium text-primary-600 hover:text-primary-500"
+                    @click.prevent="saveToLocalStorage"
+                  >
+                    <ArchiveBoxArrowDownIcon class="h-6 w-6" />
+                  </a>
+                  <a
+                    v-tooltip="t('release.deleteSavedToStorage')"
+                    href="#"
+                    class="font-medium text-primary-600 hover:text-primary-500"
+                    @click.prevent="clearFromLocalStorage"
+                  >
+                    <ArchiveBoxXMarkIcon class="h-6 w-6" />
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn--primary"
+                  @click="releaseEmail"
+                >
+                  {{ t('email.release') }}
+                </button>
+              </div>
+            </DialogPanel>
+          </TransitionChild>
+        </div>
+      </div>
+    </Dialog>
+  </TransitionRoot>
 </template>
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
@@ -309,14 +484,20 @@ import {
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
+  Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
+} from '@headlessui/vue';
+import {
   ArrowSmallLeftIcon,
   TrashIcon,
   DocumentArrowDownIcon,
+  PaperAirplaneIcon,
   EyeIcon,
   EyeSlashIcon,
   PaperClipIcon,
   ArrowDownTrayIcon,
   ExclamationTriangleIcon,
+  ArchiveBoxArrowDownIcon,
+  ArchiveBoxXMarkIcon,
 } from '@heroicons/vue/24/outline';
 
 const { t } = useI18n();
@@ -419,19 +600,15 @@ const currentTab = ref('html');
 const tabs = [
   {
     id: 'html',
-    name: t('email.tab.html'),
   },
   {
     id: 'plain',
-    name: t('email.tab.plain'),
   },
   {
     id: 'source',
-    name: t('email.tab.source'),
   },
   {
     id: 'attachments',
-    name: t('email.tab.attachments'),
   },
 ];
 
@@ -440,6 +617,83 @@ const resizeIframe = (event) => {
   const obj = event.currentTarget;
   const newHeight = obj.contentWindow.document.documentElement.scrollHeight + 2;
   iframeHeight.value = `${newHeight}px`;
+};
+
+const releaseForm = ref({
+  host: '',
+  port: 25,
+  username: '',
+  password: '',
+});
+
+const fromLocalStorage = () => {
+  let smtpReleaseCredentials = localStorage.getItem('smtpReleaseCredentials');
+  if (smtpReleaseCredentials) {
+    try {
+      smtpReleaseCredentials = JSON.parse(atob(smtpReleaseCredentials));
+      if (
+        typeof smtpReleaseCredentials === 'object'
+        && !Array.isArray(smtpReleaseCredentials)
+        && smtpReleaseCredentials !== null
+      ) {
+        if (smtpReleaseCredentials.host) {
+          releaseForm.value.host = smtpReleaseCredentials.host;
+        }
+        if (smtpReleaseCredentials.port) {
+          releaseForm.value.port = smtpReleaseCredentials.port;
+        }
+        if (smtpReleaseCredentials.username) {
+          releaseForm.value.username = smtpReleaseCredentials.username;
+        }
+        if (smtpReleaseCredentials.password) {
+          releaseForm.value.password = smtpReleaseCredentials.password;
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+};
+const clearFromLocalStorage = () => {
+  localStorage.removeItem('smtpReleaseCredentials');
+  window.MailHedgehog.success(t('release.deleted'));
+};
+const saveToLocalStorage = () => {
+  const smtpReleaseCredentials = {};
+  if (releaseForm.value.host) {
+    smtpReleaseCredentials.host = releaseForm.value.host;
+  }
+  if (releaseForm.value.port) {
+    smtpReleaseCredentials.port = releaseForm.value.port;
+  }
+  if (releaseForm.value.username) {
+    smtpReleaseCredentials.username = releaseForm.value.username;
+  }
+  if (releaseForm.value.password) {
+    smtpReleaseCredentials.password = releaseForm.value.password;
+  }
+  localStorage.setItem('smtpReleaseCredentials', btoa(JSON.stringify(smtpReleaseCredentials)));
+  fromLocalStorage();
+  window.MailHedgehog.success(t('release.saved'));
+};
+
+onMounted(() => fromLocalStorage());
+
+const isOpenReleaseModal = ref(false);
+const releaseEmail = () => {
+  isRequesting.value = true;
+  window.MailHedgehog.request()
+    .post(`emails/${email.value.id}/release`, releaseForm.value)
+    .then(() => {
+      isOpenReleaseModal.value = false;
+      window.MailHedgehog.success(t('email.released'));
+    })
+    .catch(() => {
+      window.MailHedgehog.error(t('response.error'));
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
 };
 
 </script>

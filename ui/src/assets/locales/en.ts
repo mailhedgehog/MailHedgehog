@@ -47,6 +47,10 @@ export default {
     deleted: 'Email deleted',
     download: 'Download',
     downloadHint: 'Download email as file',
+    release: 'Release',
+    releaseHint: 'Release email',
+    released: 'Released',
+    cancel: 'Cancel',
     back: 'Back',
     tab: {
       html: 'HTML',
@@ -65,5 +69,16 @@ export default {
     cleared: 'Inbox cleared',
     search: 'Search emails',
     empty: 'No emails found',
+  },
+  release: {
+    host: 'Host',
+    port: 'Port',
+    auth: 'Credentials',
+    username: 'Username',
+    password: 'Password',
+    saveToStorage: 'Save credentials to local storage (insecure)',
+    saved: 'Saved',
+    deleteSavedToStorage: 'Delete saved credentials',
+    deleted: 'Deleted',
   },
 };
