@@ -5,9 +5,9 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"mime/multipart"
+	"mime/quotedprintable"
 	"net/mail"
 	"strings"
 	"time"
@@ -45,10 +45,12 @@ func Parse(r io.Reader) (email Email, err error) {
 	case contentTypeMultipartRelated:
 		email.TextBody, email.HTMLBody, email.EmbeddedFiles, err = parseMultipartRelated(msg.Body, params["boundary"])
 	case contentTypeTextPlain:
-		message, _ := ioutil.ReadAll(msg.Body)
+		content, _ := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
+		message, _ := io.ReadAll(content)
 		email.TextBody = strings.TrimSuffix(string(message[:]), "\n")
 	case contentTypeTextHtml:
-		message, _ := ioutil.ReadAll(msg.Body)
+		content, _ := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
+		message, _ := io.ReadAll(content)
 		email.HTMLBody = strings.TrimSuffix(string(message[:]), "\n")
 	default:
 		email.Content, err = decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
@@ -121,14 +123,14 @@ func parseMultipartRelated(msg io.Reader, boundary string) (textBody, htmlBody s
 
 		switch contentType {
 		case contentTypeTextPlain:
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, embeddedFiles, err
 			}
 
 			textBody += strings.TrimSuffix(string(ppContent[:]), "\n")
 		case contentTypeTextHtml:
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, embeddedFiles, err
 			}
@@ -178,14 +180,14 @@ func parseMultipartAlternative(msg io.Reader, boundary string) (textBody, htmlBo
 
 		switch contentType {
 		case contentTypeTextPlain:
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, embeddedFiles, err
 			}
 
 			textBody += strings.TrimSuffix(string(ppContent[:]), "\n")
 		case contentTypeTextHtml:
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, embeddedFiles, err
 			}
@@ -243,14 +245,14 @@ func parseMultipartMixed(msg io.Reader, boundary string) (textBody, htmlBody str
 				return textBody, htmlBody, attachments, embeddedFiles, err
 			}
 		} else if contentType == contentTypeTextPlain {
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, attachments, embeddedFiles, err
 			}
 
 			textBody += strings.TrimSuffix(string(ppContent[:]), "\n")
 		} else if contentType == contentTypeTextHtml {
-			ppContent, err := ioutil.ReadAll(part)
+			ppContent, err := io.ReadAll(part)
 			if err != nil {
 				return textBody, htmlBody, attachments, embeddedFiles, err
 			}
@@ -348,23 +350,49 @@ func decodeContent(content io.Reader, encoding string) (io.Reader, error) {
 	switch encoding {
 	case "base64":
 		decoded := base64.NewDecoder(base64.StdEncoding, content)
-		b, err := ioutil.ReadAll(decoded)
+		b, err := io.ReadAll(decoded)
 		if err != nil {
 			return nil, err
 		}
 
 		return bytes.NewReader(b), nil
 	case "7bit":
-		dd, err := ioutil.ReadAll(content)
+		dd, err := io.ReadAll(content)
 		if err != nil {
 			return nil, err
 		}
 
 		return bytes.NewReader(dd), nil
+	case "quoted-printable":
+		qpReader := quotedprintable.NewReader(content)
+		message, err := io.ReadAll(qpReader)
+		if err != nil {
+			return nil, err
+		}
+
+		return bytes.NewReader(message), nil
 	case "":
 		return content, nil
 	default:
 		return nil, fmt.Errorf("unknown encoding: %s", encoding)
+	}
+}
+
+func decodeHtmlContent(content io.Reader, encoding string) (string, error) {
+	switch encoding {
+	case "quoted-printable":
+		qpReader := quotedprintable.NewReader(content)
+		message, err := io.ReadAll(qpReader)
+		if err == nil {
+			return string(message), nil
+		}
+		return "", err
+	default:
+		message, err := io.ReadAll(content)
+		if err == nil {
+			return strings.TrimSuffix(string(message[:]), "\n"), nil
+		}
+		return "", err
 	}
 }
 

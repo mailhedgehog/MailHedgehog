@@ -62,11 +62,9 @@ func (apiV1 *ApiV1) showUser(ctx *fiber.Ctx) error {
 		return ctx.Status(http.StatusResetContent).JSON(fiber.Map{})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"data": fiber.Map{
-			"username": username,
-		},
-	})
+	return (&Response{Data: fiber.Map{
+		"username": username,
+	}}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
@@ -96,7 +94,6 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	errors := ValidateStruct(*listQuery)
 	if errors != nil {
 		return UnprocessableEntityResponse(ctx, errors)
-
 	}
 
 	query := storage.SearchQuery{}
@@ -163,9 +160,9 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"data": messagesResponse,
-		"meta": fiber.Map{
+	return (&Response{
+		Data: messagesResponse,
+		Meta: fiber.Map{
 			"pagination": fiber.Map{
 				"current_page": listQuery.Page,
 				"per_page":     listQuery.PerPage,
@@ -175,7 +172,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 				"total":        totalCount,
 			},
 		},
-	})
+	}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
@@ -187,9 +184,7 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "Emails cleared",
-	})
+	return (&Response{Message: "Emails cleared"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
@@ -213,7 +208,7 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 		if err != nil {
 			// handle error
 		}
-		fmt.Println()
+
 		attachments = append(attachments, fiber.Map{
 			"filename":    a.Filename,
 			"contentType": a.ContentType,
@@ -223,16 +218,14 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 
 	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"data": fiber.Map{
-			"id":          email.ID,
-			"headers":     email.Content.Headers.All(),
-			"html":        parsedEmail.HTMLBody,
-			"plain":       parsedEmail.TextBody,
-			"source":      email.Raw.Data,
-			"attachments": attachments,
-		},
-	})
+	return (&Response{Data: fiber.Map{
+		"id":          email.ID,
+		"headers":     email.Content.Headers.All(),
+		"html":        parsedEmail.HTMLBody,
+		"plain":       parsedEmail.TextBody,
+		"source":      email.Raw.Data,
+		"attachments": attachments,
+	}}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
@@ -244,9 +237,7 @@ func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "Email deleted",
-	})
+	return (&Response{Message: "Email deleted"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
@@ -293,7 +284,5 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return ctx.Status(http.StatusOK).JSON(fiber.Map{
-		"message": "Email released",
-	})
+	return (&Response{Message: "Email released"}).Send(ctx)
 }
