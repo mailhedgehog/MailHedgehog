@@ -32,11 +32,11 @@ class Pagination {
   }
 
   isOnFirst(): boolean {
-    return this.currentPage == 1;
+    return this.currentPage === 1;
   }
 
   isOnLast(): boolean {
-    return this.currentPage == this.lastPage;
+    return this.currentPage === this.lastPage;
   }
 
   count(): number {
@@ -61,11 +61,11 @@ class Pagination {
 
   getPageFromDirection(direction = 'next'): number {
     let page = this.currentPage;
-    if (direction == 'next') {
+    if (direction === 'next') {
       if (this.lastPage > page) {
         page += 1;
       }
-    } else if (direction == 'prev') {
+    } else if (direction === 'prev') {
       if (page > 1) {
         page -= 1;
       }

@@ -499,10 +499,12 @@ import {
   ArchiveBoxArrowDownIcon,
   ArchiveBoxXMarkIcon,
 } from '@heroicons/vue/24/outline';
+import { useStore } from 'vuex';
 
 const { t } = useI18n();
 const router = useRouter();
 const route = useRoute();
+const store = useStore();
 
 const isRequesting = ref(false);
 const email = ref(null);
@@ -535,20 +537,21 @@ const goBack = () => {
 };
 
 const deleteEmail = () => {
-  console.warn('TODO: add confirmation');
-
-  isRequesting.value = true;
-  window.MailHedgehog.request()
-    .delete(`emails/${email.value.id}`)
+  store.dispatch('confirmDialog/confirm')
     .then(() => {
-      window.MailHedgehog.success(t('email.deleted'));
-      nextTick(() => goBack());
-    })
-    .catch(() => {
-      window.MailHedgehog.error(t('response.error'));
-    })
-    .finally(() => {
-      isRequesting.value = false;
+      isRequesting.value = true;
+      window.MailHedgehog.request()
+        .delete(`emails/${email.value.id}`)
+        .then(() => {
+          window.MailHedgehog.success(t('email.deleted'));
+          nextTick(() => goBack());
+        })
+        .catch(() => {
+          window.MailHedgehog.error(t('response.error'));
+        })
+        .finally(() => {
+          isRequesting.value = false;
+        });
     });
 };
 
@@ -650,7 +653,7 @@ const fromLocalStorage = () => {
         }
       }
     } catch (e) {
-      console.error(e);
+      window.MailHedgehog.error(e.message);
     }
   }
 };

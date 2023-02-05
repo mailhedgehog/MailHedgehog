@@ -467,17 +467,18 @@ const goToDirection = (direction = 'next') => {
 };
 
 const clearInbox = () => {
-  console.warn('TODO: add confirmation');
-
-  isRequesting.value = true;
-  window.MailHedgehog.request()
-    .delete('emails')
+  store.dispatch('confirmDialog/confirm')
     .then(() => {
-      getEmails(1);
-      window.MailHedgehog.success(t('inbox.cleared'));
-    })
-    .catch(() => {
-      isRequesting.value = false;
+      isRequesting.value = true;
+      window.MailHedgehog.request()
+        .delete('emails')
+        .then(() => {
+          getEmails(1);
+          window.MailHedgehog.success(t('inbox.cleared'));
+        })
+        .catch(() => {
+          isRequesting.value = false;
+        });
     });
 };
 
@@ -486,21 +487,22 @@ const showEmail = (emailId) => {
 };
 
 const deleteEmail = (emailId) => {
-  console.warn('TODO: add confirmation');
-
-  isRequesting.value = true;
-  window.MailHedgehog.request()
-    .delete(`emails/${emailId}`)
+  store.dispatch('confirmDialog/confirm')
     .then(() => {
-      if (pagination.value.count() === 0) {
-        goToDirection('prev');
-      } else {
-        getEmails();
-      }
-      window.MailHedgehog.success(t('email.deleted'));
-    })
-    .catch(() => {
-      isRequesting.value = false;
+      isRequesting.value = true;
+      window.MailHedgehog.request()
+        .delete(`emails/${emailId}`)
+        .then(() => {
+          if (pagination.value.count() === 0) {
+            goToDirection('prev');
+          } else {
+            getEmails();
+          }
+          window.MailHedgehog.success(t('email.deleted'));
+        })
+        .catch(() => {
+          isRequesting.value = false;
+        });
     });
 };
 

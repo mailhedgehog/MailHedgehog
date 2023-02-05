@@ -81,4 +81,10 @@ export default {
     deleteSavedToStorage: 'Supprimer les informations d\'identification enregistrées',
     deleted: 'Supprimé',
   },
+  confirmDialog: {
+    modalTitle: 'Êtes-vous sûr?',
+    modalText: 'Voulez-vous exécuter cette action ?',
+    btnCancel: 'No',
+    btnAccept: 'Oui',
+  },
 };

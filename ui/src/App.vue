@@ -138,6 +138,7 @@
       </div>
     </div>
   </div>
+  <ConfirmDialog />
 </template>
 
 <script lang="ts" setup>
@@ -160,6 +161,7 @@ import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
 import LangModeSelect from '@/components/Header/LangModeSelect.vue';
 import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
 import Logo from '@/components/Header/Logo.vue';
+import ConfirmDialog from '@/components/Confirm/Dialog.vue';
 import { User } from './plugins/store';
 
 const { t } = useI18n();

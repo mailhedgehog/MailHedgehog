@@ -81,4 +81,10 @@ export default {
     deleteSavedToStorage: 'Delete saved credentials',
     deleted: 'Deleted',
   },
+  confirmDialog: {
+    modalTitle: 'Are you sure?',
+    modalText: 'Do you want to execute this action?',
+    btnCancel: 'No',
+    btnAccept: 'Yes',
+  },
 };

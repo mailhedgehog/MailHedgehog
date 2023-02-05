@@ -65,7 +65,7 @@ export default {
   inbox: {
     hello: 'Привіт, "{msg}"',
     pageTitle: 'Вхідні',
-    clear: 'Очистити вхідні',
+    clear: 'Видалити всі вхідні',
     cleared: 'Вхідні видалені',
     search: 'Пошук імейлів',
     empty: 'Імейлів не знайдено',
@@ -80,5 +80,11 @@ export default {
     saved: 'Збережено',
     deleteSavedToStorage: 'Видалити збережені облікові дані',
     deleted: 'Видалено',
+  },
+  confirmDialog: {
+    modalTitle: 'Ви впевнені?',
+    modalText: 'Ви впевнені, що бажаєте виконати цю дію?',
+    btnCancel: 'Ні',
+    btnAccept: 'Так',
   },
 };
