@@ -1,9 +1,3 @@
-
-
-
-
-
-
 Network Working Group                                 J. Klensin, Editor
 Request for Comments: 2821                             AT&T Laboratories
 Obsoletes: 821, 974, 1869                                     April 2001
@@ -4404,23 +4398,6 @@ Acknowledgement
 
    Funding for the RFC Editor function is currently provided by the
    Internet Society.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 Klensin                     Standards Track                    [Page 79]

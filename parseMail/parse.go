@@ -87,7 +87,7 @@ func createEmailFromHeader(header mail.Header) (email Email, err error) {
 	}
 
 	//decode whole header for easier access to extra fields
-	//todo: should we decode? aren't only standard fields mime encoded?
+	// TODO: should we decode? aren't only standard fields mime encoded?
 	email.Header, err = decodeHeaderMime(header)
 	if err != nil {
 		return

@@ -1,1 +1,0 @@
-https://mailtrap.io/blog/smtp-auth/

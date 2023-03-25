@@ -1,4 +1,4 @@
-package smtpServer
+package smtpServerProtocol
 
 import (
 	"github.com/mailhedgehog/MailHedgehog/gounit"
@@ -8,21 +8,21 @@ import (
 func TestResetState(t *testing.T) {
 	protocol := CreateProtocol("", nil)
 
-	protocol.State = STATE_DATA
-	protocol.Message.From = "foo bar"
+	protocol.state = STATE_DATA
+	protocol.message.From = "foo bar"
 
-	(*gounit.T)(t).AssertEqualsString(string(STATE_DATA), string(protocol.State))
-	(*gounit.T)(t).AssertEqualsString("foo bar", protocol.Message.From)
+	(*gounit.T)(t).AssertEqualsString(string(STATE_DATA), string(protocol.state))
+	(*gounit.T)(t).AssertEqualsString("foo bar", protocol.message.From)
 
 	protocol.resetState()
 
-	(*gounit.T)(t).AssertEqualsString(string(STATE_CONVERSATION), string(protocol.State))
-	(*gounit.T)(t).AssertEqualsString("", protocol.Message.From)
+	(*gounit.T)(t).AssertEqualsString(string(STATE_COMMANDS_EXCHANGE), string(protocol.state))
+	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
 }
 
 func TestSayHi(t *testing.T) {
 	protocol := CreateProtocol("", nil)
-	reply := protocol.SayHi("   foo bar    ")
+	reply := protocol.SayWelcome("   foo bar    ")
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_SERVICE_READY, reply.Status)
 	(*gounit.T)(t).AssertEqualsString("foo bar Service ready", reply.lines[0])
@@ -64,7 +64,7 @@ func TestHELO(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(1, len(reply.lines))
 	(*gounit.T)(t).AssertEqualsString("Hello foo.host.bar", reply.lines[0])
 
-	(*gounit.T)(t).AssertEqualsString("foo.host.bar", protocol.Message.Helo)
+	(*gounit.T)(t).AssertEqualsString("foo.host.bar", protocol.message.Helo)
 }
 
 func TestEHLO(t *testing.T) {
@@ -77,21 +77,21 @@ func TestEHLO(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("Hello foo.host.bar", reply.lines[0])
 	(*gounit.T)(t).AssertEqualsString("PIPELINING", reply.lines[1])
 
-	(*gounit.T)(t).AssertEqualsString("foo.host.bar", protocol.Message.Helo)
+	(*gounit.T)(t).AssertEqualsString("foo.host.bar", protocol.message.Helo)
 }
 
 func TestMAIL(t *testing.T) {
 	command := CommandFromLine("MAIL FROM:<userx@y.foo.org>")
 	protocol := CreateProtocol("", nil)
 
-	(*gounit.T)(t).AssertEqualsString("", protocol.Message.From)
+	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
 
 	reply := protocol.MAIL(command)
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_ACTION_OK, reply.Status)
 	(*gounit.T)(t).AssertEqualsString("Sender userx@y.foo.org ok", reply.lines[0])
 
-	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", protocol.Message.From)
+	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", protocol.message.From)
 }
 
 func TestMAILFails(t *testing.T) {
@@ -107,7 +107,7 @@ func TestMAILFails(t *testing.T) {
 func TestRCPT(t *testing.T) {
 	protocol := CreateProtocol("", nil)
 
-	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.Message.To))
+	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.message.To))
 
 	command := CommandFromLine("RCPT TO:<userx@y.foo.org>")
 	reply := protocol.RCPT(command)
@@ -119,8 +119,8 @@ func TestRCPT(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(CODE_ACTION_OK, reply.Status)
 	(*gounit.T)(t).AssertEqualsString("Receiver user2@y.foo.org ok", reply.lines[0])
 
-	(*gounit.T)(t).AssertEqualsInt(2, len(protocol.Message.To))
-	(*gounit.T)(t).AssertEqualsString("user2@y.foo.org", protocol.Message.To[1])
+	(*gounit.T)(t).AssertEqualsInt(2, len(protocol.message.To))
+	(*gounit.T)(t).AssertEqualsString("user2@y.foo.org", protocol.message.To[1])
 }
 
 func TestRCPTFails(t *testing.T) {
@@ -133,12 +133,11 @@ func TestRCPTFails(t *testing.T) {
 
 func TestGetAuthMechanisms(t *testing.T) {
 	protocol := CreateProtocol("", nil)
-	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.authMechanisms()))
+	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.supportedAuthMechanisms))
 
-	protocol.AuthenticationMechanismsCallback = func() []string {
-		return []string{"PLAIN", "foo", "BAR"}
-	}
-	mechanisms := protocol.authMechanisms()
+	protocol.supportedAuthMechanisms = []string{"PLAIN", "foo", "BAR"}
+
+	mechanisms := protocol.supportedAuthMechanisms
 	(*gounit.T)(t).AssertEqualsInt(3, len(mechanisms))
 	(*gounit.T)(t).AssertEqualsString("PLAIN", mechanisms[0])
 	(*gounit.T)(t).AssertEqualsString("foo", mechanisms[1])

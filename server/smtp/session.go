@@ -3,28 +3,34 @@ package smtp
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
-	"github.com/mailhedgehog/MailHedgehog/smtpServer"
+	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
 	"io"
 	"strings"
 )
 
-type Session struct {
+// session between "client" and "sever"
+type session struct {
 	context  *serverContext.Context
-	protocol *smtpServer.Protocol
+	protocol Protocol
 	reader   io.Reader
 	writer   io.Writer
 
 	receivedLine string
 
-	LoggedUsername string
+	loggedUsername string
 }
 
-func (session *Session) Start(identification string) {
+// start session by sending to "client" welcome message
+func (session *session) start(identification string) {
 	logManager().Debug("Session started")
-	session.Write(session.protocol.SayHi(identification))
+	session.writeReply(session.protocol.SayWelcome(identification))
 }
 
-func (session *Session) IsConversation() bool {
+// readAndWriteReply function reads client message
+// and based on it writeReply.
+// Returns boolean flag is server should wait next
+// message from client.
+func (session *session) readAndWriteReply() bool {
 	buffer := make([]byte, 1024)
 	numberOfBytes, err := session.reader.Read(buffer)
 	if numberOfBytes == 0 {
@@ -44,14 +50,14 @@ func (session *Session) IsConversation() bool {
 	))
 
 	session.receivedLine += receivedText
-	for strings.Contains(session.receivedLine, smtpServer.COMMAND_END_SYMBOL) {
-		parts := strings.SplitN(session.receivedLine, smtpServer.COMMAND_END_SYMBOL, 2)
+	for strings.Contains(session.receivedLine, smtpServerProtocol.COMMAND_END_SYMBOL) {
+		parts := strings.SplitN(session.receivedLine, smtpServerProtocol.COMMAND_END_SYMBOL, 2)
 		session.receivedLine = parts[1]
 
 		reply := session.protocol.HandleReceivedLine(parts[0])
 		if reply != nil {
-			session.Write(reply)
-			if reply.Status == smtpServer.CODE_SERVICE_CLOSING {
+			session.writeReply(reply)
+			if reply.Status == smtpServerProtocol.CODE_SERVICE_CLOSING {
 				logManager().Debug("Server connection closing")
 				return false
 			}
@@ -61,14 +67,13 @@ func (session *Session) IsConversation() bool {
 	return true
 }
 
-// Write writes a reply to the specific connection
-func (session *Session) Write(reply *smtpServer.Reply) {
+// writeReply a reply to the specific connection
+func (session *session) writeReply(reply *smtpServerProtocol.Reply) {
 	lines := reply.Lines()
+	replacer := strings.NewReplacer("\n", "\\n", "\r", "\\r")
 	for _, l := range lines {
-		logManager().Info(fmt.Sprintf(
-			"SERVER -> CLIENT: %s",
-			strings.ReplaceAll(strings.ReplaceAll(l, "\n", "\\n"), "\r", "\\r"),
-		))
+		logManager().Info(fmt.Sprintf("SERVER -> CLIENT: %s", replacer.Replace(l)))
+
 		_, err := session.writer.Write([]byte(l))
 		if err != nil {
 			logManager().Error(fmt.Sprintf("Write session error: %s", err.Error()))

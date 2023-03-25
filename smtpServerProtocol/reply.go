@@ -1,4 +1,4 @@
-package smtpServer
+package smtpServerProtocol
 
 import "strconv"
 
