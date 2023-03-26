@@ -32,13 +32,3 @@ func TestNewMessageIDIsUuid(t *testing.T) {
 	id := NewMessageID()
 	(*gounit.T)(t).AssertLengthString(36, string(id))
 }
-
-func TestMailPathHasAddress(t *testing.T) {
-	mailPath := &MailPath{
-		Relays:  []string{},
-		Mailbox: "foo",
-		Domain:  "bar.com",
-		Params:  "",
-	}
-	(*gounit.T)(t).AssertEqualsString("foo@bar.com", mailPath.Address())
-}

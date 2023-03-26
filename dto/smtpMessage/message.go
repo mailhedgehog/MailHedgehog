@@ -49,19 +49,22 @@ func FromString(messageString string) *SMTPMessage {
 		if !headerDone {
 			if strings.HasPrefix(l, "HELO:<") {
 				l = strings.TrimPrefix(l, "HELO:<")
-				l = strings.TrimSuffix(l, ">\r")
+				l = strings.TrimSuffix(l, "\r")
+				l = strings.TrimSuffix(l, ">")
 				msg.Helo = l
 				continue
 			}
 			if strings.HasPrefix(l, "FROM:<") {
 				l = strings.TrimPrefix(l, "FROM:<")
-				l = strings.TrimSuffix(l, ">\r")
+				l = strings.TrimSuffix(l, "\r")
+				l = strings.TrimSuffix(l, ">")
 				msg.From = l
 				continue
 			}
 			if strings.HasPrefix(l, "TO:<") {
 				l = strings.TrimPrefix(l, "TO:<")
-				l = strings.TrimSuffix(l, ">\r")
+				l = strings.TrimSuffix(l, "\r")
+				l = strings.TrimSuffix(l, ">")
 				msg.To = append(msg.To, l)
 				continue
 			}
@@ -73,30 +76,4 @@ func FromString(messageString string) *SMTPMessage {
 		msg.Data += l + "\n"
 	}
 	return msg
-}
-
-// MailPathFromString parses a forward-path or reverse-path into its parts
-func MailPathFromString(path string) *MailPath {
-	var relays []string
-	userEmail := path
-	if strings.Contains(path, ":") {
-		x := strings.SplitN(path, ":", 2)
-		r, e := x[0], x[1]
-		userEmail = e
-		relays = strings.Split(r, ",")
-	}
-	mailbox, domain := "", ""
-	if strings.Contains(userEmail, "@") {
-		x := strings.SplitN(userEmail, "@", 2)
-		mailbox, domain = x[0], x[1]
-	} else {
-		mailbox = userEmail
-	}
-
-	return &MailPath{
-		Relays:  relays,
-		Mailbox: mailbox,
-		Domain:  domain,
-		Params:  "", // TODO: add params config
-	}
 }

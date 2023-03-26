@@ -25,18 +25,6 @@ func NewMessageID() MessageID {
 	return MessageID(uuid.New().String())
 }
 
-// MailPath represents an SMTP forward-path or return-path
-type MailPath struct {
-	Relays  []string
-	Mailbox string
-	Domain  string
-	Params  string
-}
-
-func (path *MailPath) Address() string {
-	return path.Mailbox + "@" + path.Domain
-}
-
 // ToSMTPMail converts SMTPMassage to SMTPMail structure
 // In case if `id` is empty will be automatically generated new identificator
 func (message *SMTPMessage) ToSMTPMail(id MessageID) (*SMTPMail, error) {
