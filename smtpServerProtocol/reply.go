@@ -49,9 +49,9 @@ func (r Reply) Lines() []string {
 	for i, line := range r.lines {
 		l := ""
 		if i == len(r.lines)-1 {
-			l = strconv.Itoa(r.Status) + " " + line + COMMAND_END_SYMBOL
+			l = strconv.Itoa(r.Status) + " " + line + CommandEndSymbol
 		} else {
-			l = strconv.Itoa(r.Status) + "-" + line + COMMAND_END_SYMBOL
+			l = strconv.Itoa(r.Status) + "-" + line + CommandEndSymbol
 		}
 		lines = append(lines, l)
 	}

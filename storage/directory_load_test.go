@@ -2,10 +2,9 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
-	"time"
 )
 
 func TestLoad(t *testing.T) {
@@ -14,11 +13,14 @@ func TestLoad(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 
 	for i := 0; i < 2; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID(fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store("", msg)
+
+		storedId, err := storage.Store("", msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 	}
 
 	(*gounit.T)(t).AssertEqualsInt(2, storage.Count(""))

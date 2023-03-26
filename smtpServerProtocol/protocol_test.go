@@ -8,15 +8,15 @@ import (
 func TestResetState(t *testing.T) {
 	protocol := CreateProtocol("", nil)
 
-	protocol.state = STATE_DATA
+	protocol.state = StateData
 	protocol.message.From = "foo bar"
 
-	(*gounit.T)(t).AssertEqualsString(string(STATE_DATA), string(protocol.state))
+	(*gounit.T)(t).AssertEqualsString(string(StateData), string(protocol.state))
 	(*gounit.T)(t).AssertEqualsString("foo bar", protocol.message.From)
 
 	protocol.resetState()
 
-	(*gounit.T)(t).AssertEqualsString(string(STATE_COMMANDS_EXCHANGE), string(protocol.state))
+	(*gounit.T)(t).AssertEqualsString(string(StateCommandsExchange), string(protocol.state))
 	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
 }
 

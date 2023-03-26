@@ -25,7 +25,7 @@ func (scene *AuthPlainScene) Start(receivedLine string, protocol *smtpServerProt
 	// Send credentials in same line "AUTH PLAIN vHRjyADROPsdSDIROu="
 	// Or send credentials in second message after reply.
 	// So to understand if credentials in same line we check it by prefix and decode immediately
-	prefix := string(smtpServerProtocol.COMMAND_AUTH) + " " + AUTH_MECHANISM_PLAIN + " "
+	prefix := string(smtpServerProtocol.CommandAuth) + " " + AuthMechanismPlain + " "
 	if strings.HasPrefix(receivedLine, prefix) {
 		return scene.checkCredentials(strings.TrimPrefix(receivedLine, prefix))
 	}

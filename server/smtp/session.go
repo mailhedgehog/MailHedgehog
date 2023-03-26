@@ -50,8 +50,8 @@ func (session *session) readAndWriteReply() bool {
 	))
 
 	session.receivedLine += receivedText
-	for strings.Contains(session.receivedLine, smtpServerProtocol.COMMAND_END_SYMBOL) {
-		parts := strings.SplitN(session.receivedLine, smtpServerProtocol.COMMAND_END_SYMBOL, 2)
+	for strings.Contains(session.receivedLine, smtpServerProtocol.CommandEndSymbol) {
+		parts := strings.SplitN(session.receivedLine, smtpServerProtocol.CommandEndSymbol, 2)
 		session.receivedLine = parts[1]
 
 		reply := session.protocol.HandleReceivedLine(parts[0])

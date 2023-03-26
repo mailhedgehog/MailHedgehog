@@ -1,7 +1,7 @@
 package smtpClient
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"os"
 	"path/filepath"
@@ -15,12 +15,12 @@ func TestSendMail(t *testing.T) {
 		t.Skip("skipping testing in short mode")
 	}
 
-	messageId := dto.MessageID("example-email")
+	messageId := smtpMessage.MessageID("example-email")
 	b, err := os.ReadFile(filepath.Join("./", string(messageId)))
 	(*gounit.T)(t).AssertNotError(err)
 
-	email := dto.FromBytes(b).Parse()
-	email.ID = messageId
+	email, err := smtpMessage.FromString(string(b)).ToSMTPMail(messageId)
+	(*gounit.T)(t).AssertNotError(err)
 
 	client := NewClient(
 		"smtp.mailtrap.io:2525",

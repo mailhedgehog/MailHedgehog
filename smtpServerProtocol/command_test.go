@@ -10,12 +10,12 @@ func TestCommandFromLine(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("", string(command.verb))
 	(*gounit.T)(t).AssertEqualsString("", command.args)
 
-	command = CommandFromLine(string(COMMAND_QUIT))
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_QUIT), string(command.verb))
+	command = CommandFromLine(string(CommandQuit))
+	(*gounit.T)(t).AssertEqualsString(string(CommandQuit), string(command.verb))
 	(*gounit.T)(t).AssertEqualsString("", command.args)
 
-	command = CommandFromLine(string(COMMAND_AUTH) + " PLAIN")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_AUTH), string(command.verb))
+	command = CommandFromLine(string(CommandAuth) + " PLAIN")
+	(*gounit.T)(t).AssertEqualsString(string(CommandAuth), string(command.verb))
 	(*gounit.T)(t).AssertEqualsString("PLAIN", command.args)
 
 	command = CommandFromLine("foo bar baz")
@@ -24,11 +24,11 @@ func TestCommandFromLine(t *testing.T) {
 }
 
 func TestCommandStrings(t *testing.T) {
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_HELO), "HELO")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_EHLO), "EHLO")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_AUTH), "AUTH")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_MAIL), "MAIL")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_RCPT), "RCPT")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_DATA), "DATA")
-	(*gounit.T)(t).AssertEqualsString(string(COMMAND_QUIT), "QUIT")
+	(*gounit.T)(t).AssertEqualsString(string(CommandHelo), "HELO")
+	(*gounit.T)(t).AssertEqualsString(string(CommandEhlo), "EHLO")
+	(*gounit.T)(t).AssertEqualsString(string(CommandAuth), "AUTH")
+	(*gounit.T)(t).AssertEqualsString(string(CommandMail), "MAIL")
+	(*gounit.T)(t).AssertEqualsString(string(CommandRcpt), "RCPT")
+	(*gounit.T)(t).AssertEqualsString(string(CommandData), "DATA")
+	(*gounit.T)(t).AssertEqualsString(string(CommandQuit), "QUIT")
 }

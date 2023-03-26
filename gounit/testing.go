@@ -91,3 +91,10 @@ func (t *T) AssertFalse(val bool) {
 		t.Errorf("Value is not true")
 	}
 }
+
+func (t *T) AssertLengthString(expected int, val string) {
+	if len(val) != expected {
+		t.Helper()
+		t.Errorf("Incorect length, expected: %d, received %d", expected, len(val))
+	}
+}

@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"io"
 	"os"
@@ -46,8 +46,8 @@ func (directory *Directory) RoomDirectory(room Room) string {
 	return path
 }
 
-func (directory *Directory) Store(room Room, message *dto.Message) (dto.MessageID, error) {
-	b, err := io.ReadAll(message.Raw.Bytes())
+func (directory *Directory) Store(room Room, message *smtpMessage.SMTPMail) (smtpMessage.MessageID, error) {
+	b, err := io.ReadAll(message.Origin.ToReader())
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,7 @@ func (directory *Directory) Store(room Room, message *dto.Message) (dto.MessageI
 	return message.ID, err
 }
 
-func (directory *Directory) List(room Room, query SearchQuery, offset, limit int) ([]dto.Message, int, error) {
+func (directory *Directory) List(room Room, query SearchQuery, offset, limit int) ([]smtpMessage.SMTPMail, int, error) {
 	if offset < 0 || limit < 0 {
 		return nil, 0, errors.New("offset and limit should be >= 0")
 	}
@@ -87,7 +87,7 @@ func (directory *Directory) List(room Room, query SearchQuery, offset, limit int
 	if len(query) > 0 {
 	filtrationLoop:
 		for i := range unfilteredN {
-			msg, err := directory.Load(room, dto.MessageID(unfilteredN[i].Name()))
+			msg, err := directory.Load(room, smtpMessage.MessageID(unfilteredN[i].Name()))
 			if err != nil {
 				continue
 			}
@@ -96,18 +96,18 @@ func (directory *Directory) List(room Room, query SearchQuery, offset, limit int
 				switch criteria {
 				case "to":
 					for _, t := range msg.To {
-						if strings.Contains(strings.ToLower(t.Mailbox+"@"+t.Domain), queryValue) {
+						if strings.Contains(strings.ToLower(t.Address()), queryValue) {
 							n = append(n, unfilteredN[i])
 							continue filtrationLoop
 						}
 					}
 				case "from":
-					if strings.Contains(strings.ToLower(msg.From.Mailbox+"@"+msg.From.Domain), queryValue) {
+					if strings.Contains(strings.ToLower(msg.From.Address()), queryValue) {
 						n = append(n, unfilteredN[i])
 						continue filtrationLoop
 					}
 				case "content":
-					if strings.Contains(strings.ToLower(msg.Raw.Data), queryValue) {
+					if strings.Contains(strings.ToLower(msg.Origin.Data), queryValue) {
 						n = append(n, unfilteredN[i])
 						continue filtrationLoop
 					}
@@ -126,8 +126,8 @@ func (directory *Directory) List(room Room, query SearchQuery, offset, limit int
 	return messages, len(n), nil
 }
 
-func (directory *Directory) parseList(room string, n []os.FileInfo, offset, limit int) ([]dto.Message, error) {
-	messages := make([]dto.Message, 0)
+func (directory *Directory) parseList(room string, n []os.FileInfo, offset, limit int) ([]smtpMessage.SMTPMail, error) {
+	messages := make([]smtpMessage.SMTPMail, 0)
 
 	if offset >= len(n) {
 		return messages, nil
@@ -142,13 +142,16 @@ func (directory *Directory) parseList(room string, n []os.FileInfo, offset, limi
 	for _, fileinfo := range n {
 		b, err := os.ReadFile(filepath.Join(directory.RoomDirectory(room), fileinfo.Name()))
 		if err != nil {
-			return nil, err
+			logManager().Error(err.Error())
+			continue
 		}
-		msg := dto.FromBytes(b)
-		m := *msg.Parse()
-		m.ID = dto.MessageID(fileinfo.Name())
-		m.Created = fileinfo.ModTime()
-		messages = append(messages, m)
+		msg := smtpMessage.FromString(string(b))
+		smtpMail, err := msg.ToSMTPMail(smtpMessage.MessageID(fileinfo.Name()))
+		if err != nil {
+			logManager().Error(err.Error())
+			continue
+		}
+		messages = append(messages, *smtpMail)
 	}
 
 	logManager().Debug(fmt.Sprintf("Found %d messages", len(messages)))
@@ -164,17 +167,21 @@ func (directory *Directory) Count(room Room) int {
 	return len(n)
 }
 
-func (directory *Directory) Delete(room Room, messageId dto.MessageID) error {
+func (directory *Directory) Delete(room Room, messageId smtpMessage.MessageID) error {
 	return os.Remove(filepath.Join(directory.RoomDirectory(room), string(messageId)))
 }
 
-func (directory *Directory) Load(room Room, messageId dto.MessageID) (*dto.Message, error) {
+func (directory *Directory) Load(room Room, messageId smtpMessage.MessageID) (*smtpMessage.SMTPMail, error) {
 	b, err := os.ReadFile(filepath.Join(directory.RoomDirectory(room), string(messageId)))
 	if err != nil {
 		return nil, err
 	}
-	m := dto.FromBytes(b).Parse()
-	m.ID = messageId
+
+	m, err := smtpMessage.FromString(string(b)).ToSMTPMail(messageId)
+	if err != nil {
+		return nil, err
+	}
+
 	return m, nil
 }
 
@@ -196,6 +203,10 @@ func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
 
 	rooms := make([]Room, 0)
 
+	sort.Slice(n, func(i, j int) bool {
+		return n[i].Name() < n[j].Name()
+	})
+
 	if offset >= len(n) {
 		return rooms, nil
 	}
@@ -204,6 +215,7 @@ func (directory *Directory) RoomsList(offset, limit int) ([]Room, error) {
 	if offset+limit < len(n) {
 		endIndex = offset + limit
 	}
+
 	n = n[offset:endIndex]
 
 	for _, fileinfo := range n {

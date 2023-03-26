@@ -1,4 +1,4 @@
-package parseMail
+package email
 
 import (
 	"encoding/base64"
@@ -934,10 +934,10 @@ Content-Type: text/html; charset=UTF-8
 
 --f403045f1dcc043a3f054c8e6bbd--
 --f403045f1dcc043a44054c8e6bbf
-Content-Type: application/csv; 
+Content-Type: application/csv;
 	name="unencoded.csv"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; 
+Content-Disposition: attachment;
 	filename="unencoded.csv"
 
 

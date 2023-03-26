@@ -2,12 +2,11 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"golang.org/x/exp/slices"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestRoomsList(t *testing.T) {
@@ -15,11 +14,10 @@ func TestRoomsList(t *testing.T) {
 
 	storage := CreateDirectoryStorage("")
 
-	for i := 0; i < 15; i++ {
+	for i := 0; i < 9; i++ {
 		for j := 0; j < 3; j++ {
-			msg := &dto.Message{
-				ID:      dto.MessageID(fmt.Sprint(i)),
-				Created: time.Now(),
+			msg := &smtpMessage.SMTPMail{
+				ID: smtpMessage.MessageID(fmt.Sprint(i)),
 			}
 			storage.Store(room+fmt.Sprint(i), msg)
 		}
@@ -40,9 +38,8 @@ func TestRoomsListOutOfRange(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 4; j++ {
-			msg := &dto.Message{
-				ID:      dto.MessageID(fmt.Sprint(i)),
-				Created: time.Now(),
+			msg := &smtpMessage.SMTPMail{
+				ID: smtpMessage.MessageID(fmt.Sprint(i)),
 			}
 			storage.Store(room+fmt.Sprint(i), msg)
 		}

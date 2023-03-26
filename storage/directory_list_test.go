@@ -2,7 +2,7 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
 	"time"
@@ -15,33 +15,39 @@ func TestList(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room))
 
 	for i := 0; i < 5; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("a" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("a" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 7; i++ {
-		msg := &dto.Message{
-			ID: dto.MessageID("b" + fmt.Sprint(i)),
-			Raw: &dto.SMTPMessage{
+		id := smtpMessage.MessageID("b" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
+			Origin: &smtpMessage.SMTPMessage{
 				To:   []string{"foo&bar.com"},
 				From: "foo@baz.com",
 			},
-			Created: time.Now(),
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 3; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("c" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("c" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
@@ -71,33 +77,39 @@ func TestListOutOfRange(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room))
 
 	for i := 0; i < 5; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("a" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("a" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 7; i++ {
-		msg := &dto.Message{
-			ID: dto.MessageID("b" + fmt.Sprint(i)),
-			Raw: &dto.SMTPMessage{
+		id := smtpMessage.MessageID("b" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
+			Origin: &smtpMessage.SMTPMessage{
 				To:   []string{"foo&bar.com"},
 				From: "foo@baz.com",
 			},
-			Created: time.Now(),
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 3; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("c" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("c" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
@@ -128,33 +140,39 @@ func TestListWrongOffset(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room))
 
 	for i := 0; i < 5; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("a" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("a" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 7; i++ {
-		msg := &dto.Message{
-			ID: dto.MessageID("b" + fmt.Sprint(i)),
-			Raw: &dto.SMTPMessage{
+		id := smtpMessage.MessageID("b" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
+			Origin: &smtpMessage.SMTPMessage{
 				To:   []string{"foo&bar.com"},
 				From: "foo@baz.com",
 			},
-			Created: time.Now(),
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}
 	for i := 0; i < 3; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID("c" + fmt.Sprint(i)),
-			Created: time.Now(),
+		id := smtpMessage.MessageID("c" + fmt.Sprint(i))
+		msg := &smtpMessage.SMTPMail{
+			ID: id,
 		}
-		storage.Store(room, msg)
+		storedId, err := storage.Store(room, msg)
+		(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+		(*gounit.T)(t).AssertNotError(err)
 		// Fix for correct sorting
 		time.Sleep(10000000)
 	}

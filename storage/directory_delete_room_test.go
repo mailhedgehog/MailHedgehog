@@ -2,10 +2,9 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"testing"
-	"time"
 )
 
 func TestDeleteRoom(t *testing.T) {
@@ -15,11 +14,13 @@ func TestDeleteRoom(t *testing.T) {
 
 	for i := 0; i < 15; i++ {
 		for j := 0; j < 3; j++ {
-			msg := &dto.Message{
-				ID:      dto.MessageID(fmt.Sprint(i)),
-				Created: time.Now(),
+			id := smtpMessage.MessageID(fmt.Sprint(i))
+			msg := &smtpMessage.SMTPMail{
+				ID: id,
 			}
-			storage.Store(room+fmt.Sprint(i), msg)
+			storedId, err := storage.Store(room+fmt.Sprint(i), msg)
+			(*gounit.T)(t).AssertEqualsString(string(id), string(storedId))
+			(*gounit.T)(t).AssertNotError(err)
 		}
 	}
 

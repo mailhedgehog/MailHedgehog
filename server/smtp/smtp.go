@@ -2,7 +2,7 @@ package smtp
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
@@ -39,11 +39,11 @@ type Protocol interface {
 	// OnMessageReceived function called only when smtp protocol finished and messaage fully received and processed.
 	// So package can save this message or send to other services and return string ID of saved message to send
 	// this ID to "client"
-	OnMessageReceived(callback func(message *dto.SMTPMessage) (string, error))
+	OnMessageReceived(callback func(message *smtpMessage.SMTPMessage) (string, error))
 }
 
 const (
-	AUTH_MECHANISM_PLAIN = "PLAIN"
+	AuthMechanismPlain = "PLAIN"
 )
 
 var listener net.Listener
@@ -102,11 +102,14 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	// Set conditionally Authentication flow
 	if context.Authentication.RequiresAuthentication() {
 		// TODO: there can be added other auth mechanisms
-		session.protocol.SetAuthMechanisms([]string{AUTH_MECHANISM_PLAIN})
+		session.protocol.SetAuthMechanisms([]string{AuthMechanismPlain})
 	}
 
-	session.protocol.OnMessageReceived(func(message *dto.SMTPMessage) (string, error) {
-		formattedMessage := message.Parse()
+	session.protocol.OnMessageReceived(func(message *smtpMessage.SMTPMessage) (string, error) {
+		formattedMessage, err := message.ToSMTPMail(smtpMessage.MessageID(""))
+		if err != nil {
+			return "", err
+		}
 
 		id, err := context.Storage.Store(session.loggedUsername, formattedMessage)
 

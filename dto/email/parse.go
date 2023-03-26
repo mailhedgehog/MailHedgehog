@@ -1,9 +1,11 @@
-package parseMail
+package email
 
 import (
 	"bytes"
 	"encoding/base64"
+	"errors"
 	"fmt"
+	"github.com/mailhedgehog/MailHedgehog/logger"
 	"io"
 	"mime"
 	"mime/multipart"
@@ -13,22 +15,85 @@ import (
 	"time"
 )
 
+var configuredLogger *logger.Logger
+
+func logManager() *logger.Logger {
+	if configuredLogger == nil {
+		configuredLogger = logger.CreateLogger("dto.email")
+	}
+	return configuredLogger
+}
+
 const contentTypeMultipartMixed = "multipart/mixed"
 const contentTypeMultipartAlternative = "multipart/alternative"
 const contentTypeMultipartRelated = "multipart/related"
 const contentTypeTextHtml = "text/html"
 const contentTypeTextPlain = "text/plain"
 
-// Parse an email message read from io.Reader into parsemail.Email struct
-func Parse(r io.Reader) (email Email, err error) {
+// Attachment represents file data with
+// filename, content type and data (as an io.Reader)
+type Attachment struct {
+	Filename    string
+	ContentType string
+	Data        io.Reader
+}
+
+// EmbeddedFile represents file data with
+// content id, content type and data (as an io.Reader)
+type EmbeddedFile struct {
+	CID         string
+	ContentType string
+	Data        io.Reader
+}
+
+// Email with fields for all the headers defined in RFC5322
+// with attachments and embedded files
+type Email struct {
+	// Headers full set for easier access to extra fields
+	Headers mail.Header
+
+	Subject    string
+	Sender     *mail.Address
+	From       []*mail.Address
+	ReplyTo    []*mail.Address
+	To         []*mail.Address
+	Cc         []*mail.Address
+	Bcc        []*mail.Address
+	Date       time.Time
+	MessageID  string
+	InReplyTo  []string
+	References []string
+
+	ResentFrom      []*mail.Address
+	ResentSender    *mail.Address
+	ResentTo        []*mail.Address
+	ResentDate      time.Time
+	ResentCc        []*mail.Address
+	ResentBcc       []*mail.Address
+	ResentMessageID string
+
+	ContentType string
+	Content     io.Reader
+
+	HTMLBody string
+	TextBody string
+
+	Attachments   []Attachment
+	EmbeddedFiles []EmbeddedFile
+}
+
+var ErrEmptyString = errors.New("EOF")
+
+// Parse an email message read from io.Reader into email.Email struct
+func Parse(r io.Reader) (email *Email, err error) {
 	msg, err := mail.ReadMessage(r)
 	if err != nil {
-		return
+		return nil, ErrEmptyString
 	}
 
 	email, err = createEmailFromHeader(msg.Header)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	email.ContentType = msg.Header.Get("Content-Type")
@@ -59,8 +124,10 @@ func Parse(r io.Reader) (email Email, err error) {
 	return
 }
 
-func createEmailFromHeader(header mail.Header) (email Email, err error) {
+func createEmailFromHeader(header mail.Header) (email *Email, err error) {
 	hp := headerParser{header: &header}
+
+	email = &Email{}
 
 	email.Subject = decodeMimeSentence(header.Get("Subject"))
 	email.From = hp.parseAddressList(header.Get("From"))
@@ -86,9 +153,9 @@ func createEmailFromHeader(header mail.Header) (email Email, err error) {
 		return
 	}
 
-	//decode whole header for easier access to extra fields
+	// decode whole header for easier access to extra fields
 	// TODO: should we decode? aren't only standard fields mime encoded?
-	email.Header, err = decodeHeaderMime(header)
+	email.Headers, err = decodeHeaderMime(header)
 	if err != nil {
 		return
 	}
@@ -470,52 +537,4 @@ func (hp headerParser) parseMessageIdList(s string) (result []string) {
 	}
 
 	return
-}
-
-// Attachment with filename, content type and data (as a io.Reader)
-type Attachment struct {
-	Filename    string
-	ContentType string
-	Data        io.Reader
-}
-
-// EmbeddedFile with content id, content type and data (as a io.Reader)
-type EmbeddedFile struct {
-	CID         string
-	ContentType string
-	Data        io.Reader
-}
-
-// Email with fields for all the headers defined in RFC5322 with it's attachments and
-type Email struct {
-	Header mail.Header
-
-	Subject    string
-	Sender     *mail.Address
-	From       []*mail.Address
-	ReplyTo    []*mail.Address
-	To         []*mail.Address
-	Cc         []*mail.Address
-	Bcc        []*mail.Address
-	Date       time.Time
-	MessageID  string
-	InReplyTo  []string
-	References []string
-
-	ResentFrom      []*mail.Address
-	ResentSender    *mail.Address
-	ResentTo        []*mail.Address
-	ResentDate      time.Time
-	ResentCc        []*mail.Address
-	ResentBcc       []*mail.Address
-	ResentMessageID string
-
-	ContentType string
-	Content     io.Reader
-
-	HTMLBody string
-	TextBody string
-
-	Attachments   []Attachment
-	EmbeddedFiles []EmbeddedFile
 }

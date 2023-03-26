@@ -8,14 +8,14 @@ type CommandName string
 
 // RSET
 const (
-	COMMAND_HELO = CommandName("HELO")
-	COMMAND_EHLO = CommandName("EHLO")
-	COMMAND_AUTH = CommandName("AUTH")
-	COMMAND_MAIL = CommandName("MAIL")
-	COMMAND_RSET = CommandName("RSET")
-	COMMAND_RCPT = CommandName("RCPT")
-	COMMAND_DATA = CommandName("DATA")
-	COMMAND_QUIT = CommandName("QUIT")
+	CommandHelo = CommandName("HELO")
+	CommandEhlo = CommandName("EHLO")
+	CommandAuth = CommandName("AUTH")
+	CommandMail = CommandName("MAIL")
+	CommandRset = CommandName("RSET")
+	CommandRcpt = CommandName("RCPT")
+	CommandData = CommandName("DATA")
+	CommandQuit = CommandName("QUIT")
 )
 
 // Command is a struct representing an SMTP command (verb + arguments)

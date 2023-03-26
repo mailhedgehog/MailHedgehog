@@ -3,7 +3,7 @@ package smtpServerProtocol
 import (
 	"errors"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"golang.org/x/exp/slices"
 	"regexp"
@@ -30,15 +30,15 @@ type Scene interface {
 	Finish()
 }
 
-const COMMAND_END_SYMBOL = "\r\n"
+const CommandEndSymbol = "\r\n"
 
 type ConversationState string
 
 const (
-	STATE_COMMANDS_EXCHANGE = ConversationState("commands_exchange")
-	STATE_WAITING_AUTH      = ConversationState("waiting_auth")
-	STATE_DATA              = ConversationState("data")
-	STATE_CUSTOM_SCENE      = ConversationState("custom_scene")
+	StateCommandsExchange = ConversationState("commands_exchange")
+	StateWaitingAuth      = ConversationState("waiting_auth")
+	StateData             = ConversationState("data")
+	StateCustomScene      = ConversationState("custom_scene")
 )
 
 type Validation struct {
@@ -51,11 +51,11 @@ type Protocol struct {
 	validation *Validation
 
 	state   ConversationState
-	message *dto.SMTPMessage
+	message *smtpMessage.SMTPMessage
 
 	// supportedAuthMechanisms can be empty, if empty client will not go through auth flow
 	supportedAuthMechanisms []string
-	messageReceivedCallback func(message *dto.SMTPMessage) (string, error)
+	messageReceivedCallback func(message *smtpMessage.SMTPMessage) (string, error)
 
 	createCustomSceneCallback func(sceneName string) Scene
 	currentScene              Scene
@@ -82,7 +82,7 @@ func (protocol *Protocol) SetAuthMechanisms(authMechanisms []string) {
 	protocol.supportedAuthMechanisms = authMechanisms
 }
 
-func (protocol *Protocol) OnMessageReceived(callback func(message *dto.SMTPMessage) (string, error)) {
+func (protocol *Protocol) OnMessageReceived(callback func(message *smtpMessage.SMTPMessage) (string, error)) {
 	protocol.messageReceivedCallback = callback
 }
 
@@ -91,7 +91,7 @@ func (protocol *Protocol) CreateCustomSceneUsing(callback func(sceneName string)
 }
 
 func (protocol *Protocol) SetStateCommandsExchange() {
-	protocol.state = STATE_COMMANDS_EXCHANGE
+	protocol.state = StateCommandsExchange
 }
 
 func (protocol *Protocol) SayWelcome(identification string) *Reply {
@@ -103,7 +103,7 @@ func (protocol *Protocol) SayWelcome(identification string) *Reply {
 	if len(hostname) > 0 {
 		hostname = hostname + " "
 	}
-	protocol.state = STATE_COMMANDS_EXCHANGE
+	protocol.state = StateCommandsExchange
 	return ReplyServiceReady(hostname + identification + "Service ready")
 }
 
@@ -114,14 +114,14 @@ func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {
 		}
 	}
 
-	if protocol.state == STATE_CUSTOM_SCENE {
+	if protocol.state == StateCustomScene {
 		if protocol.currentScene != nil {
 			return protocol.currentScene.ReadAndWriteReply(receivedLine)
 		}
 		return ReplyCommandNotImplemented()
 	}
 
-	if protocol.state == STATE_DATA {
+	if protocol.state == StateData {
 		return protocol.handleMailContent(receivedLine)
 	}
 
@@ -129,7 +129,7 @@ func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {
 }
 
 func (protocol *Protocol) resetState() {
-	protocol.message = &dto.SMTPMessage{}
+	protocol.message = &smtpMessage.SMTPMessage{}
 	protocol.SetStateCommandsExchange()
 }
 
@@ -140,7 +140,7 @@ func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
 
 		logManager().Debug("Got EOF, storing message and reset state.")
 		protocol.message.Data = strings.TrimSuffix(protocol.message.Data, "\r\n.\r\n")
-		protocol.state = STATE_COMMANDS_EXCHANGE
+		protocol.state = StateCommandsExchange
 
 		defer protocol.resetState()
 
@@ -165,36 +165,36 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 
 	logManager().Debug(fmt.Sprintf("Handle command: '%s', with args: '%s'", command.verb, command.args))
 
-	if protocol.state == STATE_WAITING_AUTH && command.verb != COMMAND_AUTH {
+	if protocol.state == StateWaitingAuth && command.verb != CommandAuth {
 		return ReplyAuthFailed()
 	}
 
 	switch command.verb {
-	case COMMAND_HELO:
+	case CommandHelo:
 		return protocol.HELO(command)
-	case COMMAND_EHLO:
+	case CommandEhlo:
 		return protocol.EHLO(command)
-	case COMMAND_AUTH:
+	case CommandAuth:
 		logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
 		authMechanism := protocol.parseAuthMechanism(command.args)
 		if slices.Contains(protocol.supportedAuthMechanisms, authMechanism) && protocol.createCustomSceneCallback != nil {
 			protocol.currentScene = protocol.createCustomSceneCallback(string(command.verb) + "_" + authMechanism)
 			if protocol.currentScene != nil {
-				protocol.state = STATE_CUSTOM_SCENE
+				protocol.state = StateCustomScene
 				return protocol.currentScene.Start(receivedLine, protocol)
 			}
 		}
 		return ReplyCommandNotImplemented()
-	case COMMAND_RSET:
+	case CommandRset:
 		return protocol.RSET(command)
-	case COMMAND_MAIL:
+	case CommandMail:
 		return protocol.MAIL(command)
-	case COMMAND_RCPT:
+	case CommandRcpt:
 		return protocol.RCPT(command)
-	case COMMAND_DATA:
-		protocol.state = STATE_DATA
+	case CommandData:
+		protocol.state = StateData
 		return ReplyMailData()
-	case COMMAND_QUIT:
+	case CommandQuit:
 		return ReplyBye()
 	default:
 		return ReplyUnrecognisedCommand()
@@ -205,7 +205,7 @@ func (protocol *Protocol) HELO(command *Command) *Reply {
 	protocol.message.Helo = command.args
 
 	if len(protocol.supportedAuthMechanisms) > 0 {
-		protocol.state = STATE_WAITING_AUTH
+		protocol.state = StateWaitingAuth
 	}
 
 	return ReplyOk("Hello " + command.args)
@@ -218,8 +218,8 @@ func (protocol *Protocol) EHLO(command *Command) *Reply {
 	logManager().Warning("TODO: add tls support") // TODO
 
 	if len(protocol.supportedAuthMechanisms) > 0 {
-		protocol.state = STATE_WAITING_AUTH
-		replyArgs = append(replyArgs, string(COMMAND_AUTH)+" "+strings.Join(protocol.supportedAuthMechanisms, " "))
+		protocol.state = StateWaitingAuth
+		replyArgs = append(replyArgs, string(CommandAuth)+" "+strings.Join(protocol.supportedAuthMechanisms, " "))
 	}
 
 	return ReplyOk(replyArgs...)

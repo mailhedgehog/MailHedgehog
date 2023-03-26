@@ -3,9 +3,9 @@ package v1
 import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/email"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
-	"github.com/mailhedgehog/MailHedgehog/parseMail"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpClient"
 	"github.com/mailhedgehog/MailHedgehog/storage"
@@ -127,36 +127,27 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	messagesResponse := []fiber.Map{}
 	for _, message := range messages {
 		var from fiber.Map
-		fromInfo, err := message.Content.Headers.From()
-		if err == nil {
+		if len(message.Email.From) > 0 {
 			from = fiber.Map{
-				"name":  fromInfo.Name,
-				"email": fromInfo.Email,
+				"name":  message.Email.From[0].Name,
+				"email": message.Email.From[0].Address,
 			}
 		}
 		to := []fiber.Map{}
-		for _, info := range message.Content.Headers.To() {
+		for _, toAddress := range message.Email.To {
 			to = append(to, fiber.Map{
-				"name":  info.Name,
-				"email": info.Email,
+				"name":  toAddress.Name,
+				"email": toAddress.Address,
 			})
 		}
-
-		var receivedAt string
-		receivedAtInfo, err := message.Content.Headers.DateUTC()
-		if err == nil {
-			receivedAt = receivedAtInfo.Format("2006-01-02 15:04:05")
-		}
-
-		subject, _ := message.Content.Headers.GetOne("Subject")
 
 		messagesResponse = append(messagesResponse, fiber.Map{
 			"id":          message.ID,
 			"from":        from,
 			"to":          to,
-			"subject":     subject,
-			"received_at": receivedAt,
-			"size":        len(message.Raw.Data),
+			"subject":     message.Email.Subject,
+			"received_at": message.Email.Date.Format("2006-01-02 15:04:05"),
+			"size":        len(message.Origin.Data),
 		})
 	}
 
@@ -189,14 +180,14 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	email, err := apiV1.context.Storage.Load(username, dto.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
 
-	parsedEmail, err := parseMail.Parse(strings.NewReader(email.Raw.Data)) // returns Email struct and error
+	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
 	if err != nil {
 		// handle error
 	}
@@ -219,18 +210,18 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
 
 	return (&Response{Data: fiber.Map{
-		"id":          email.ID,
-		"headers":     email.Content.Headers.All(),
+		"id":          smtpEmail.ID,
+		"headers":     smtpEmail.Email.Headers,
 		"html":        parsedEmail.HTMLBody,
 		"plain":       parsedEmail.TextBody,
-		"source":      email.Raw.Data,
+		"source":      smtpEmail.Origin.Data,
 		"attachments": attachments,
 	}}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	err := apiV1.context.Storage.Delete(username, dto.MessageID(ctx.Params("id")))
+	err := apiV1.context.Storage.Delete(username, smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -242,7 +233,7 @@ func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	email, err := apiV1.context.Storage.Load(username, dto.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -277,7 +268,7 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 		client = smtpClient.NewClient(smtpHost, "", []string{})
 	}
 
-	err = client.SendMail(email)
+	err = client.SendMail(smtpEmail)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),

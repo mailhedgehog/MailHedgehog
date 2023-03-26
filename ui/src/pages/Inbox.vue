@@ -104,9 +104,9 @@
                         {{ t('email.received_at') }}
                       </span>
                       <time
-                        v-if="moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                        v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
                       </time>
                     </span>
                   </span>
@@ -266,9 +266,9 @@
                     </td>
                     <td class="whitespace-nowrap px-6 py-4 text-sm text-context-500 dark:text-context-400">
                       <time
-                        v-if="moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
+                        v-if="moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').isValid()"
                         :datetime="email.received_at"
-                      >{{ moment.utc(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
+                      >{{ moment(email.received_at, 'YYYY-MM-DD HH:mm:ss').fromNow() }}
                       </time>
                     </td>
                     <td

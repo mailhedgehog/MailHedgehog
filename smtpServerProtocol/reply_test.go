@@ -26,7 +26,7 @@ func TestLinesOfReply(t *testing.T) {
 	lines := reply.Lines()
 
 	(*gounit.T)(t).AssertEqualsInt(3, len(lines))
-	(*gounit.T)(t).AssertEqualsString("250-foo"+COMMAND_END_SYMBOL, lines[0])
-	(*gounit.T)(t).AssertEqualsString("250-BAR"+COMMAND_END_SYMBOL, lines[1])
-	(*gounit.T)(t).AssertEqualsString("250 baz"+COMMAND_END_SYMBOL, lines[2])
+	(*gounit.T)(t).AssertEqualsString("250-foo"+CommandEndSymbol, lines[0])
+	(*gounit.T)(t).AssertEqualsString("250-BAR"+CommandEndSymbol, lines[1])
+	(*gounit.T)(t).AssertEqualsString("250 baz"+CommandEndSymbol, lines[2])
 }

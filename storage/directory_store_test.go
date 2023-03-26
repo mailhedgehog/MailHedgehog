@@ -2,11 +2,10 @@ package storage
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto"
+	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestStoreDefaultRoom(t *testing.T) {
@@ -15,9 +14,8 @@ func TestStoreDefaultRoom(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(""))
 
 	for i := 0; i < 2; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store("", msg)
 	}
@@ -34,17 +32,15 @@ func TestStore(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room2))
 
 	for i := 0; i < 3; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store(room1, msg)
 	}
 
 	for i := 0; i < 4; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store(room2, msg)
 	}
@@ -65,9 +61,8 @@ func TestStoreCustomPath(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room))
 
 	for i := 0; i < 2; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store(room, msg)
 	}
@@ -89,9 +84,8 @@ func TestStoreWithLimit(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(0, storage.Count(room1))
 
 	for i := 0; i < 15; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store(room1, msg)
 	}
@@ -99,9 +93,8 @@ func TestStoreWithLimit(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(3, storage.Count(room1))
 
 	for i := 0; i < 2; i++ {
-		msg := &dto.Message{
-			ID:      dto.MessageID(fmt.Sprint(i)),
-			Created: time.Now(),
+		msg := &smtpMessage.SMTPMail{
+			ID: smtpMessage.MessageID(fmt.Sprint(i)),
 		}
 		storage.Store(room1, msg)
 	}
