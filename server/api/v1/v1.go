@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailhedgehog/MailHedgehog/dto/email"
@@ -12,6 +13,7 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
@@ -53,6 +55,8 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	v1.Delete("/emails/:id", apiV1.deleteEmail)
 
 	v1.Post("/emails/:id/release", apiV1.releaseEmail)
+
+	v1.Get("/emails/:id/attachment/:fileIndex", apiV1.downloadAttachment)
 }
 
 func (apiV1 *ApiV1) showUser(ctx *fiber.Ctx) error {
@@ -91,9 +95,9 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 		listQuery.PerPage = 25
 	}
 
-	errors := ValidateStruct(*listQuery)
-	if errors != nil {
-		return UnprocessableEntityResponse(ctx, errors)
+	errs := ValidateStruct(*listQuery)
+	if errs != nil {
+		return UnprocessableEntityResponse(ctx, errs)
 	}
 
 	query := storage.SearchQuery{}
@@ -189,21 +193,18 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 
 	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
 	if err != nil {
-		// handle error
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
+		})
 	}
 
 	attachments := []fiber.Map{}
-	for _, a := range parsedEmail.Attachments {
-		buf := new(strings.Builder)
-		_, err := io.Copy(buf, a.Data)
-		if err != nil {
-			// handle error
-		}
-
+	for index, a := range parsedEmail.Attachments {
 		attachments = append(attachments, fiber.Map{
 			"filename":    a.Filename,
 			"contentType": a.ContentType,
-			"data":        buf.String(),
+			"data":        "",
+			"index":       index,
 		})
 	}
 
@@ -217,6 +218,47 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 		"source":      smtpEmail.Origin.Data,
 		"attachments": attachments,
 	}}).Send(ctx)
+}
+
+func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+	fileIndex, err := strconv.Atoi(ctx.Params("fileIndex"))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", err),
+		})
+	}
+
+	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
+		})
+	}
+
+	if fileIndex >= len(parsedEmail.Attachments) || fileIndex < 0 {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", errors.New("incorrect attachment number")),
+		})
+	}
+	attachment := parsedEmail.Attachments[fileIndex]
+
+	bytes, err := io.ReadAll(attachment.Data)
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", errors.New("we can't get content of attachment")),
+		})
+	}
+	ctx.Attachment(attachment.Filename)
+	ctx.Type(attachment.ContentType)
+
+	return ctx.Send(bytes)
 }
 
 func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {

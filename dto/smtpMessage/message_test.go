@@ -39,7 +39,6 @@ func TestFromString(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("your-email@here.test", smtpMessage.To[0])
 	(*gounit.T)(t).AssertEqualsString("second@here.test", smtpMessage.To[1])
 	(*gounit.T)(t).AssertLengthString(586, smtpMessage.Data)
-
 }
 
 func TestToReader(t *testing.T) {
@@ -49,5 +48,4 @@ func TestToReader(t *testing.T) {
 	(*gounit.T)(t).AssertNotError(err)
 
 	(*gounit.T)(t).AssertLengthString(686, string(bytes))
-
 }

@@ -565,12 +565,36 @@ const downloadBlobFile = (data, contentType, filename) => {
   link.remove();
 };
 
+function downloadAttachment(index, filename) {
+  const url = `emails/${email.value.id}/attachment/${index}`;
+  window.MailHedgehog.request()
+    .get(url)
+    .then(() => {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = `${window.MailHedgehog.request().defaults.baseURL}/${url}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    })
+    .catch(() => {
+      window.MailHedgehog.error(t('response.error'));
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+}
+
 const downloadEmail = () => {
   downloadBlobFile(email.value.source, 'text/plain', `${email.value.id}.eml`);
 };
 
 const downloadEmailAttachment = (attachment) => {
-  downloadBlobFile(attachment.data, attachment.contentType, attachment.filename);
+  if (attachment.data && attachment.data.length > 0) {
+    downloadBlobFile(attachment.data, attachment.contentType, attachment.filename);
+  } else {
+    downloadAttachment(attachment.index, attachment.filename);
+  }
 };
 
 const isAllHeaders = ref(false);
