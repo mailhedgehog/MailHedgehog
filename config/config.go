@@ -34,6 +34,13 @@ type AppConfig struct {
 		Directory    struct {
 			Path string `yaml:"path"`
 		} `yaml:"directory"`
+		MongoDB struct {
+			URI        string `yaml:"uri"`
+			DB         string `yaml:"db_name"`
+			User       string `yaml:"db_user"`
+			Pass       string `yaml:"db_pass"`
+			Collection string `yaml:"db_collection"`
+		} `yaml:"mongodb"`
 	} `yaml:"storage"`
 	Authentication struct {
 		Use  string `yaml:"use"`
@@ -94,9 +101,22 @@ func (config *AppConfig) withDefaults() {
 
 	if len(config.Storage.Use) <= 0 {
 		config.Storage.Use = "directory"
-		if len(config.Storage.Directory.Path) <= 0 {
-			config.Storage.Directory.Path = ""
-		}
+	}
+
+	if len(config.Storage.Directory.Path) <= 0 {
+		config.Storage.Directory.Path = ""
+	}
+
+	if len(config.Storage.MongoDB.URI) <= 0 {
+		config.Storage.MongoDB.URI = "127.0.0.1:27017"
+	}
+
+	if len(config.Storage.MongoDB.DB) <= 0 {
+		config.Storage.MongoDB.DB = "mailhedgehog"
+	}
+
+	if len(config.Storage.MongoDB.Collection) <= 0 {
+		config.Storage.MongoDB.Collection = "emails"
 	}
 
 	if len(config.Authentication.Use) <= 0 {

@@ -44,6 +44,11 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 		if config.Storage.PerRoomLimit > 0 {
 			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
 		}
+	case "mongodb":
+		context.Storage = storage.CreateMongoDbStorage(config.Storage.MongoDB)
+		if config.Storage.PerRoomLimit > 0 {
+			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
+		}
 	default:
 		panic("Incorrect storage type, Supports: directory")
 	}

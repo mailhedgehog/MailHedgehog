@@ -57,6 +57,7 @@ func (directory *Directory) Store(room Room, message *smtpMessage.SMTPMail) (smt
 
 	path := filepath.Join(directory.RoomDirectory(room), string(message.ID))
 	err = os.WriteFile(path, b, 0660)
+
 	logManager().Debug(fmt.Sprintf("New message saved at %s", path))
 
 	return message.ID, err
