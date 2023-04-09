@@ -20,11 +20,11 @@ type Mongo struct {
 }
 
 func CreateMongoDbStorage(config struct {
-	URI        string `yaml:"uri"`
-	DB         string `yaml:"db_name"`
-	User       string `yaml:"db_user"`
-	Pass       string `yaml:"db_pass"`
-	Collection string `yaml:"db_collection"`
+	URI        string
+	DB         string
+	User       string
+	Pass       string
+	Collection string
 }) *Mongo {
 
 	clientOptions := options.Client().ApplyURI("mongodb://" + config.URI)
