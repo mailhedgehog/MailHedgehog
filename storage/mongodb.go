@@ -19,13 +19,15 @@ type Mongo struct {
 	Collection *mongo.Collection
 }
 
-func CreateMongoDbStorage(config struct {
+type MongoConfig struct {
 	URI        string
 	DB         string
 	User       string
 	Pass       string
 	Collection string
-}) *Mongo {
+}
+
+func CreateMongoDbStorage(config MongoConfig) *Mongo {
 
 	clientOptions := options.Client().ApplyURI("mongodb://" + config.URI)
 

@@ -48,6 +48,9 @@ type AppConfig struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
 	} `yaml:"authentication"`
+	UI struct {
+		File string `yaml:"file"`
+	} `yaml:"ui"`
 	Log struct {
 		Level string `yaml:"level"`
 	} `yaml:"log"`

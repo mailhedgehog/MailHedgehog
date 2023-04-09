@@ -2,11 +2,13 @@ package ui
 
 import (
 	"embed"
+	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"net/http"
+	"os"
 )
 
 var configuredLogger *logger.Logger
@@ -26,7 +28,7 @@ func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
-	ui.Get("/mh-configuration.json", indexHandler(context))
+	ui.Get("/mh-configuration.json", configurationHandler(context))
 
 	if len(context.Config.Http.AssetsRoot) > 0 {
 		ui.Static("/", context.Config.Http.AssetsRoot)
@@ -39,16 +41,32 @@ func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 	}
 }
 
-func indexHandler(context *serverContext.Context) func(c *fiber.Ctx) error {
+func configurationHandler(context *serverContext.Context) func(c *fiber.Ctx) error {
 	baseUrl := context.Config.Http.BaseUrl
 	if len(baseUrl) <= 0 {
 		baseUrl = "//" + context.HttpBindAddr() + context.PathWithPrefix("")
 	}
+
+	var uiData interface{}
+	uiConfigFileName := context.Config.UI.File
+	if len(uiConfigFileName) > 0 {
+		if _, err := os.Stat(uiConfigFileName); err == nil {
+			bytes, err := os.ReadFile(uiConfigFileName)
+			if err == nil {
+				err := json.Unmarshal([]byte(bytes), &uiData)
+				if err != nil {
+					uiData = nil
+				}
+			}
+		}
+	}
+
 	return func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"http": fiber.Map{
 				"baseUrl": baseUrl,
 			},
+			"ui": uiData,
 		})
 	}
 }

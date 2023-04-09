@@ -8,6 +8,15 @@ storage:
   per_room_limit: 100
   directory:
     path: ""
+#storage:
+#  use: mongodb
+#  per_room_limit: 1000
+#  mongodb:
+#    uri: 127.0.0.1:27017
+#    db_name: mailhedgehog
+#    db_user: test
+#    db_pass: testpass
+#    db_collection: emails_dev
 authentication:
   use: file
   file:

@@ -45,7 +45,13 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
 		}
 	case "mongodb":
-		context.Storage = storage.CreateMongoDbStorage(config.Storage.MongoDB)
+		context.Storage = storage.CreateMongoDbStorage(storage.MongoConfig{
+			config.Storage.MongoDB.URI,
+			config.Storage.MongoDB.DB,
+			config.Storage.MongoDB.User,
+			config.Storage.MongoDB.Pass,
+			config.Storage.MongoDB.Collection,
+		})
 		if config.Storage.PerRoomLimit > 0 {
 			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
 		}
