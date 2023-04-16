@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/db"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/spf13/cobra"
@@ -31,15 +30,15 @@ func authAddUser(cmd *cobra.Command, args []string) {
 	case "file":
 		addUser(authentication.CreateFileAuthentication(configuration.Authentication.File.Path))
 	case "mongodb":
-		addUser(authentication.CreateMongoDbAuthentication(db.MongoConfig{
-			configuration.Authentication.MongoDB.URI,
-			configuration.Authentication.MongoDB.DB,
-			configuration.Authentication.MongoDB.User,
-			configuration.Authentication.MongoDB.Pass,
-			configuration.Authentication.MongoDB.Collection,
-		}))
+		addUser(authentication.CreateMongoDbAuthentication(
+			configuration.DB.GetMongoDBConnection(
+				configuration.Authentication.MongoDB.Connection,
+			).Collection(
+				configuration.Authentication.MongoDB.Collection,
+			),
+		))
 	default:
-		logManager().Error("Unsuppoerted auth type")
+		logManager().Error(fmt.Sprintf("Unsupported auth type [%s]", configuration.Authentication.Use))
 	}
 }
 

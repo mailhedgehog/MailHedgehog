@@ -1,27 +1,24 @@
 package storage
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/db"
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/logger"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"net/mail"
-	"time"
+    "context"
+    "errors"
+    "fmt"
+    "github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
+    "github.com/mailhedgehog/MailHedgehog/logger"
+    "go.mongodb.org/mongo-driver/bson"
+    "go.mongodb.org/mongo-driver/bson/primitive"
+    "go.mongodb.org/mongo-driver/mongo"
+    "go.mongodb.org/mongo-driver/mongo/options"
+    "net/mail"
+    "time"
 )
 
 type Mongo struct {
 	Collection *mongo.Collection
 }
 
-func CreateMongoDbStorage(config db.MongoConfig) *Mongo {
-	collection := db.CreateMongoDbCollectionConnection(config)
-
+func CreateMongoDbStorage(collection *mongo.Collection) *Mongo {
 	indexName, err := collection.Indexes().CreateOne(context.TODO(), mongo.IndexModel{
 		Keys: bson.D{
 			{"room", -1},

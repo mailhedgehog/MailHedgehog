@@ -35,11 +35,8 @@ type AppConfig struct {
 			Path string `yaml:"path"`
 		} `yaml:"directory"`
 		MongoDB struct {
-			URI        string `yaml:"uri"`
-			DB         string `yaml:"db_name"`
-			User       string `yaml:"db_user"`
-			Pass       string `yaml:"db_pass"`
-			Collection string `yaml:"db_collection"`
+			Connection string `yaml:"connection"`
+			Collection string `yaml:"collection"`
 		} `yaml:"mongodb"`
 	} `yaml:"storage"`
 	Authentication struct {
@@ -48,16 +45,14 @@ type AppConfig struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
 		MongoDB struct {
-			URI        string `yaml:"uri"`
-			DB         string `yaml:"db_name"`
-			User       string `yaml:"db_user"`
-			Pass       string `yaml:"db_pass"`
-			Collection string `yaml:"db_collection"`
+			Connection string `yaml:"connection"`
+			Collection string `yaml:"collection"`
 		} `yaml:"mongodb"`
 	} `yaml:"authentication"`
 	UI struct {
 		File string `yaml:"file"`
 	} `yaml:"ui"`
+	DB  DbConfig `yaml:"db"`
 	Log struct {
 		Level string `yaml:"level"`
 	} `yaml:"log"`
@@ -117,12 +112,8 @@ func (config *AppConfig) withDefaults() {
 		config.Storage.Directory.Path = ""
 	}
 
-	if len(config.Storage.MongoDB.URI) <= 0 {
-		config.Storage.MongoDB.URI = "127.0.0.1:27017"
-	}
-
-	if len(config.Storage.MongoDB.DB) <= 0 {
-		config.Storage.MongoDB.DB = "mailhedgehog"
+	if len(config.Storage.MongoDB.Connection) <= 0 {
+		config.Storage.MongoDB.Connection = "mongodb"
 	}
 
 	if len(config.Storage.MongoDB.Collection) <= 0 {
@@ -137,12 +128,8 @@ func (config *AppConfig) withDefaults() {
 		config.Authentication.File.Path = ""
 	}
 
-	if len(config.Authentication.MongoDB.URI) <= 0 {
-		config.Authentication.MongoDB.URI = "127.0.0.1:27017"
-	}
-
-	if len(config.Authentication.MongoDB.DB) <= 0 {
-		config.Authentication.MongoDB.DB = "mailhedgehog"
+	if len(config.Authentication.MongoDB.Connection) <= 0 {
+		config.Authentication.MongoDB.Connection = "mongodb"
 	}
 
 	if len(config.Authentication.MongoDB.Collection) <= 0 {
@@ -152,4 +139,5 @@ func (config *AppConfig) withDefaults() {
 	if len(config.Log.Level) <= 0 {
 		config.Log.Level = logger.DEBUG
 	}
+
 }

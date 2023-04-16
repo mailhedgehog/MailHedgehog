@@ -12,11 +12,8 @@ storage:
 #  use: mongodb
 #  per_room_limit: 1000
 #  mongodb:
-#    uri: 127.0.0.1:27017
-#    db_name: mailhedgehog
-#    db_user: test
-#    db_pass: testpass
-#    db_collection: emails
+#    connection: mongodb
+#    collection: emails
 authentication:
   use: file
   file:
@@ -24,10 +21,15 @@ authentication:
 #authentication:
 #  use: mongodb
 #  mongodb:
-#    uri: 127.0.0.1:27017
-#    db_name: mailhedgehog
-#    db_user: test
-#    db_pass: testpass
-#    db_collection:users
+#    connection: mongodb
+#    collection: users
 #ui:
 #  file: ui.json
+#db:
+#  connections:
+#    mongodb:
+#      uri: 127.0.0.1:27017
+#      db_name: mailhedgehog
+#      db_user: test
+#      db_pass: testpass
+

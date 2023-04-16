@@ -9,14 +9,13 @@ import (
 )
 
 type MongoConfig struct {
-	URI        string
-	DB         string
-	User       string
-	Pass       string
-	Collection string
+	URI  string
+	DB   string
+	User string
+	Pass string
 }
 
-func CreateMongoDbCollectionConnection(config MongoConfig) *mongo.Collection {
+func CreateMongoDbConnection(config MongoConfig) *mongo.Database {
 	clientOptions := options.Client().ApplyURI("mongodb://" + config.URI).SetTimeout(5 * time.Second)
 
 	if len(config.User) > 0 {
@@ -36,5 +35,9 @@ func CreateMongoDbCollectionConnection(config MongoConfig) *mongo.Collection {
 
 	logManager().Debug("Connected to MongoDB")
 
-	return client.Database(config.DB).Collection(config.Collection)
+	return client.Database(config.DB)
+}
+
+func CreateMongoDbCollectionConnection(config MongoConfig, collection string) *mongo.Collection {
+	return CreateMongoDbConnection(config).Collection(collection)
 }

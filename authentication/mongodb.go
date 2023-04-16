@@ -3,7 +3,6 @@ package authentication
 import (
 	"context"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/db"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,9 +19,7 @@ type UserRow struct {
 	SmtpPass string `bson:"smtp_password"`
 }
 
-func CreateMongoDbAuthentication(config db.MongoConfig) *Mongo {
-	collection := db.CreateMongoDbCollectionConnection(config)
-
+func CreateMongoDbAuthentication(collection *mongo.Collection) *Mongo {
 	indexName, err := collection.Indexes().CreateOne(context.TODO(), mongo.IndexModel{
 		Keys: bson.M{"username": 1},
 	})

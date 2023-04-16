@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/db"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/server/api"
 	"github.com/mailhedgehog/MailHedgehog/server/smtp"
@@ -46,13 +45,13 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
 		}
 	case "mongodb":
-		context.Storage = storage.CreateMongoDbStorage(db.MongoConfig{
-			config.Storage.MongoDB.URI,
-			config.Storage.MongoDB.DB,
-			config.Storage.MongoDB.User,
-			config.Storage.MongoDB.Pass,
-			config.Storage.MongoDB.Collection,
-		})
+		context.Storage = storage.CreateMongoDbStorage(
+			config.DB.GetMongoDBConnection(
+				config.Storage.MongoDB.Connection,
+			).Collection(
+				config.Storage.MongoDB.Collection,
+			),
+		)
 		if config.Storage.PerRoomLimit > 0 {
 			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
 		}
@@ -64,13 +63,13 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 	case "file":
 		context.Authentication = authentication.CreateFileAuthentication(config.Authentication.File.Path)
 	case "mongodb":
-		context.Authentication = authentication.CreateMongoDbAuthentication(db.MongoConfig{
-			config.Authentication.MongoDB.URI,
-			config.Authentication.MongoDB.DB,
-			config.Authentication.MongoDB.User,
-			config.Authentication.MongoDB.Pass,
-			config.Authentication.MongoDB.Collection,
-		})
+		context.Authentication = authentication.CreateMongoDbAuthentication(
+			config.DB.GetMongoDBConnection(
+				config.Authentication.MongoDB.Connection,
+			).Collection(
+				config.Authentication.MongoDB.Collection,
+			),
+		)
 	default:
 		panic("Incorrect authentication type, Supports: file, mongodb")
 	}
