@@ -1,10 +1,10 @@
 import 'floating-vue/dist/style.css';
 import './assets/scss/app.scss';
-import Toast, { PluginOptions, POSITION, useToast } from 'vue-toastification';
+import Toast, { POSITION, useToast } from 'vue-toastification';
 import _ from 'lodash';
 import FloatingVue from 'floating-vue';
-import { createApp } from 'vue';
-import mitt from 'mitt';
+import { createApp, App } from 'vue';
+import mitt, {Handler, WildcardHandler} from 'mitt';
 import { Axios, AxiosResponse } from 'axios';
 import enMessages from './assets/locales/en';
 import ukMessages from './assets/locales/uk';
@@ -14,7 +14,8 @@ import { setupRouter } from './plugins/router';
 import { setupStore } from './plugins/store';
 import { fetchConfigs } from './plugins/fetchConfigs';
 import { setI18nLanguage, setupI18n } from './plugins/i18n';
-import App from './App.vue';
+import AppView from './App.vue';
+import {Router} from "vue-router";
 
 const i18n = setupI18n({
   legacy: false,
@@ -28,44 +29,32 @@ const i18n = setupI18n({
   },
 });
 
-const router = setupRouter();
 const store = setupStore();
 const emitter = mitt();
 
-const app = createApp(App);
-
-app.use(router);
-app.use(store);
-app.use(i18n);
-app.use(FloatingVue);
-
-const options: PluginOptions = {
-  position: POSITION.BOTTOM_RIGHT,
-};
-
-app.use(Toast, options);
-
-app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
-app.provide('emitter', emitter);
-
-class MailHedgehog {
+// eslint-disable-next-line import/prefer-default-export
+export class MailHedgehog {
   mhConf: object;
 
   $toast: any;
 
   $axios: Axios;
 
+  app: App | null = null;
+
+  router: Router | null = null;
+
   constructor(mhConf = {}) {
     this.mhConf = mhConf;
 
     this.$toast = useToast();
-    this.$axios = setupAxios({
-      baseUrl: this.congValue('http.baseUrl', ''),
+    this.$axios = setupAxios(this, {
+      baseUrl: this.configValue('http.baseUrl', ''),
     });
   }
 
-  congValue(key: string, def: any): any {
-    return _.get(this.mhConf, key, def);
+  configValue(key: string, defaultValue: any = null): any {
+    return _.get(this.mhConf, key, defaultValue);
   }
 
   request(): Axios {
@@ -87,6 +76,59 @@ class MailHedgehog {
   warning(message: string) {
     this.$toast.warning(message);
   }
+
+  // eslint-disable-next-line class-methods-use-this
+  $on(type: any, handler: WildcardHandler): void {
+    emitter.on(type, handler);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  $off(type: any, handler: WildcardHandler): void {
+    emitter.off(type, handler);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  $emit(type: string) {
+    emitter.emit(type);
+  }
+
+  goTo(to: any) {
+    this.router?.push(to)
+  }
+
+  init() {
+    this.app = createApp(AppView);
+    this.router = setupRouter(this);
+
+    this.app.use(this.router);
+    this.app.use(store);
+    this.app.use(i18n);
+    this.app.use(FloatingVue);
+    this.app.use(Toast, {
+      position: POSITION.BOTTOM_RIGHT,
+    });
+
+    this.app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
+    this.app.provide('emitter', emitter);
+
+
+    this.router.beforeEach((to) => {
+      if(to.name === 'login') {
+        return
+      }
+      this.request()
+        .get('user')
+        .then((response: AxiosResponse) => {
+          store.dispatch('setUser', response.data.data || null);
+        })
+        .catch(() => store.dispatch('setUser', null));
+    });
+
+    this.app.provide('MailHedgehog', this);
+    window.MailHedgehog = this;
+
+    this.app.mount('#app');
+  }
 }
 
 declare global {
@@ -96,15 +138,6 @@ declare global {
   }
 }
 
-window.MailHedgehog = new MailHedgehog(fetchConfigs());
+const mailHedgehog = new MailHedgehog(fetchConfigs());
+mailHedgehog.init();
 
-router.beforeEach(() => {
-  window.MailHedgehog.request()
-    .get('user')
-    .then((response: AxiosResponse) => {
-      store.dispatch('setUser', response.data.data || null);
-    })
-    .catch(() => store.dispatch('setUser', null));
-});
-
-app.mount('#app');

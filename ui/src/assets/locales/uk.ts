@@ -87,4 +87,18 @@ export default {
     btnCancel: 'Ні',
     btnAccept: 'Так',
   },
+  login: {
+    title: 'Увійдіть у свій обліковий запис',
+    form: {
+      username: {
+        label: 'Ім\'я користувача',
+      },
+      password: {
+        label: 'Пароль',
+      },
+      login: {
+        label: 'Увійти',
+      },
+    },
+  },
 };

@@ -477,10 +477,11 @@
     </Dialog>
   </TransitionRoot>
 </template>
+
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import {
-  computed, nextTick, onMounted, ref,
+  computed, inject, nextTick, onMounted, ref,
 } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {
@@ -502,6 +503,7 @@ import {
 import { useStore } from 'vuex';
 
 const { t } = useI18n();
+const mailHedgehog = inject('MailHedgehog');
 const router = useRouter();
 const route = useRoute();
 const store = useStore();
@@ -511,7 +513,7 @@ const email = ref(null);
 
 const getEmail = (emailId) => {
   isRequesting.value = true;
-  window.MailHedgehog.request()
+  mailHedgehog?.request()
     .get(`emails/${emailId}`)
     .then((response) => {
       if (response.data?.data) {
@@ -540,14 +542,14 @@ const deleteEmail = () => {
   store.dispatch('confirmDialog/confirm')
     .then(() => {
       isRequesting.value = true;
-      window.MailHedgehog.request()
+      mailHedgehog?.request()
         .delete(`emails/${email.value.id}`)
         .then(() => {
-          window.MailHedgehog.success(t('email.deleted'));
+          mailHedgehog?.success(t('email.deleted'));
           nextTick(() => goBack());
         })
         .catch(() => {
-          window.MailHedgehog.error(t('response.error'));
+          mailHedgehog?.error(t('response.error'));
         })
         .finally(() => {
           isRequesting.value = false;
@@ -567,18 +569,18 @@ const downloadBlobFile = (data, contentType, filename) => {
 
 function downloadAttachment(index, filename) {
   const url = `emails/${email.value.id}/attachment/${index}`;
-  window.MailHedgehog.request()
+  mailHedgehog?.request()
     .get(url)
     .then(() => {
       const link = document.createElement('a');
       link.download = filename;
-      link.href = `${window.MailHedgehog.request().defaults.baseURL}/${url}`;
+      link.href = `${mailHedgehog?.request().defaults.baseURL}/${url}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     })
     .catch(() => {
-      window.MailHedgehog.error(t('response.error'));
+      mailHedgehog?.error(t('response.error'));
     })
     .finally(() => {
       isRequesting.value = false;
@@ -677,13 +679,13 @@ const fromLocalStorage = () => {
         }
       }
     } catch (e) {
-      window.MailHedgehog.error(e.message);
+      mailHedgehog?.error(e.message);
     }
   }
 };
 const clearFromLocalStorage = () => {
   localStorage.removeItem('smtpReleaseCredentials');
-  window.MailHedgehog.success(t('release.deleted'));
+  mailHedgehog?.success(t('release.deleted'));
 };
 const saveToLocalStorage = () => {
   const smtpReleaseCredentials = {};
@@ -701,7 +703,7 @@ const saveToLocalStorage = () => {
   }
   localStorage.setItem('smtpReleaseCredentials', btoa(JSON.stringify(smtpReleaseCredentials)));
   fromLocalStorage();
-  window.MailHedgehog.success(t('release.saved'));
+  mailHedgehog?.success(t('release.saved'));
 };
 
 onMounted(() => fromLocalStorage());
@@ -709,14 +711,14 @@ onMounted(() => fromLocalStorage());
 const isOpenReleaseModal = ref(false);
 const releaseEmail = () => {
   isRequesting.value = true;
-  window.MailHedgehog.request()
+  mailHedgehog?.request()
     .post(`emails/${email.value.id}/release`, releaseForm.value)
     .then(() => {
       isOpenReleaseModal.value = false;
-      window.MailHedgehog.success(t('email.released'));
+      mailHedgehog?.success(t('email.released'));
     })
     .catch(() => {
-      window.MailHedgehog.error(t('response.error'));
+      mailHedgehog?.error(t('response.error'));
     })
     .finally(() => {
       isRequesting.value = false;

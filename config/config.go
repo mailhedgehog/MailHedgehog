@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -41,6 +40,7 @@ type AppConfig struct {
 	} `yaml:"storage"`
 	Authentication struct {
 		Use  string `yaml:"use"`
+		Type string `yaml:"type"`
 		File struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
@@ -96,9 +96,6 @@ func (config *AppConfig) withDefaults() {
 	if config.Http.Port <= 0 {
 		config.Http.Port = 8025
 	}
-	if len(config.Http.AllowOrigins) <= 0 {
-		config.Http.AllowOrigins = fmt.Sprintf("http://%s:%d", config.Http.Host, config.Http.Port)
-	}
 
 	if config.Websocket.MaxConnection <= 0 {
 		config.Websocket.MaxConnection = 50
@@ -122,6 +119,10 @@ func (config *AppConfig) withDefaults() {
 
 	if len(config.Authentication.Use) <= 0 {
 		config.Authentication.Use = "file"
+	}
+
+	if len(config.Authentication.Type) <= 0 {
+		config.Authentication.Type = "internal"
 	}
 
 	if len(config.Authentication.File.Path) <= 0 {

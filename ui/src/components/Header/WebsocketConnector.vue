@@ -25,7 +25,7 @@ import {
 } from '@heroicons/vue/24/outline';
 import { onMounted, ref, inject } from 'vue';
 
-const emitter = inject('emitter');
+const mailHedgehog = inject('MailHedgehog');
 const disabled = ref(false);
 const soc = ref(null);
 
@@ -41,11 +41,11 @@ const closeSocket = () => {
 const handleSystemMessage = (msg) => {
   switch (msg.type) {
     case 'new_message':
-      emitter.emit('new_message', msg.data);
-      window.MailHedgehog.info('Message received');
+      mailHedgehog.$emit('new_message', msg.data);
+      mailHedgehog?.info('Message received');
       break;
     default:
-      window.MailHedgehog.error(`Online system flow type ${msg.type} not supported`);
+      mailHedgehog?.error(`Online system flow type ${msg.type} not supported`);
   }
 };
 
@@ -54,7 +54,7 @@ const initSocket = () => {
     return;
   }
   disabled.value = true;
-  let url = window.MailHedgehog.congValue('http.baseUrl', '')
+  let url = mailHedgehog?.configValue('http.baseUrl', '')
     .trim()
     .replace(/\/+$/, '')
     .replace(/(http)(s)?\:\/\//, 'ws$2://');
@@ -70,7 +70,7 @@ const initSocket = () => {
     closeSocket();
   };
   soc.value.onerror = () => {
-    window.MailHedgehog.error('Online connection error');
+    mailHedgehog?.error('Online connection error');
   };
 
   soc.value.onmessage = (event) => {
@@ -82,7 +82,7 @@ const initSocket = () => {
           handleSystemMessage(msg);
           break;
         default:
-          window.MailHedgehog.error(`Online message flow ${msg.flow} not supported`);
+          mailHedgehog?.error(`Online message flow ${msg.flow} not supported`);
       }
     } catch (e) {
       console.error(e);

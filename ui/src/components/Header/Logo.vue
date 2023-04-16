@@ -14,12 +14,14 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n';
-import { computed } from 'vue';
+import { computed, inject } from 'vue';
+import { MailHedgehog } from '@/main';
 
 const { t } = useI18n();
+const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 
-const title = computed(() => window.MailHedgehog.congValue('ui.appName', null));
-const logoUrl = computed(() => window.MailHedgehog.congValue('ui.appLogoUrl', '/MailHedgehog.svg'));
-const logoStyle = computed(() => window.MailHedgehog.congValue('ui.appLogoStyle', []));
+const title = computed(() => mailHedgehog?.configValue('ui.appName', null));
+const logoUrl = computed(() => mailHedgehog?.configValue('ui.appLogoUrl', '/MailHedgehog.svg'));
+const logoStyle = computed(() => mailHedgehog?.configValue('ui.appLogoStyle', []));
 
 </script>

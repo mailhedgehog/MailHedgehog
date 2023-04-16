@@ -1,9 +1,8 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/skip"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	v1 "github.com/mailhedgehog/MailHedgehog/server/api/v1"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
@@ -24,10 +23,31 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
-	logManager().Debug(fmt.Sprintf("Allow origins: %s", context.Config.Http.AllowOrigins))
-	api.Use(cors.New(cors.Config{
-		AllowOrigins: context.Config.Http.AllowOrigins,
-	}))
+	if context.Authentication.RequiresAuthentication() {
+		switch context.Config.Authentication.Type {
+		case "internal":
+			api.Use(skip.New(authenticationInternal(context), func(ctx *fiber.Ctx) bool {
+				return false
+			}))
+		}
+	}
 
 	v1.CreateAPIV1Routes(context, api)
+}
+
+func authenticationInternal(context *serverContext.Context) func(ctx *fiber.Ctx) error {
+	return func(ctx *fiber.Ctx) error {
+		Unauthorized := func() error {
+			return ctx.SendStatus(fiber.StatusUnauthorized)
+		}
+
+		_, err := context.GetHttpAuthenticatedUser(ctx)
+
+		if err != nil {
+			return Unauthorized()
+		}
+
+		// Go to next middleware:
+		return ctx.Next()
+	}
 }

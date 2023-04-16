@@ -87,4 +87,18 @@ export default {
     btnCancel: 'No',
     btnAccept: 'Yes',
   },
+  login: {
+    title: 'Sign in to your account',
+    form: {
+      username: {
+        label: 'Username',
+      },
+      password: {
+        label: 'Password',
+      },
+      login: {
+        label: 'Sign in',
+      },
+    },
+  },
 };

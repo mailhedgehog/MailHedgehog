@@ -19,5 +19,6 @@ func serve(cmd *cobra.Command, args []string) {
 	if len(args) > 0 {
 		filePath = args[0]
 	}
+
 	server.Start(server.Configure(config.ParseConfig(filePath)))
 }

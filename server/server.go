@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
@@ -85,8 +86,19 @@ func Start(context *serverContext.Context) {
 	go smtp.Listen(context, exitChannel)
 
 	httpApp := fiber.New()
+
+	if len(context.Config.Http.AllowOrigins) > 0 {
+		logManager().Debug(fmt.Sprintf("Allow origins: %s", context.Config.Http.AllowOrigins))
+		httpApp.Use(cors.New(cors.Config{
+			AllowOrigins: context.Config.Http.AllowOrigins,
+		}))
+	}
+
 	if context.Authentication.RequiresAuthentication() {
-		httpApp.Use(httpAuthentication(context))
+		switch context.Config.Authentication.Type {
+		case "basic":
+			httpApp.Use(authenticationBasic(context))
+		}
 	}
 
 	api.CreateAPIRoutes(context, httpApp)
@@ -105,14 +117,14 @@ func Start(context *serverContext.Context) {
 	}
 }
 
-func httpAuthentication(context *serverContext.Context) func(ctx *fiber.Ctx) error {
+func authenticationBasic(context *serverContext.Context) func(ctx *fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		Unauthorized := func() error {
 			ctx.Set(fiber.HeaderWWWAuthenticate, "basic realm=Restricted")
 			return ctx.SendStatus(fiber.StatusUnauthorized)
 		}
 
-		username, err := context.GetHttpAuthenticatedUser(ctx)
+		_, err := context.GetHttpAuthenticatedUser(ctx)
 
 		if err != nil {
 			// Set a custom header on all responses:
@@ -140,7 +152,7 @@ func httpAuthentication(context *serverContext.Context) func(ctx *fiber.Ctx) err
 			}
 
 			// Get the username and password
-			username = credentials[:index]
+			username := credentials[:index]
 			password := credentials[index+1:]
 
 			if !context.Authentication.Authenticate(authentication.HTTP, username, password) {

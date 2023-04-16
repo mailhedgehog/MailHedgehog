@@ -340,7 +340,7 @@
       </div>
     </template>
   </div>
-  <Teleport to="#header-search">
+  <Teleport v-if="mounted" to="#header-search">
     <form
       class="flex w-full md:ml-0"
       method="GET"
@@ -394,18 +394,19 @@ import {
   TrashIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline';
-import Pagination from '../utils/pagination.ts';
+import Pagination from '@/utils/pagination.ts';
 
 const { t } = useI18n();
+const mailHedgehog = inject('MailHedgehog');
 const router = useRouter();
 const store = useStore();
-const emitter = inject('emitter');
 
 const queryParams = ref({
   page: 1,
   per_page: 25,
   search: '',
 });
+const mounted = ref(false);
 const isRequesting = ref(false);
 const emails = ref([]);
 const pagination = ref(new Pagination());
@@ -417,7 +418,7 @@ const getEmails = (page = null) => {
   if (page) {
     queryParams.value.page = page;
   }
-  window.MailHedgehog.request()
+  mailHedgehog?.request()
     .get('emails', {
       params: queryParams.value,
     })
@@ -458,9 +459,10 @@ watch(() => queryParams.value.search, () => {
 
 onMounted(() => {
   getEmails(1);
+  mounted.value = true;
 });
 
-emitter.on('new_message', () => getEmails());
+mailHedgehog.$on('new_message', () => getEmails());
 
 const goToDirection = (direction = 'next') => {
   getEmails(pagination.value.getPageFromDirection(direction));
@@ -470,11 +472,11 @@ const clearInbox = () => {
   store.dispatch('confirmDialog/confirm')
     .then(() => {
       isRequesting.value = true;
-      window.MailHedgehog.request()
+      mailHedgehog?.request()
         .delete('emails')
         .then(() => {
           getEmails(1);
-          window.MailHedgehog.success(t('inbox.cleared'));
+          mailHedgehog?.success(t('inbox.cleared'));
         })
         .catch(() => {
           isRequesting.value = false;
@@ -490,7 +492,7 @@ const deleteEmail = (emailId) => {
   store.dispatch('confirmDialog/confirm')
     .then(() => {
       isRequesting.value = true;
-      window.MailHedgehog.request()
+      mailHedgehog?.request()
         .delete(`emails/${emailId}`)
         .then(() => {
           if (pagination.value.count() === 0) {
@@ -498,7 +500,7 @@ const deleteEmail = (emailId) => {
           } else {
             getEmails();
           }
-          window.MailHedgehog.success(t('email.deleted'));
+          mailHedgehog?.success(t('email.deleted'));
         })
         .catch(() => {
           isRequesting.value = false;

@@ -61,10 +61,16 @@ func configurationHandler(context *serverContext.Context) func(c *fiber.Ctx) err
 		}
 	}
 
+	authType := ""
+	if context.Authentication.RequiresAuthentication() {
+		authType = context.Config.Authentication.Type
+	}
+
 	return func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"http": fiber.Map{
 				"baseUrl": baseUrl,
+				"auth":    authType,
 			},
 			"ui": uiData,
 		})

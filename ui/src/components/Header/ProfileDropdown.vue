@@ -52,13 +52,17 @@ import {
   UserCircleIcon,
   ChevronDownIcon,
 } from '@heroicons/vue/24/outline';
+import { inject } from 'vue';
+import { MailHedgehog } from '@/main';
+
+const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 
 const logout = () => {
-  window.MailHedgehog.request()
+  mailHedgehog?.request()
     .post('logout')
     .finally(() => {
       const reloadNow = () => {
-        let url = window.MailHedgehog.congValue('http.baseUrl', '')
+        let url = mailHedgehog?.configValue('http.baseUrl', '')
           .trim()
           .replace(/\/+$/, '');
         url = `${url}/`;

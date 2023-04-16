@@ -1,7 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
+import { MailHedgehog } from '@/main';
 
 // eslint-disable-next-line import/prefer-default-export
-export function setupAxios(conf: { baseUrl: string }): AxiosInstance {
+export function setupAxios(app: MailHedgehog, conf: { baseUrl: string }): AxiosInstance {
   const url = conf.baseUrl.trim().replace(/\/+$/, '');
   const instance = axios.create({
     baseURL: `${url}/api/v1`,
@@ -22,8 +23,16 @@ export function setupAxios(conf: { baseUrl: string }): AxiosInstance {
       } = response;
 
       if (status === 401) {
-        // eslint-disable-next-line no-restricted-globals
-        location.reload();
+        switch (app.configValue('http.auth')) {
+          case 'basic':
+            app.error('Unauthorized, reloading page');
+            location.reload()
+            break;
+          case 'internal':
+            app.error('Unauthorized');
+            app.goTo({ name: 'login' });
+            break;
+        }
       }
 
       return Promise.reject(error);

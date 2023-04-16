@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
+    "rootDir": "src",
     "baseUrl": ".",
     "paths": {
-      "@": [
-        "src"
+      "@/*": [
+        "./src/*"
       ]
     },
     "allowJs": true,
@@ -27,11 +28,7 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.tsx",
-    "src/**/*.vue"
+    "src/**/*.vue",
   ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "exclude": ["node_modules", "src/**/*.test.ts", "src/**/*.spec.ts"]
 }
