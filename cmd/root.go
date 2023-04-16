@@ -1,59 +1,59 @@
 package cmd
 
 import (
-    "github.com/mailhedgehog/MailHedgehog/logger"
-    "github.com/spf13/cobra"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-    Use:   "MailHedgehog",
-    Short: "Mail storage system",
-    Long:  ``,
+	Use:   "MailHedgehog",
+	Short: "Mail storage system",
+	Long:  ``,
 }
 
 func Execute() error {
-    return rootCmd.Execute()
+	return rootCmd.Execute()
 }
 
 var flagForce bool
 
 func init() {
-    initCmd.Flags().BoolVarP(&flagForce, "force", "F", false, "Force override files")
+	initCmd.Flags().BoolVarP(&flagForce, "force", "F", false, "Force override files")
 
-    rootCmd.AddCommand(initCmd)
-    rootCmd.AddCommand(serveCmd)
-    rootCmd.AddCommand(authFileAddCmd)
+	rootCmd.AddCommand(initCmd)
+	rootCmd.AddCommand(serveCmd)
+	rootCmd.AddCommand(authAddUserCmd)
 }
 
 var configuredLogger *logger.Logger
 
 func logManager() *logger.Logger {
-    if configuredLogger == nil {
-        configuredLogger = logger.CreateLogger("MailHedgehog")
-    }
-    return configuredLogger
+	if configuredLogger == nil {
+		configuredLogger = logger.CreateLogger("MailHedgehog")
+	}
+	return configuredLogger
 }
 
 var initCmd = &cobra.Command{
-    Use:   "init",
-    Short: "Initialise application",
-    Long:  `Create configuration files`,
-    Args:  initApplicationArgs,
-    Run:   initApplication,
+	Use:   "init",
+	Short: "Initialise application",
+	Long:  `Create configuration files`,
+	Args:  initApplicationArgs,
+	Run:   initApplication,
 }
 
 var serveCmd = &cobra.Command{
-    Use:   "serve",
-    Short: "Run MailHedgehog application",
-    Long:  `Run MailHedgehog client and server`,
-    Args:  serveArgs,
-    Run:   serve,
+	Use:   "serve",
+	Short: "Run MailHedgehog application",
+	Long:  `Run MailHedgehog client and server`,
+	Args:  serveArgs,
+	Run:   serve,
 }
 
-var authFileAddCmd = &cobra.Command{
-    Use:   "auth:file:add",
-    Short: "Add auth credentials",
-    Long:  `Add new authentication credentials`,
-    Args:  authFileAddArgs,
-    Run:   authFileAdd,
+var authAddUserCmd = &cobra.Command{
+	Use:   "auth:add-user",
+	Short: "Add auth credentials",
+	Long:  `Add new authentication credentials`,
+	Args:  authAddUserArgs,
+	Run:   authAddUser,
 }

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
+	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/db"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/spf13/cobra"
@@ -11,7 +13,7 @@ import (
 	"os"
 )
 
-func authFileAddArgs(cmd *cobra.Command, args []string) error {
+func authAddUserArgs(cmd *cobra.Command, args []string) error {
 	if err := cobra.RangeArgs(0, 1)(cmd, args); err != nil {
 		return err
 	}
@@ -19,17 +21,29 @@ func authFileAddArgs(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func authFileAdd(cmd *cobra.Command, args []string) {
-	authFileName := ".mh-authfile"
+func authAddUser(cmd *cobra.Command, args []string) {
+	filePath := ""
 	if len(args) > 0 {
-		authFileName = args[0]
+		filePath = args[0]
 	}
+	configuration := config.ParseConfig(filePath)
+	switch configuration.Authentication.Use {
+	case "file":
+		addUser(authentication.CreateFileAuthentication(configuration.Authentication.File.Path))
+	case "mongodb":
+		addUser(authentication.CreateMongoDbAuthentication(db.MongoConfig{
+			configuration.Authentication.MongoDB.URI,
+			configuration.Authentication.MongoDB.DB,
+			configuration.Authentication.MongoDB.User,
+			configuration.Authentication.MongoDB.Pass,
+			configuration.Authentication.MongoDB.Collection,
+		}))
+	default:
+		logManager().Error("Unsuppoerted auth type")
+	}
+}
 
-	// If the file doesn't exist, create it, or append to the file
-	file, err := os.OpenFile(authFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	logger.PanicIfError(err)
-	defer file.Close()
-
+func addUser(auth authentication.Authentication) {
 	roomName, err := userInput.Get("Please input room name:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(roomName, 0, 20)
@@ -38,7 +52,6 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}
 
-	auth := authentication.CreateFileAuthentication(authFileName)
 	if auth.UsernamePresent(roomName) {
 		logManager().Critical(fmt.Sprintf("Room [%s] already present in credentials list.", roomName))
 		os.Exit(0)
@@ -72,13 +85,6 @@ func authFileAdd(cmd *cobra.Command, args []string) {
 		logManager().Critical(err.Error())
 		os.Exit(0)
 	}
-
-	err = auth.WriteToFile(file)
-	if err != nil {
-		logManager().Critical(err.Error())
-		os.Exit(0)
-	}
-	logger.PanicIfError(err)
 
 	logManager().Info(fmt.Sprintf("Room [%s] credentials added.", roomName))
 }

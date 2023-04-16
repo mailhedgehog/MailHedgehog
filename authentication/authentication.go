@@ -21,6 +21,10 @@ type Authentication interface {
 	RequiresAuthentication() bool
 	// Authenticate check is credentials valid
 	Authenticate(authType AuthenticationType, username string, password string) bool
+	// UsernamePresent check is username exists
+	UsernamePresent(username string) bool
+	// AddUser to auth storage
+	AddUser(username string, httpPassHash string, smtpPassHash string) error
 }
 
 const (

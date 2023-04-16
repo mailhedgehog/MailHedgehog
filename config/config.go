@@ -47,6 +47,13 @@ type AppConfig struct {
 		File struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
+		MongoDB struct {
+			URI        string `yaml:"uri"`
+			DB         string `yaml:"db_name"`
+			User       string `yaml:"db_user"`
+			Pass       string `yaml:"db_pass"`
+			Collection string `yaml:"db_collection"`
+		} `yaml:"mongodb"`
 	} `yaml:"authentication"`
 	UI struct {
 		File string `yaml:"file"`
@@ -124,9 +131,22 @@ func (config *AppConfig) withDefaults() {
 
 	if len(config.Authentication.Use) <= 0 {
 		config.Authentication.Use = "file"
-		if len(config.Authentication.File.Path) <= 0 {
-			config.Authentication.File.Path = ""
-		}
+	}
+
+	if len(config.Authentication.File.Path) <= 0 {
+		config.Authentication.File.Path = ""
+	}
+
+	if len(config.Authentication.MongoDB.URI) <= 0 {
+		config.Authentication.MongoDB.URI = "127.0.0.1:27017"
+	}
+
+	if len(config.Authentication.MongoDB.DB) <= 0 {
+		config.Authentication.MongoDB.DB = "mailhedgehog"
+	}
+
+	if len(config.Authentication.MongoDB.Collection) <= 0 {
+		config.Authentication.MongoDB.Collection = "users"
 	}
 
 	if len(config.Log.Level) <= 0 {

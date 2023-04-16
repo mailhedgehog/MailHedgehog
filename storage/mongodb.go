@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/mailhedgehog/MailHedgehog/db"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,41 +15,12 @@ import (
 	"time"
 )
 
-// Directory store messages in local directory
 type Mongo struct {
 	Collection *mongo.Collection
 }
 
-type MongoConfig struct {
-	URI        string
-	DB         string
-	User       string
-	Pass       string
-	Collection string
-}
-
-func CreateMongoDbStorage(config MongoConfig) *Mongo {
-
-	clientOptions := options.Client().ApplyURI("mongodb://" + config.URI)
-
-	if len(config.User) > 0 {
-		clientOptions = clientOptions.SetAuth(options.Credential{
-			Username: config.User,
-			Password: config.Pass,
-		})
-	}
-
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-	logger.PanicIfError(err)
-
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-	logger.PanicIfError(err)
-
-	logManager().Debug("Connected to MongoDB")
-
-	collection := client.Database(config.DB).Collection(config.Collection)
+func CreateMongoDbStorage(config db.MongoConfig) *Mongo {
+	collection := db.CreateMongoDbCollectionConnection(config)
 
 	indexName, err := collection.Indexes().CreateOne(context.TODO(), mongo.IndexModel{
 		Keys: bson.D{
@@ -60,16 +32,9 @@ func CreateMongoDbStorage(config MongoConfig) *Mongo {
 
 	logManager().Debug(fmt.Sprintf("Index [%s] created", indexName))
 
-	mongoClient := &Mongo{
+	return &Mongo{
 		Collection: collection,
 	}
-
-	query := SearchQuery{
-		"content": "87361",
-	}
-	fmt.Println(mongoClient.List("", query, 0, 2))
-
-	return mongoClient
 }
 
 type Message struct {
@@ -218,7 +183,7 @@ func (mongoClient *Mongo) RoomsList(offset, limit int) ([]Room, error) {
 	cursor, err := mongoClient.Collection.Aggregate(context.TODO(), mongo.Pipeline{
 		bson.D{
 			{"$group", bson.M{"_id": "$room"}}},
-		bson.D{{"$sort", bson.D{{"_id", 1}}}},
+		bson.D{{"$sort", bson.M{"_id": 1}}},
 		bson.D{{"$skip", offset}},
 		bson.D{{"$limit", limit}},
 	},
@@ -242,7 +207,7 @@ func (mongoClient *Mongo) RoomsCount() int {
 	cursor, err := mongoClient.Collection.Aggregate(context.TODO(), mongo.Pipeline{bson.D{
 		{"$group", bson.D{
 			{"_id", "$room"},
-			{"count", bson.D{{"$sum", 1}}},
+			{"count", bson.M{"$sum": 1}},
 		}}}},
 	)
 	logger.PanicIfError(err)
@@ -259,7 +224,7 @@ func (mongoClient *Mongo) RoomsCount() int {
 
 func (mongoClient *Mongo) DeleteRoom(room Room) error {
 	roomName := mongoClient.RoomName(room)
-	result, err := mongoClient.Collection.DeleteMany(context.TODO(), bson.D{{"room", roomName}})
+	result, err := mongoClient.Collection.DeleteMany(context.TODO(), bson.M{"room": roomName})
 
 	logManager().Debug(fmt.Sprintf("Deleted room [%s] (%d items)", roomName, result.DeletedCount))
 

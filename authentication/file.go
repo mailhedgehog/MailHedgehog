@@ -12,12 +12,15 @@ import (
 
 // FileAuth represents the authentication handler using file
 type FileAuth struct {
-	users map[string]userInfo
+	filePath string
+	users    map[string]userInfo
 }
 
 func CreateFileAuthentication(authFilePath string) *FileAuth {
-	authFile := &FileAuth{}
-	authFile.AuthFile(authFilePath)
+	authFile := &FileAuth{
+		filePath: authFilePath,
+	}
+	authFile.authFile()
 
 	return authFile
 }
@@ -48,16 +51,16 @@ func (fileAuth *FileAuth) Authenticate(authType AuthenticationType, username str
 	return true
 }
 
-// AuthFile scan file and add users to memory
-func (fileAuth *FileAuth) AuthFile(path string) int {
+// authFile scan file and add users to memory
+func (fileAuth *FileAuth) authFile() int {
 	fileAuth.users = nil
 
-	if len(path) <= 0 {
+	if len(fileAuth.filePath) <= 0 {
 		logManager().Debug("File auth empty.")
 		return 0
 	}
 
-	file, err := os.Open(path)
+	file, err := os.Open(fileAuth.filePath)
 	logger.PanicIfError(err)
 	defer file.Close()
 
@@ -75,27 +78,6 @@ func (fileAuth *FileAuth) AuthFile(path string) int {
 		return 0
 	}
 	return len(fileAuth.users)
-}
-
-func (fileAuth *FileAuth) WriteToFile(file *os.File) error {
-	file.Truncate(0)
-	for _, userInfo := range fileAuth.users {
-		smtpPass := ""
-		if userInfo.httpPass != userInfo.smtpPass {
-			smtpPass = userInfo.smtpPass
-		}
-		_, err := file.WriteString(fmt.Sprintf(
-			"%s:%s:%s\n",
-			userInfo.username,
-			userInfo.httpPass,
-			smtpPass,
-		))
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (fileAuth *FileAuth) initUsers() {
@@ -148,6 +130,33 @@ func (fileAuth *FileAuth) AddUser(username string, httpPassHash string, smtpPass
 		username: username,
 		httpPass: httpPassHash,
 		smtpPass: smtpPassHash,
+	}
+
+	return fileAuth.writeToFile()
+}
+
+func (fileAuth *FileAuth) writeToFile() error {
+	file, err := os.OpenFile(fileAuth.filePath, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	file.Truncate(0)
+	for _, userInfo := range fileAuth.users {
+		smtpPass := ""
+		if userInfo.httpPass != userInfo.smtpPass {
+			smtpPass = userInfo.smtpPass
+		}
+		_, err := file.WriteString(fmt.Sprintf(
+			"%s:%s:%s\n",
+			userInfo.username,
+			userInfo.httpPass,
+			smtpPass,
+		))
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

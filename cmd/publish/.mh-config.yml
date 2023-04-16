@@ -16,8 +16,18 @@ storage:
 #    db_name: mailhedgehog
 #    db_user: test
 #    db_pass: testpass
-#    db_collection: emails_dev
+#    db_collection: emails
 authentication:
   use: file
   file:
     path: ".mh-authfile"
+#authentication:
+#  use: mongodb
+#  mongodb:
+#    uri: 127.0.0.1:27017
+#    db_name: mailhedgehog
+#    db_user: test
+#    db_pass: testpass
+#    db_collection:users
+#ui:
+#  file: ui.json

@@ -123,12 +123,17 @@
         <span class="mr-0">
           ©
         </span>
+        <span
+          v-if="copyrightsText"
+          v-html="copyrightsText"
+        />
         <a
-          href="https://think.studio/"
+          v-else
+          href="https://github.com/mailhedgehog"
           class="underline transition-colors duration-500 hover:text-primary-600"
           target="_blank"
         >
-          Think One Communications Ltd
+          MailHedgehog
         </a>
       </div>
       <div class="hidden sm:block text-sm text-context-300 dark:text-context-700 select-none">
@@ -170,5 +175,7 @@ const store = useStore();
 const user = computed<User | null>(() => store.getters.getUser);
 
 const sidebarOpen = ref(false);
+
+const copyrightsText = computed(() => window.MailHedgehog.congValue('ui.copyrightsText', null));
 
 </script>
