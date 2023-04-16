@@ -3,6 +3,8 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
+	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -11,7 +13,7 @@ import (
 var configFileContent string
 
 func initApplicationArgs(cmd *cobra.Command, args []string) error {
-	if err := cobra.RangeArgs(0, 1)(cmd, args); err != nil {
+	if err := cobra.NoArgs(cmd, args); err != nil {
 		return err
 	}
 
@@ -19,9 +21,11 @@ func initApplicationArgs(cmd *cobra.Command, args []string) error {
 }
 
 func initApplication(cmd *cobra.Command, args []string) {
-	configFileName := ".mh-config.yml"
-	if len(args) > 0 {
-		configFileName = args[0]
+	defaultConfigFileName := ".mh-config.yml"
+	configFileName, err := userInput.Get(fmt.Sprintf("Config file name [%s]:", defaultConfigFileName))
+	logger.PanicIfError(err)
+	if len(configFileName) <= 0 {
+		configFileName = defaultConfigFileName
 	}
 	if _, err := os.Stat(configFileName); err == nil {
 		if flagForce {
@@ -32,15 +36,12 @@ func initApplication(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	f, err := os.Create(configFileName)
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	_, err = f.WriteString(configFileContent)
-	if err != nil {
-		panic(err)
-	}
+	file, err := os.Create(configFileName)
+	logger.PanicIfError(err)
+	defer file.Close()
+
+	_, err = file.WriteString(configFileContent)
+	logger.PanicIfError(err)
 
 	logManager().Info(fmt.Sprintf("Config file `%s` created.", configFileName))
 }
