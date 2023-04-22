@@ -6,6 +6,7 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	v1 "github.com/mailhedgehog/MailHedgehog/server/api/v1"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"regexp"
 )
 
 var configuredLogger *logger.Logger
@@ -27,7 +28,9 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		switch context.Config.Authentication.Type {
 		case "internal":
 			api.Use(skip.New(authenticationInternal(context), func(ctx *fiber.Ctx) bool {
-				return false
+				isLoginRoute, _ := regexp.MatchString(`^\/api\/v\d+\/login.*$`, ctx.Path())
+
+				return isLoginRoute
 			}))
 		}
 	}

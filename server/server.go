@@ -159,7 +159,7 @@ func authenticationBasic(context *serverContext.Context) func(ctx *fiber.Ctx) er
 				return Unauthorized()
 			}
 
-			if context.SetHttpAuthenticatedUser(ctx, username) != nil {
+			if _, err := context.SetHttpAuthenticatedUser(ctx, username); err != nil {
 				logManager().Error(fmt.Sprintf("Error on saving session %s", err.Error()))
 				return Unauthorized()
 			}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
+	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/dto/email"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
@@ -41,11 +42,17 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	v1.Get("/user", apiV1.showUser)
 
 	if context.Authentication.RequiresAuthentication() {
-		v1.Post("/logout", func(c *fiber.Ctx) error {
-			context.GetHttpSession(c).Destroy()
-			logManager().Error("Session destroyed")
-			return c.Redirect("//logout:logout@" + context.HttpBindAddr() + context.PathWithPrefix("/"))
-		})
+		switch context.Config.Authentication.Type {
+		case "internal":
+			v1.Post("/login", apiV1.postInternalLogin)
+			v1.Post("/logout", apiV1.postInternalLogout)
+		case "basic":
+			v1.Post("/logout", func(c *fiber.Ctx) error {
+				context.GetHttpSession(c).Destroy()
+				logManager().Error("Session destroyed")
+				return c.Redirect("//logout:logout@" + context.HttpBindAddr() + context.PathWithPrefix("/"))
+			})
+		}
 	}
 
 	v1.Get("/emails", apiV1.getEmails)
@@ -318,4 +325,47 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 	}
 
 	return (&Response{Message: "Email released"}).Send(ctx)
+}
+
+func (apiV1 *ApiV1) postInternalLogin(ctx *fiber.Ctx) error {
+	type LoginBody struct {
+		Username string `query:"username" validate:"min=1,max=99999"`
+		Password string `query:"password" validate:"min=0,max=99999"`
+	}
+
+	loginBody := new(LoginBody)
+
+	if err := ctx.BodyParser(loginBody); err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	if !apiV1.context.Authentication.Authenticate(authentication.HTTP, loginBody.Username, loginBody.Password) {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			{FailedField: "username", Value: "Incorrect credentials"},
+		})
+	}
+
+	token, err := apiV1.context.SetHttpAuthenticatedUser(ctx, loginBody.Username)
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	fmt.Println(token)
+
+	return (&Response{
+		Message: "You are logged",
+		Data: fiber.Map{
+			"token": token,
+		},
+	}).Send(ctx)
+}
+
+func (apiV1 *ApiV1) postInternalLogout(ctx *fiber.Ctx) error {
+	apiV1.context.GetHttpSession(ctx).Destroy()
+
+	return (&Response{Message: "Session destroyed"}).Send(ctx)
 }

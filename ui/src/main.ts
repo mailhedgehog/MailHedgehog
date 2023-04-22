@@ -61,6 +61,13 @@ export class MailHedgehog {
     return this.$axios;
   }
 
+  setAuthToken(token: string) {
+    localStorage.setItem("mailHedgehogToken", token);
+    this.$axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+
+    return this;
+  }
+
   info(message: string) {
     this.$toast.info(message);
   }

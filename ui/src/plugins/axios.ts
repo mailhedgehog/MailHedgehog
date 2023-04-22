@@ -10,6 +10,10 @@ export function setupAxios(app: MailHedgehog, conf: { baseUrl: string }): AxiosI
 
   instance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
+  if(localStorage.getItem("mailHedgehogToken")) {
+    instance.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem("mailHedgehogToken")}`;
+  }
+
   instance.interceptors.response.use(
     (response) => response,
     (error) => {

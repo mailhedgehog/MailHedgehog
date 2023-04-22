@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/rand"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -39,9 +40,10 @@ type AppConfig struct {
 		} `yaml:"mongodb"`
 	} `yaml:"storage"`
 	Authentication struct {
-		Use  string `yaml:"use"`
-		Type string `yaml:"type"`
-		File struct {
+		Use        string `yaml:"use"`
+		Type       string `yaml:"type"`
+		HmacSecret []byte
+		File       struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
 		MongoDB struct {
@@ -141,4 +143,10 @@ func (config *AppConfig) withDefaults() {
 		config.Log.Level = logger.DEBUG
 	}
 
+	if config.Authentication.Type == "internal" {
+		hmacSecret := make([]byte, 200)
+		_, err := rand.Read(hmacSecret)
+		logger.PanicIfError(err)
+		config.Authentication.HmacSecret = hmacSecret
+	}
 }

@@ -19,6 +19,7 @@
           <div>
             <label for="email-address" class="sr-only">{{t('login.form.username.label')}}</label>
             <input id="username"
+                   v-model="loginForm.username"
                    name="username"
                    type="text"
                    autocomplete="username"
@@ -30,6 +31,7 @@
           <div>
             <label for="password" class="sr-only">{{t('login.form.password.label')}}</label>
             <input id="password"
+                   v-model="loginForm.password"
                    name="password"
                    type="password"
                    autocomplete="current-password"
@@ -68,7 +70,7 @@
 import { LockClosedIcon } from '@heroicons/vue/20/solid'
 import {useI18n} from "vue-i18n";
 import ColorModeSelect from "@/components/Header/ColorModeSelect.vue";
-import {computed, inject} from "vue";
+import {computed, inject, ref} from "vue";
 import {MailHedgehog} from "@/main.js";
 import LangModeSelect from "@/components/Header/LangModeSelect.vue";
 import Copyright from '@/components/Footer/Copyright.vue';
@@ -80,7 +82,26 @@ const title = computed(() => mailHedgehog?.configValue('ui.appName', null));
 const logoUrl = computed(() => mailHedgehog?.configValue('ui.appLogoUrl', '/MailHedgehog.svg'));
 const logoStyle = computed(() => mailHedgehog?.configValue('ui.appLogoStyle', []));
 
+const isRequesting = ref(false);
+const loginForm = ref({
+  username: null,
+  password: null,
+});
 const loginAction = () => {
-  alert('asdasd')
+  isRequesting.value = true;
+  mailHedgehog?.request()
+    .post('login', loginForm.value)
+    .then((response) => {
+      if(response.data?.data?.token) {
+        mailHedgehog?.setAuthToken(response.data?.data?.token);
+        mailHedgehog.goTo({ name: 'emails' });
+      }
+    })
+    .catch((error) => {
+      mailHedgehog?.error("Error")
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
 }
 </script>
