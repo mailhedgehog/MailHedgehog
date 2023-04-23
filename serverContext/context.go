@@ -77,7 +77,7 @@ func (context *Context) GetHttpAuthenticatedUser(ctx *fiber.Ctx) (string, error)
 					}
 
 					// hmacSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-					return context.Config.Authentication.HmacSecret, nil
+					return context.Config.Authentication.Internal.HmacSecret, nil
 				})
 				if err == nil {
 					if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -112,9 +112,9 @@ func (context *Context) SetHttpAuthenticatedUser(ctx *fiber.Ctx, username string
 			jwt.MapClaims{
 				"iss":  "mailhedgehog",
 				"user": username,
-				"exp":  time.Now().Add(48 * time.Hour).Unix(),
+				"exp":  time.Now().Add(time.Duration(context.Config.Authentication.Internal.SessionLifetime) * time.Minute).Unix(),
 			})
-		tokenString, err := t.SignedString(context.Config.Authentication.HmacSecret)
+		tokenString, err := t.SignedString(context.Config.Authentication.Internal.HmacSecret)
 		logger.PanicIfError(err)
 		return tokenString, nil
 	}

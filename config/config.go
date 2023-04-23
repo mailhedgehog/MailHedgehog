@@ -40,10 +40,15 @@ type AppConfig struct {
 		} `yaml:"mongodb"`
 	} `yaml:"storage"`
 	Authentication struct {
-		Use        string `yaml:"use"`
-		Type       string `yaml:"type"`
-		HmacSecret []byte
-		File       struct {
+		Use      string `yaml:"use"`
+		Type     string `yaml:"type"`
+		Internal struct {
+			HmacSecret []byte
+			// Lifetime in minutes
+			SessionLifetime int64 `yaml:"session_lifetime"`
+		} `yaml:"internal"`
+
+		File struct {
 			Path string `yaml:"path"`
 		} `yaml:"file"`
 		MongoDB struct {
@@ -147,6 +152,10 @@ func (config *AppConfig) withDefaults() {
 		hmacSecret := make([]byte, 200)
 		_, err := rand.Read(hmacSecret)
 		logger.PanicIfError(err)
-		config.Authentication.HmacSecret = hmacSecret
+		config.Authentication.Internal.HmacSecret = hmacSecret
+
+		if config.Authentication.Internal.SessionLifetime <= 0 {
+			config.Authentication.Internal.SessionLifetime = 2 * 60
+		}
 	}
 }
