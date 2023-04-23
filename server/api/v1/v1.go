@@ -367,5 +367,8 @@ func (apiV1 *ApiV1) postInternalLogin(ctx *fiber.Ctx) error {
 func (apiV1 *ApiV1) postInternalLogout(ctx *fiber.Ctx) error {
 	apiV1.context.GetHttpSession(ctx).Destroy()
 
+	// server has not blocklist or any other mechanism to invalidate token,
+	// so just remove token from client and keep expiration time shortly as possible
+
 	return (&Response{Message: "Session destroyed"}).Send(ctx)
 }

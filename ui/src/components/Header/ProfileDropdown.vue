@@ -61,6 +61,7 @@ const logout = () => {
   mailHedgehog?.request()
     .post('logout')
     .finally(() => {
+      mailHedgehog?.setAuthToken();
       const reloadNow = () => {
         let url = mailHedgehog?.configValue('http.baseUrl', '')
           .trim()
