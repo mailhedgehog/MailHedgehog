@@ -2,10 +2,13 @@ package authentication
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -82,4 +85,55 @@ func (mongoClient *Mongo) AddUser(username string, httpPassHash string, smtpPass
 	logManager().Debug(fmt.Sprintf("New useer [%s] added, mongo _id='%s'", username, insertResult.InsertedID))
 
 	return err
+}
+
+func (mongoClient *Mongo) DeleteUser(username string) error {
+	filter := bson.D{
+		{"$and",
+			bson.A{
+				bson.D{{"username", username}},
+			}},
+	}
+
+	result, err := mongoClient.Collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	if result.DeletedCount != 1 {
+		return errors.New(fmt.Sprintf("Unexpected count of deleted items, extected 1, got %d", result.DeletedCount))
+	}
+
+	return nil
+}
+
+func (mongoClient *Mongo) ListUsers(searchQuery string, offset, limit int) ([]UserResource, int, error) {
+	opts := options.Find().SetSort(bson.M{"username": 1}).SetSkip(int64(offset)).SetLimit(int64(limit))
+	textsMatch := bson.A{
+		bson.M{"username": primitive.Regex{Pattern: searchQuery, Options: ""}},
+	}
+	filterQuery := bson.A{}
+	if len(textsMatch) > 0 {
+		filterQuery = append(filterQuery, bson.M{"$or": textsMatch})
+	}
+	filter := bson.M{"$and": filterQuery}
+
+	totalCount, err := mongoClient.Collection.CountDocuments(context.TODO(), filter)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	cursor, err := mongoClient.Collection.Find(context.TODO(), filter, opts)
+	if err != nil {
+		return nil, 0, err
+	}
+	var resources []UserResource
+	var results []UserRow
+	if err = cursor.All(context.TODO(), &results); err != nil {
+		return nil, 0, err
+	}
+	for _, result := range results {
+		resources = append(resources, UserResource{Username: result.Username})
+	}
+
+	return resources, int(totalCount), nil
 }

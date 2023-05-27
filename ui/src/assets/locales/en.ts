@@ -5,6 +5,7 @@ export default {
   menu: {
     inbox: 'Inbox',
     logout: 'Logout',
+    users: 'Users',
   },
   sidebar: {
     open: 'Open sidebar',
@@ -100,5 +101,13 @@ export default {
         label: 'Sign in',
       },
     },
+  },
+  users: {
+    pageTitle: 'Users',
+    search: 'Search users',
+    empty: 'No users found',
+    create: 'Add user',
+    deleted: 'User deleted',
+    username: 'Username',
   },
 };

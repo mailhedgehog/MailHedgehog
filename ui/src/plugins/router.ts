@@ -4,6 +4,7 @@ import {MailHedgehog} from "@/main";
 const Dashboard = () => import(/* webpackChunkName: "page-email" */ '../layouts/Dashboard.vue');
 const Inbox = () => import(/* webpackChunkName: "page-email" */ '../pages/Inbox.vue');
 const Email = () => import(/* webpackChunkName: "page-email" */ '../pages/Email.vue');
+const Users = () => import(/* webpackChunkName: "page-users" */ '../pages/Users.vue');
 const Login = () => import(/* webpackChunkName: "page-login" */ '../pages/Login.vue');
 
 
@@ -23,10 +24,23 @@ function makeRoutes(app: MailHedgehog) {
     // notice how only the child route has a name
     children: [
       {
-        "path": '', "component": Inbox, "alias": 'emails', "name": 'emails',
+        path: '',
+        component: Inbox,
+        alias: 'emails',
+        name: 'emails',
       },
-      { path: 'emails/:id', component: Email, name: 'email' },
-    ],
+      {
+        path: 'emails/:id',
+        component: Email,
+        name: 'email'
+      },
+      {
+        path: 'users',
+        component: Users,
+        name: 'users',
+        hide: !app.userCan('manage_users')
+      }
+    ].filter((i) => !i.hide),
   },)
 
   return routes;

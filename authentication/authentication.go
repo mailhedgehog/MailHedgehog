@@ -25,6 +25,10 @@ type Authentication interface {
 	UsernamePresent(username string) bool
 	// AddUser to auth storage
 	AddUser(username string, httpPassHash string, smtpPassHash string) error
+	// DeleteUser from auth storage
+	DeleteUser(username string) error
+	// ListUsers from auth storage
+	ListUsers(searchQuery string, offset, limit int) ([]UserResource, int, error)
 }
 
 const (
@@ -32,8 +36,6 @@ const (
 	SMTP                    = "smtp"
 )
 
-type userInfo struct {
-	username string
-	httpPass string
-	smtpPass string
+type UserResource struct {
+	Username string
 }

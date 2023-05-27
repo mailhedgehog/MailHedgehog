@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+type userInfo struct {
+	username string
+	httpPass string
+	smtpPass string
+}
+
 // FileAuth represents the authentication handler using file
 type FileAuth struct {
 	filePath string
@@ -133,6 +139,40 @@ func (fileAuth *FileAuth) AddUser(username string, httpPassHash string, smtpPass
 	}
 
 	return fileAuth.writeToFile()
+}
+
+func (fileAuth *FileAuth) DeleteUser(username string) error {
+	delete(fileAuth.users, username)
+
+	return fileAuth.writeToFile()
+}
+
+func (fileAuth *FileAuth) ListUsers(searchQuery string, offset, limit int) ([]UserResource, int, error) {
+	keys := make([]string, 0, len(fileAuth.users))
+	for k, _ := range fileAuth.users {
+		if len(searchQuery) > 0 {
+			if strings.Contains(k, searchQuery) {
+				keys = append(keys, k)
+			}
+		} else {
+			keys = append(keys, k)
+		}
+	}
+
+	endIndex := len(keys)
+	if offset+limit < len(keys) {
+		endIndex = offset + limit
+	}
+	if offset < 0 || offset > endIndex {
+		offset = 0
+	}
+	slice := keys[offset:endIndex]
+	var resources []UserResource
+	for _, username := range slice {
+		resources = append(resources, UserResource{Username: username})
+	}
+
+	return resources, len(keys), nil
 }
 
 func (fileAuth *FileAuth) writeToFile() error {
