@@ -108,6 +108,18 @@ export default {
     empty: 'No users found',
     create: 'Add user',
     deleted: 'User deleted',
+    updated: 'User updated',
+    created: 'User created',
     username: 'Username',
+    hubPassword: 'UI password',
+    smtpPassword: 'SMTP password',
+    emptySmtpPasswordHint: 'Left blank to set same password as UI',
+    emptyPasswordHint: 'Left blank to keep old password',
+    modal: {
+      createTitle: 'Create user',
+      editTitle: 'Edit user \'{user}\'',
+      cancel: 'Cancel',
+      submit: 'Submit',
+    },
   },
 };

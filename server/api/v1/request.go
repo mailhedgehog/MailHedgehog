@@ -10,9 +10,9 @@ TODO: remake functionality got array of messages...
 */
 
 type ValidationError struct {
-	FailedField string
-	Tag         string
-	Value       string
+	FailedField string `json:"failed_field" xml:"failed_field"`
+	Tag         string `json:"tag" xml:"tag"`
+	Value       string `json:"value" xml:"value"`
 }
 
 func ValidationErrorFromError(field string, err error) *ValidationError {

@@ -38,9 +38,8 @@ function makeRoutes(app: MailHedgehog) {
         path: 'users',
         component: Users,
         name: 'users',
-        hide: !app.userCan('manage_users')
       }
-    ].filter((i) => !i.hide),
+    ],
   },)
 
   return routes;

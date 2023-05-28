@@ -12,4 +12,9 @@
     @apply placeholder-context-400 dark:placeholder-context-500;
     @apply px-3 py-2 shadow-sm focus:outline-none sm:text-sm;
   }
+  &-hint {
+    @apply block text-sm;
+    @apply text-context-400;
+    @apply dark:text-context-400;
+  }
 }

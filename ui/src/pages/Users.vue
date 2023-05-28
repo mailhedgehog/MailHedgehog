@@ -19,7 +19,7 @@
             v-tooltip="t('users.create')"
             type="button"
             class="btn btn--default whitespace-nowrap"
-            @click.prevent="addUser()"
+            @click.prevent="editingUser = ''"
           >
             <UserPlusIcon class="w-4 h-4 md:mr-2" />
             <span
@@ -256,7 +256,7 @@
       as="div"
       class="relative z-10"
       :class="{'pointer-events-none': isRequesting}"
-      @close="editingUser = null"
+      @close="closeModal"
     >
       <TransitionChild
         as="template"
@@ -289,16 +289,23 @@
             text-left shadow-xl transition-all
             sm:my-8 sm:w-full sm:max-w-lg sm:p-6"
             >
-              <div>
+              <form @submit.prevent="updateOrCreateUser">
+                <div>
                 <div class="text-center sm:mt-5">
                   <DialogTitle
                     as="h3"
                     class="text-lg font-medium leading-6 text-context-900 dark:text-context-100"
                   >
-                    {{ t('email.releaseHint') }}
+                    <template v-if="editingUser === ''">
+                      {{ t('users.modal.createTitle') }}
+                    </template>
+                    <template v-else>
+                      {{ t('users.modal.editTitle', {user: editingUser}) }}
+                    </template>
                   </DialogTitle>
                   <div
                     class="
+                    block
                     mt-6
                     text-left
                     text-context-900 dark:text-context-100
@@ -307,86 +314,101 @@
                     <div
                       class="space-y-6"
                     >
-                      <div>
+                      <div v-if="editingUser === ''">
                         <label
-                          for="host"
+                          for="new_username"
                           class="form-label"
                         >
-                          {{ t('release.host') }}
+                          {{ t('users.username') }}
                         </label>
                         <div class="mt-1 flex">
                           <input
-                            id="host"
-                            v-model="userForm.host"
-                            name="host"
+                            id="new_username"
+                            v-model="userForm.new_username"
+                            name="new_username"
                             type="text"
-                            autocomplete="host"
-                            required
+                            autocomplete="off"
+                            :required="editingUser === ''"
                             class="form-input"
-                            placeholder="smtp.provider.com"
+                            :placeholder="t('users.username')"
                           >
                         </div>
                       </div>
                       <div>
                         <label
-                          for="host"
+                          for="hub_password"
                           class="form-label"
                         >
-                          {{ t('release.host') }}
+                          {{ t('users.hubPassword') }}
                         </label>
                         <div class="mt-1 flex">
                           <input
-                            id="host"
-                            v-model="userForm.host"
-                            name="host"
-                            type="text"
-                            autocomplete="host"
-                            required
+                            id="hub_password"
+                            v-model="userForm.hub_password"
+                            name="hub_password"
+                            type="password"
+                            autocomplete="hub_password"
+                            :required="editingUser === ''"
                             class="form-input"
-                            placeholder="smtp.provider.com"
+                            :placeholder="t('users.hubPassword')"
                           >
+                        </div>
+                        <div class="form-hint">
+                          <template v-if="editingUser === ''">
+
+                          </template>
+                          <template v-else>
+                            {{t('users.emptyPasswordHint')}}
+                          </template>
                         </div>
                       </div>
                       <div>
                         <label
-                          for="host"
+                          for="smtp_password"
                           class="form-label"
                         >
-                          {{ t('release.host') }}
+                          {{ t('users.smtpPassword') }}
                         </label>
                         <div class="mt-1 flex">
                           <input
-                            id="host"
-                            v-model="userForm.host"
-                            name="host"
-                            type="text"
-                            autocomplete="host"
-                            required
+                            id="smtp_password"
+                            v-model="userForm.smtp_password"
+                            name="smtp_password"
+                            type="password"
+                            autocomplete="smtp_password"
                             class="form-input"
-                            placeholder="smtp.provider.com"
+                            :placeholder="t('users.smtpPassword')"
                           >
+                        </div>
+                        <div class="form-hint">
+                          <template v-if="editingUser === ''">
+                            {{t('users.emptySmtpPasswordHint')}}
+                          </template>
+                          <template v-else>
+                            {{t('users.emptyPasswordHint')}}
+                          </template>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="mt-6 sm:mt-8 flex items-center justify-between">
+                <div class="mt-6 sm:mt-8 flex items-center justify-between">
                 <button
                   type="button"
                   class="btn btn--default"
-                  @click="editingUser = null"
+                  @click.prevent="closeModal"
                 >
-                  {{ t('email.cancel') }}
+                  {{ t('users.modal.cancel') }}
                 </button>
                 <button
-                  type="button"
+                  type="submit"
                   class="btn btn--primary"
-                  @click="updateOrCreateUser"
                 >
-                  {{ t('email.release') }}
+                  {{ t('users.modal.submit') }}
                 </button>
               </div>
+              </form>
             </DialogPanel>
           </TransitionChild>
         </div>
@@ -397,7 +419,7 @@
     <form
       class="flex w-full md:ml-0"
       method="GET"
-      @submit.prevent="getEmails(1)"
+      @submit.prevent="getUsers(1)"
     >
       <label
         for="search-field"
@@ -462,7 +484,7 @@ const store = useStore();
 
 const queryParams = ref({
   page: 1,
-  per_page: 2,
+  per_page: 25,
   search: '',
 });
 const mounted = ref(false);
@@ -526,24 +548,53 @@ const goToDirection = (direction = 'next') => {
 const editingUser = ref(null);
 
 const userForm = ref({
-  host: '',
-  port: 25,
-  username: '',
-  password: '',
+  new_username: null,
+  hub_password: null,
+  smtp_password: null,
 });
-const addUser = () => {
-  editingUser.value = '';
-};
+
 const editUser = (user) => {
   editingUser.value = user.username;
 };
+
 const updateOrCreateUser = () => {
+  isRequesting.value = true;
+  let request = mailHedgehog?.request();
   if(editingUser.value) {
-    alert('update user');
+    request = request.put(`users/${editingUser.value}`, {
+      hub_password: userForm.value.hub_password,
+      smtp_password: userForm.value.smtp_password,
+    })
   } else {
-    alert('create user');
+    request = request.post('users', {
+      username: userForm.value.new_username,
+      hub_password: userForm.value.hub_password,
+      smtp_password: userForm.value.smtp_password,
+    })
   }
+  request.then((response) => {
+      getUsers();
+      if(editingUser.value) {
+        mailHedgehog?.success(t('users.updated'));
+      } else {
+        mailHedgehog?.success(t('users.created'));
+      }
+    closeModal()
+
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
 };
+
+const closeModal = () => {
+  editingUser.value = null;
+  userForm.value = {
+    new_username: null,
+    hub_password: null,
+    smtp_password: null,
+  };
+}
 
 const deleteUser = (user) => {
   store.dispatch('confirmDialog/confirm')

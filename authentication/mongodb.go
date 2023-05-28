@@ -80,9 +80,31 @@ func (mongoClient *Mongo) AddUser(username string, httpPassHash string, smtpPass
 		smtpPassHash,
 	})
 
-	fmt.Println(username, httpPassHash, smtpPassHash)
+	logManager().Debug(fmt.Sprintf("New user [%s] added, mongo _id='%s'", username, insertResult.InsertedID))
 
-	logManager().Debug(fmt.Sprintf("New useer [%s] added, mongo _id='%s'", username, insertResult.InsertedID))
+	return err
+}
+
+func (mongoClient *Mongo) UpdateUser(username string, httpPassHash string, smtpPassHash string) error {
+	filter := bson.D{
+		{"$and",
+			bson.A{
+				bson.D{{"username", username}},
+			}},
+	}
+
+	newValues := bson.D{}
+
+	if len(httpPassHash) > 0 {
+		newValues = append(newValues, bson.E{"http_password", httpPassHash})
+	}
+	if len(smtpPassHash) > 0 {
+		newValues = append(newValues, bson.E{"smtp_password", smtpPassHash})
+	}
+
+	updateResult, err := mongoClient.Collection.UpdateOne(context.TODO(), filter, bson.D{bson.E{"$set", newValues}})
+
+	logManager().Debug(fmt.Sprintf("User [%s] updated, mongo _id='%s'", username, updateResult.UpsertedID))
 
 	return err
 }

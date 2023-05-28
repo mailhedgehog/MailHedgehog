@@ -42,6 +42,7 @@ type AppConfig struct {
 	Authentication struct {
 		Use      string `yaml:"use"`
 		Type     string `yaml:"type"`
+		Admin    string `yaml:"admin"`
 		Internal struct {
 			HmacSecret []byte
 			// Lifetime in minutes
@@ -158,4 +159,8 @@ func (config *AppConfig) withDefaults() {
 			config.Authentication.Internal.SessionLifetime = 2 * 60
 		}
 	}
+}
+
+func (config *AppConfig) IsAdmin(username string) bool {
+	return len(config.Authentication.Admin) > 0 && config.Authentication.Admin == username
 }

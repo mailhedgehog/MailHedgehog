@@ -8,7 +8,6 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/spf13/cobra"
-	"golang.org/x/crypto/bcrypt"
 	"os"
 )
 
@@ -63,7 +62,7 @@ func addUser(auth authentication.Authentication) {
 		logManager().Critical(err.Error())
 		os.Exit(0)
 	}
-	hashHttpPassword, err := createPasswordHash(httpPassword)
+	hashHttpPassword, err := authentication.CreatePasswordHash(httpPassword)
 	logger.PanicIfError(err)
 
 	hashSmtpPassword := []byte{}
@@ -75,7 +74,7 @@ func addUser(auth authentication.Authentication) {
 			logManager().Critical(err.Error())
 			os.Exit(0)
 		}
-		hashSmtpPassword, err = createPasswordHash(smtpPassword)
+		hashSmtpPassword, err = authentication.CreatePasswordHash(smtpPassword)
 		logger.PanicIfError(err)
 	}
 
@@ -98,12 +97,4 @@ func validateMinMaxLength(input string, min int, max int) error {
 	}
 
 	return nil
-}
-
-func createPasswordHash(password string) ([]byte, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	if err != nil {
-		return []byte{}, err
-	}
-	return bytes, nil
 }

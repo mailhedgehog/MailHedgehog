@@ -5,7 +5,7 @@
   >
     <div class="space-y-1 px-2">
       <router-link
-        v-for="item in navigation.filter((i) => !i.hide)"
+        v-for="item in navigation"
         v-slot="{ href, navigate, isActive, isExactActive }"
         :key="item.name"
         custom
@@ -32,14 +32,29 @@
 <script setup lang="ts">
 import { InboxArrowDownIcon, UsersIcon } from '@heroicons/vue/24/outline';
 import { useI18n } from 'vue-i18n';
-import {inject} from "vue";
+import {computed, inject, ref} from "vue";
 import {MailHedgehog} from "@/main";
+import {Axios} from "axios";
+import {useStore} from "vuex";
 
+const store = useStore();
 const { t } = useI18n();
 const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 
-const navigation = [
-  { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
-  { name: 'users', href: '/users', icon: UsersIcon, hide: !mailHedgehog?.userCan('manage_users') },
-];
+const canManageUsers = computed(() => {
+    const permissions = store.getters.getUser?.permissions
+
+    if(!Array.isArray(permissions)) {
+      return false;
+    }
+
+    return permissions.includes("manage_users");
+});
+
+const navigation = computed(() => {
+  return [
+    { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
+    { name: 'users', href: '/users', icon: UsersIcon, hide: !canManageUsers },
+  ].filter((i) => !i.hide)
+});
 </script>

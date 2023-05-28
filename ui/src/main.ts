@@ -57,14 +57,6 @@ export class MailHedgehog {
     return _.get(this.mhConf, key, defaultValue);
   }
 
-  userCan(permission: string): boolean {
-    const permissions = this.configValue('permissions', []);
-    if(!Array.isArray(permissions)) {
-      return false;
-    }
-    return permissions.includes(permission);
-  }
-
   request(): Axios {
     return this.$axios;
   }

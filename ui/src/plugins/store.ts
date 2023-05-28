@@ -2,6 +2,7 @@ import { createStore } from 'vuex';
 
 export interface User {
   username: string;
+  permissions: Array<string>;
 }
 
 export interface State {
