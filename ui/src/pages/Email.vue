@@ -548,8 +548,8 @@ const deleteEmail = () => {
           mailHedgehog?.success(t('email.deleted'));
           nextTick(() => goBack());
         })
-        .catch(() => {
-          mailHedgehog?.error(t('response.error'));
+        .catch(error => {
+          mailHedgehog.onResponseError(error, 'Response Error');
         })
         .finally(() => {
           isRequesting.value = false;
@@ -579,8 +579,8 @@ function downloadAttachment(index, filename) {
       link.click();
       document.body.removeChild(link);
     })
-    .catch(() => {
-      mailHedgehog?.error(t('response.error'));
+    .catch(error => {
+      mailHedgehog.onResponseError(error, 'Response Error');
     })
     .finally(() => {
       isRequesting.value = false;

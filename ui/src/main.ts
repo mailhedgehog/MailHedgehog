@@ -1,11 +1,11 @@
 import 'floating-vue/dist/style.css';
 import './assets/scss/app.scss';
 import Toast, { POSITION, useToast } from 'vue-toastification';
-import _ from 'lodash';
+import _, {isObject} from 'lodash';
 import FloatingVue from 'floating-vue';
 import { createApp, App } from 'vue';
 import mitt, {Handler, WildcardHandler} from 'mitt';
-import { Axios, AxiosResponse } from 'axios';
+import {Axios, AxiosError, AxiosResponse} from 'axios';
 import enMessages from './assets/locales/en';
 import ukMessages from './assets/locales/uk';
 import frMessages from './assets/locales/fr';
@@ -106,6 +106,25 @@ export class MailHedgehog {
 
   goTo(to: any) {
     this.router?.push(to)
+  }
+
+  onResponseError(error: AxiosError, defaultError: string|null = null) {
+    if (error.response && error.response.data && isObject(error.response.data)) {
+      // @ts-ignore
+      if (error.response.data?.messages && Array.isArray(error.response.data?.messages) && error.response.data?.messages.length > 0) {
+        // @ts-ignore
+        const errorMessage = error.response.data?.messages[0];
+        this.error(`Error: ${errorMessage.tag}, ${errorMessage.failed_field}`);
+        return;
+      }
+
+      if(defaultError) {
+        this.error(defaultError);
+      }
+    }
+
+    console.error(error)
+    this.error(defaultError ? defaultError : 'Response returned error.');
   }
 
   init() {

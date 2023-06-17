@@ -97,8 +97,8 @@ const loginAction = () => {
         mailHedgehog.goTo({ name: 'emails' });
       }
     })
-    .catch((error) => {
-      mailHedgehog?.error("Error")
+    .catch(error => {
+      mailHedgehog.onResponseError(error, 'Response Error');
     })
     .finally(() => {
       isRequesting.value = false;

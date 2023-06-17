@@ -5,6 +5,7 @@ export default {
   menu: {
     inbox: 'Boîte de réception',
     logout: 'Se déconnecter',
+    users: 'Utilisateurs',
   },
   sidebar: {
     open: 'Ouvrir la barre latérale',
@@ -99,6 +100,26 @@ export default {
       login: {
         label: 'S\'identifier',
       },
+    },
+  },
+  users: {
+    pageTitle: 'Utilisateurs',
+    search: 'Rechercher des utilisateurs',
+    empty: 'Aucun utilisateur trouvé',
+    create: 'Ajouter un utilisateur',
+    deleted: 'Utilisateur supprimé',
+    updated: 'Utilisateur mis à jour',
+    created: 'Utilisateur créé',
+    username: 'Nom d\'utilisateur',
+    hubPassword: 'UI mot de passe',
+    smtpPassword: 'SMTP mot de passe',
+    emptySmtpPasswordHint: 'Laissé vide pour définir le même mot de passe que UI',
+    emptyPasswordHint: 'Laissé vide pour conserver l\'ancien mot de passe',
+    modal: {
+      createTitle: 'Créer un utilisateur',
+      editTitle: 'Modifier l\'utilisateur \'{user}\'',
+      cancel: 'Annuler',
+      submit: 'Soumettre',
     },
   },
 };

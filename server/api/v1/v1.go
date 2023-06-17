@@ -14,6 +14,8 @@ import (
 	"io"
 	"math"
 	"net/http"
+	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -77,6 +79,7 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 		// Go to next middleware:
 		return ctx.Next()
 	})
+
 	/* Users management */
 	users.Get("", apiV1.getUsers)
 	users.Post("", apiV1.createUser)
@@ -444,6 +447,10 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 		lastPage = listQuery.Page
 	}
 
+	sort.Slice(users, func(i, j int) bool {
+		return users[i].Username < users[j].Username
+	})
+
 	usersResponse := []fiber.Map{}
 	for _, user := range users {
 		usersResponse = append(usersResponse, fiber.Map{
@@ -468,7 +475,7 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) createUser(ctx *fiber.Ctx) error {
 	type CreateUserBody struct {
-		Username     string `json:"username" xml:"username" form:"username" validate:"min=1,max=255"`
+		Username     string `json:"username" xml:"username" form:"username" validate:"min=1,max=255,alphanum"`
 		HubPassword  string `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"min=1,max=255"`
 		SmtpPassword string `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
 	}
@@ -574,14 +581,20 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 	loggedUsername, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	username := ctx.Params("username")
+	username, err := url.QueryUnescape(ctx.Params("username"))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
 	if loggedUsername == username {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", errors.New("you can't delete your own account")),
 		})
 	}
 
-	err := apiV1.context.Storage.DeleteRoom(username)
+	err = apiV1.context.Storage.DeleteRoom(username)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),

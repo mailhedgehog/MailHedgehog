@@ -5,6 +5,7 @@ export default {
   menu: {
     inbox: 'Вхідні',
     logout: 'Вийти',
+    users: 'Користувачі',
   },
   sidebar: {
     open: 'Відкрити бічну панель',
@@ -99,6 +100,26 @@ export default {
       login: {
         label: 'Увійти',
       },
+    },
+  },
+  users: {
+    pageTitle: 'Користувачі',
+    search: 'Пошук користувачів',
+    empty: 'Користувачів не знайдено',
+    create: 'Додати користувача',
+    deleted: 'Користувача видалено',
+    updated: 'Користувач оновлений',
+    created: 'Користувач створено',
+    username: 'Ім\'я користувача',
+    hubPassword: 'UI пароль',
+    smtpPassword: 'SMTP пароль',
+    emptySmtpPasswordHint: 'Залиште порожнім, щоб встановити той самий пароль, що й UI',
+    emptyPasswordHint: 'Залишити порожнім, щоб зберегти старий пароль',
+    modal: {
+      createTitle: 'Створити користувача',
+      editTitle: 'Редагувати користувача \'{user}\'',
+      cancel: 'Скасувати',
+      submit: 'Надіслати',
     },
   },
 };

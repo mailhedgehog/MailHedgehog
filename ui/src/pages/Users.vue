@@ -579,8 +579,10 @@ const updateOrCreateUser = () => {
       } else {
         mailHedgehog?.success(t('users.created'));
       }
-    closeModal()
-
+      closeModal()
+    })
+    .catch(error => {
+      mailHedgehog.onResponseError(error, 'Response Error');
     })
     .finally(() => {
       isRequesting.value = false;
@@ -609,6 +611,9 @@ const deleteUser = (user) => {
             getUsers();
           }
           mailHedgehog?.success(t('users.deleted'));
+        })
+        .catch(error => {
+          mailHedgehog.onResponseError(error, 'Response Error');
         })
         .catch(() => {
           isRequesting.value = false;

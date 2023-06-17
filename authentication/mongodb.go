@@ -110,6 +110,7 @@ func (mongoClient *Mongo) UpdateUser(username string, httpPassHash string, smtpP
 }
 
 func (mongoClient *Mongo) DeleteUser(username string) error {
+	logManager().Error(username)
 	filter := bson.D{
 		{"$and",
 			bson.A{

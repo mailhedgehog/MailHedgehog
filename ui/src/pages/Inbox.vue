@@ -441,6 +441,9 @@ const getEmails = (page = null) => {
         pagination.value = new Pagination();
       }
     })
+    .catch(error => {
+      mailHedgehog.onResponseError(error, 'Response Error');
+    })
     .finally(() => {
       isRequesting.value = false;
     });

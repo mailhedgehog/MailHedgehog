@@ -52,9 +52,12 @@ const canManageUsers = computed(() => {
 });
 
 const navigation = computed(() => {
-  return [
+  const list = [
     { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
-    { name: 'users', href: '/users', icon: UsersIcon, hide: !canManageUsers },
-  ].filter((i) => !i.hide)
+  ];
+  if(canManageUsers.value) {
+    list.push({ name: 'users', href: '/users', icon: UsersIcon })
+  }
+  return list
 });
 </script>
