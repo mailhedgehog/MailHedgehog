@@ -145,6 +145,7 @@ func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
 		defer protocol.resetState()
 
 		if protocol.messageReceivedCallback == nil {
+			logManager().Error("No receive callback processed")
 			return ReplyExceededStorage("No storage backend")
 		}
 
@@ -153,6 +154,8 @@ func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
 			logManager().Error(fmt.Sprintf("Error storing message: %s", err.Error()))
 			return ReplyExceededStorage("Unable to store message")
 		}
+
+		logManager().Debug("Message processed and returns success.")
 		return ReplyOk("Ok: queued as " + messageId)
 	}
 
