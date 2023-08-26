@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/server/api"
 	"github.com/mailhedgehog/MailHedgehog/server/smtp"
@@ -73,6 +74,15 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 		)
 	default:
 		panic("Incorrect authentication type, Supports: file, mongodb")
+	}
+
+	switch config.Sharing.Use {
+	case "csv":
+		context.Sharing = emailSharing.CreateSharingEmailUsingCSV(config.Sharing.CSV.Path)
+	case "mongodb":
+		// TODO: add implementation
+	default:
+		// Nothing to do
 	}
 
 	context.HttpSession = session.New(session.Config{Expiration: 10 * time.Minute})

@@ -1,6 +1,5 @@
 /go.sum
-/.mh-config.yml
-/.mh-authfile
+/.mh-*
 /ui.json
 /public
 /dist

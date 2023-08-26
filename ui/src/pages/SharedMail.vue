@@ -38,7 +38,7 @@ const { isAllHeaders, headers } = useShowHeader(email);
 const { currentTab, tabs } = useEmailTabs();
 const { iframeHeight, resizeIframe } = useEmailIframe();
 const { downloadEmailAttachment, downloadEmail } = useEmailAttachments(email, {
-  urlBuilder: (index: number, email: Ref<Email|null>) => `shared-email/${email.value?.id}/attachment/${index}`,
+  urlBuilder: (index: number, email: Ref<Email|null>) => `shared-email/${route.params.id}/attachment/${index}`,
 });
 
 const getSharedEmail = (sharedEmailId: string) => {

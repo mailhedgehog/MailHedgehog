@@ -43,8 +43,10 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/user", apiV1.showUser)
 
-	v1.Get("/shared-email/:id", apiV1.showSharedEmail)
-	v1.Get("/shared-email/:id/attachment/:fileIndex", apiV1.downloadSharedEmailAttachment)
+	if apiV1.context.Sharing != nil {
+		v1.Get("/shared-email/:id", apiV1.showSharedEmail)
+		v1.Get("/shared-email/:id/attachment/:fileIndex", apiV1.downloadSharedEmailAttachment)
+	}
 
 	if context.Authentication.RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
@@ -615,10 +617,14 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 }
 
 func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
-	return UnprocessableEntityResponse(ctx, []*ValidationError{
-		ValidationErrorFromError("id", errors.New("route not ready")),
-	})
-	smtpEmail, err := apiV1.context.Storage.Load("testuser", smtpMessage.MessageID(ctx.Params("id")))
+	emailSharingRecord, err := apiV1.context.Sharing.Find(ctx.Params("id"))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	smtpEmail, err := apiV1.context.Storage.Load(emailSharingRecord.Room, smtpMessage.MessageID(emailSharingRecord.EmailId))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -655,15 +661,20 @@ func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
 }
 
 func (apiV1 *ApiV1) downloadSharedEmailAttachment(ctx *fiber.Ctx) error {
-	return UnprocessableEntityResponse(ctx, []*ValidationError{
-		ValidationErrorFromError("id", errors.New("route not ready")),
-	})
-	smtpEmail, err := apiV1.context.Storage.Load("testuser", smtpMessage.MessageID(ctx.Params("id")))
+	emailSharingRecord, err := apiV1.context.Sharing.Find(ctx.Params("id"))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
+
+	smtpEmail, err := apiV1.context.Storage.Load(emailSharingRecord.Room, smtpMessage.MessageID(emailSharingRecord.EmailId))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
 	fileIndex, err := strconv.Atoi(ctx.Params("fileIndex"))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{

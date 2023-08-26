@@ -57,6 +57,16 @@ type AppConfig struct {
 			Collection string `yaml:"collection"`
 		} `yaml:"mongodb"`
 	} `yaml:"authentication"`
+	Sharing struct {
+		Use string `yaml:"use"`
+		CSV struct {
+			Path string `yaml:"path"`
+		} `yaml:"csv"`
+		MongoDB struct {
+			Connection string `yaml:"connection"`
+			Collection string `yaml:"collection"`
+		} `yaml:"mongodb"`
+	} `yaml:"sharing"`
 	UI struct {
 		File string `yaml:"file"`
 	} `yaml:"ui"`
