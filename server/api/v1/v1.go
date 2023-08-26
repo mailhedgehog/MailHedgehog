@@ -43,6 +43,9 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/user", apiV1.showUser)
 
+	v1.Get("/shared-email/:id", apiV1.showSharedEmail)
+	v1.Get("/shared-email/:id/attachment/:fileIndex", apiV1.downloadSharedEmailAttachment)
+
 	if context.Authentication.RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
 		case "internal":
@@ -609,4 +612,87 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 	}
 
 	return (&Response{Message: "User deleted."}).Send(ctx)
+}
+
+func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
+	return UnprocessableEntityResponse(ctx, []*ValidationError{
+		ValidationErrorFromError("id", errors.New("route not ready")),
+	})
+	smtpEmail, err := apiV1.context.Storage.Load("testuser", smtpMessage.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
+		})
+	}
+
+	attachments := []fiber.Map{}
+	for index, a := range parsedEmail.Attachments {
+		attachments = append(attachments, fiber.Map{
+			"filename":    a.Filename,
+			"contentType": a.ContentType,
+			"data":        "",
+			"index":       index,
+		})
+	}
+
+	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
+
+	return (&Response{Data: fiber.Map{
+		"id":          smtpEmail.ID,
+		"headers":     smtpEmail.Email.Headers,
+		"html":        parsedEmail.HTMLBody,
+		"plain":       parsedEmail.TextBody,
+		"source":      smtpEmail.Origin.Data,
+		"attachments": attachments,
+	}}).Send(ctx)
+}
+
+func (apiV1 *ApiV1) downloadSharedEmailAttachment(ctx *fiber.Ctx) error {
+	return UnprocessableEntityResponse(ctx, []*ValidationError{
+		ValidationErrorFromError("id", errors.New("route not ready")),
+	})
+	smtpEmail, err := apiV1.context.Storage.Load("testuser", smtpMessage.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+	fileIndex, err := strconv.Atoi(ctx.Params("fileIndex"))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", err),
+		})
+	}
+
+	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
+		})
+	}
+
+	if fileIndex >= len(parsedEmail.Attachments) || fileIndex < 0 {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", errors.New("incorrect attachment number")),
+		})
+	}
+	attachment := parsedEmail.Attachments[fileIndex]
+
+	bytes, err := io.ReadAll(attachment.Data)
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("fileIndex", errors.New("we can't get content of attachment")),
+		})
+	}
+	ctx.Attachment(attachment.Filename)
+	ctx.Type(attachment.ContentType)
+
+	return ctx.Send(bytes)
 }

@@ -1,8 +1,8 @@
 <template>
   <div class="text-sm">
-        <span class="mr-0">
-          ©
-        </span>
+    <span class="mr-0">
+      ©
+    </span>
     <span
       v-if="copyrightsText"
       v-html="copyrightsText"
@@ -19,8 +19,8 @@
 </template>
 
 <script lang="ts" setup>
-import {computed, inject} from "vue";
-import {MailHedgehog} from "@/main.js";
+import { computed, inject } from 'vue';
+import { MailHedgehog } from '@/main.js';
 
 const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 

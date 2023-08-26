@@ -340,7 +340,10 @@
       </div>
     </template>
   </div>
-  <Teleport v-if="mounted" to="#header-search">
+  <Teleport
+    v-if="mounted"
+    to="#header-search"
+  >
     <form
       class="flex w-full md:ml-0"
       method="GET"
@@ -441,7 +444,7 @@ const getEmails = (page = null) => {
         pagination.value = new Pagination();
       }
     })
-    .catch(error => {
+    .catch((error) => {
       mailHedgehog.onResponseError(error, 'Response Error');
     })
     .finally(() => {

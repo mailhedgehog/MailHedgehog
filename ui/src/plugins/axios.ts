@@ -10,9 +10,9 @@ export function setupAxios(app: MailHedgehog, conf: { baseUrl: string }): AxiosI
 
   instance.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-  const mailHedgehogToken = sessionStorage.getItem("mailHedgehogToken")
-  if(mailHedgehogToken) {
-    instance.defaults.headers.common['Authorization'] = `Bearer ${mailHedgehogToken}`;
+  const mailHedgehogToken = sessionStorage.getItem('mailHedgehogToken');
+  if (mailHedgehogToken) {
+    instance.defaults.headers.common.Authorization = `Bearer ${mailHedgehogToken}`;
   }
 
   instance.interceptors.response.use(
@@ -31,7 +31,7 @@ export function setupAxios(app: MailHedgehog, conf: { baseUrl: string }): AxiosI
         switch (app.configValue('http.auth')) {
           case 'basic':
             app.error('Unauthorized, reloading page');
-            location.reload()
+            location.reload();
             break;
           case 'internal':
             app.error('Unauthorized');

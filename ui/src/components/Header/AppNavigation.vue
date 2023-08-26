@@ -32,32 +32,32 @@
 <script setup lang="ts">
 import { InboxArrowDownIcon, UsersIcon } from '@heroicons/vue/24/outline';
 import { useI18n } from 'vue-i18n';
-import {computed, inject, ref} from "vue";
-import {MailHedgehog} from "@/main";
-import {Axios} from "axios";
-import {useStore} from "vuex";
+import { computed, inject, ref } from 'vue';
+import { Axios } from 'axios';
+import { useStore } from 'vuex';
+import { MailHedgehog } from '@/main';
 
 const store = useStore();
 const { t } = useI18n();
 const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 
 const canManageUsers = computed(() => {
-    const permissions = store.getters.getUser?.permissions
+  const permissions = store.getters.getUser?.permissions;
 
-    if(!Array.isArray(permissions)) {
-      return false;
-    }
+  if (!Array.isArray(permissions)) {
+    return false;
+  }
 
-    return permissions.includes("manage_users");
+  return permissions.includes('manage_users');
 });
 
 const navigation = computed(() => {
   const list = [
     { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
   ];
-  if(canManageUsers.value) {
-    list.push({ name: 'users', href: '/users', icon: UsersIcon })
+  if (canManageUsers.value) {
+    list.push({ name: 'users', href: '/users', icon: UsersIcon });
   }
-  return list
+  return list;
 });
 </script>

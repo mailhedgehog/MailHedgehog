@@ -6,7 +6,7 @@
         <h1
           class="ml-3 text-xl md:text-2xl font-bold leading-7 text-context-900 dark:text-context-100 truncate sm:leading-9"
         >
-            {{ t('users.pageTitle') }}
+          {{ t('users.pageTitle') }}
         </h1>
         <div
           class="flex justify-end ml-4 transition-all duration-200"
@@ -175,9 +175,9 @@
                     class="bg-context-50 dark:bg-context-800"
                   >
                     <td class="max-w-[12rem] whitespace-nowrap px-6 py-4 text-sm text-context-900 dark:text-context-100">
-                        <div class="truncate">
-                          {{ user.username }}
-                        </div>
+                      <div class="truncate">
+                        {{ user.username }}
+                      </div>
                     </td>
                     <td
                       class="whitespace-nowrap px-6 py-4 text-sm text-right flex justify-end space-x-1"
@@ -291,123 +291,121 @@
             >
               <form @submit.prevent="updateOrCreateUser">
                 <div>
-                <div class="text-center sm:mt-5">
-                  <DialogTitle
-                    as="h3"
-                    class="text-lg font-medium leading-6 text-context-900 dark:text-context-100"
-                  >
-                    <template v-if="editingUser === ''">
-                      {{ t('users.modal.createTitle') }}
-                    </template>
-                    <template v-else>
-                      {{ t('users.modal.editTitle', {user: editingUser}) }}
-                    </template>
-                  </DialogTitle>
-                  <div
-                    class="
+                  <div class="text-center sm:mt-5">
+                    <DialogTitle
+                      as="h3"
+                      class="text-lg font-medium leading-6 text-context-900 dark:text-context-100"
+                    >
+                      <template v-if="editingUser === ''">
+                        {{ t('users.modal.createTitle') }}
+                      </template>
+                      <template v-else>
+                        {{ t('users.modal.editTitle', {user: editingUser}) }}
+                      </template>
+                    </DialogTitle>
+                    <div
+                      class="
                     block
                     mt-6
                     text-left
                     text-context-900 dark:text-context-100
                     "
-                  >
-                    <div
-                      class="space-y-6"
                     >
-                      <div v-if="editingUser === ''">
-                        <label
-                          for="new_username"
-                          class="form-label"
-                        >
-                          {{ t('users.username') }}
-                        </label>
-                        <div class="mt-1 flex">
-                          <input
-                            id="new_username"
-                            v-model="userForm.new_username"
-                            name="new_username"
-                            type="text"
-                            autocomplete="off"
-                            :required="editingUser === ''"
-                            class="form-input"
-                            :placeholder="t('users.username')"
+                      <div
+                        class="space-y-6"
+                      >
+                        <div v-if="editingUser === ''">
+                          <label
+                            for="new_username"
+                            class="form-label"
                           >
+                            {{ t('users.username') }}
+                          </label>
+                          <div class="mt-1 flex">
+                            <input
+                              id="new_username"
+                              v-model="userForm.new_username"
+                              name="new_username"
+                              type="text"
+                              autocomplete="off"
+                              :required="editingUser === ''"
+                              class="form-input"
+                              :placeholder="t('users.username')"
+                            >
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <label
-                          for="hub_password"
-                          class="form-label"
-                        >
-                          {{ t('users.hubPassword') }}
-                        </label>
-                        <div class="mt-1 flex">
-                          <input
-                            id="hub_password"
-                            v-model="userForm.hub_password"
-                            name="hub_password"
-                            type="password"
-                            autocomplete="hub_password"
-                            :required="editingUser === ''"
-                            class="form-input"
-                            :placeholder="t('users.hubPassword')"
+                        <div>
+                          <label
+                            for="hub_password"
+                            class="form-label"
                           >
+                            {{ t('users.hubPassword') }}
+                          </label>
+                          <div class="mt-1 flex">
+                            <input
+                              id="hub_password"
+                              v-model="userForm.hub_password"
+                              name="hub_password"
+                              type="password"
+                              autocomplete="hub_password"
+                              :required="editingUser === ''"
+                              class="form-input"
+                              :placeholder="t('users.hubPassword')"
+                            >
+                          </div>
+                          <div class="form-hint">
+                            <template v-if="editingUser === ''" />
+                            <template v-else>
+                              {{ t('users.emptyPasswordHint') }}
+                            </template>
+                          </div>
                         </div>
-                        <div class="form-hint">
-                          <template v-if="editingUser === ''">
-
-                          </template>
-                          <template v-else>
-                            {{t('users.emptyPasswordHint')}}
-                          </template>
-                        </div>
-                      </div>
-                      <div>
-                        <label
-                          for="smtp_password"
-                          class="form-label"
-                        >
-                          {{ t('users.smtpPassword') }}
-                        </label>
-                        <div class="mt-1 flex">
-                          <input
-                            id="smtp_password"
-                            v-model="userForm.smtp_password"
-                            name="smtp_password"
-                            type="password"
-                            autocomplete="smtp_password"
-                            class="form-input"
-                            :placeholder="t('users.smtpPassword')"
+                        <div>
+                          <label
+                            for="smtp_password"
+                            class="form-label"
                           >
-                        </div>
-                        <div class="form-hint">
-                          <template v-if="editingUser === ''">
-                            {{t('users.emptySmtpPasswordHint')}}
-                          </template>
-                          <template v-else>
-                            {{t('users.emptyPasswordHint')}}
-                          </template>
+                            {{ t('users.smtpPassword') }}
+                          </label>
+                          <div class="mt-1 flex">
+                            <input
+                              id="smtp_password"
+                              v-model="userForm.smtp_password"
+                              name="smtp_password"
+                              type="password"
+                              autocomplete="smtp_password"
+                              class="form-input"
+                              :placeholder="t('users.smtpPassword')"
+                            >
+                          </div>
+                          <div class="form-hint">
+                            <template v-if="editingUser === ''">
+                              {{ t('users.emptySmtpPasswordHint') }}
+                            </template>
+                            <template v-else>
+                              {{ t('users.emptyPasswordHint') }}
+                            </template>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
                 <div class="mt-6 sm:mt-8 flex items-center justify-between">
-                <button
-                  type="button"
-                  class="btn btn--default"
-                  @click.prevent="closeModal"
-                >
-                  {{ t('users.modal.cancel') }}
-                </button>
-                <button
-                  type="submit"
-                  class="btn btn--primary"
-                >
-                  {{ t('users.modal.submit') }}
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    class="btn btn--default"
+                    @click.prevent="closeModal"
+                  >
+                    {{ t('users.modal.cancel') }}
+                  </button>
+                  <button
+                    type="submit"
+                    class="btn btn--primary"
+                  >
+                    {{ t('users.modal.submit') }}
+                  </button>
+                </div>
               </form>
             </DialogPanel>
           </TransitionChild>
@@ -415,7 +413,10 @@
       </div>
     </Dialog>
   </TransitionRoot>
-  <Teleport v-if="mounted" to="#header-search">
+  <Teleport
+    v-if="mounted"
+    to="#header-search"
+  >
     <form
       class="flex w-full md:ml-0"
       method="GET"
@@ -474,8 +475,8 @@ import {
 import {
   Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
 } from '@headlessui/vue';
+import { ArchiveBoxArrowDownIcon, ArchiveBoxXMarkIcon } from '@heroicons/vue/24/outline/index.js';
 import Pagination from '@/utils/pagination.ts';
-import {ArchiveBoxArrowDownIcon, ArchiveBoxXMarkIcon} from "@heroicons/vue/24/outline/index.js";
 
 const { t } = useI18n();
 const mailHedgehog = inject('MailHedgehog');
@@ -560,28 +561,28 @@ const editUser = (user) => {
 const updateOrCreateUser = () => {
   isRequesting.value = true;
   let request = mailHedgehog?.request();
-  if(editingUser.value) {
+  if (editingUser.value) {
     request = request.put(`users/${editingUser.value}`, {
       hub_password: userForm.value.hub_password,
       smtp_password: userForm.value.smtp_password,
-    })
+    });
   } else {
     request = request.post('users', {
       username: userForm.value.new_username,
       hub_password: userForm.value.hub_password,
       smtp_password: userForm.value.smtp_password,
-    })
+    });
   }
   request.then((response) => {
-      getUsers();
-      if(editingUser.value) {
-        mailHedgehog?.success(t('users.updated'));
-      } else {
-        mailHedgehog?.success(t('users.created'));
-      }
-      closeModal()
-    })
-    .catch(error => {
+    getUsers();
+    if (editingUser.value) {
+      mailHedgehog?.success(t('users.updated'));
+    } else {
+      mailHedgehog?.success(t('users.created'));
+    }
+    closeModal();
+  })
+    .catch((error) => {
       mailHedgehog.onResponseError(error, 'Response Error');
     })
     .finally(() => {
@@ -596,7 +597,7 @@ const closeModal = () => {
     hub_password: null,
     smtp_password: null,
   };
-}
+};
 
 const deleteUser = (user) => {
   store.dispatch('confirmDialog/confirm')
@@ -612,7 +613,7 @@ const deleteUser = (user) => {
           }
           mailHedgehog?.success(t('users.deleted'));
         })
-        .catch(error => {
+        .catch((error) => {
           mailHedgehog.onResponseError(error, 'Response Error');
         })
         .catch(() => {

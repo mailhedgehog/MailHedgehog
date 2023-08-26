@@ -1,22 +1,23 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import {MailHedgehog} from "@/main";
+import { MailHedgehog } from '@/main';
 
 const Dashboard = () => import(/* webpackChunkName: "page-email" */ '../layouts/Dashboard.vue');
 const Inbox = () => import(/* webpackChunkName: "page-email" */ '../pages/Inbox.vue');
 const Email = () => import(/* webpackChunkName: "page-email" */ '../pages/Email.vue');
 const Users = () => import(/* webpackChunkName: "page-users" */ '../pages/Users.vue');
 const Login = () => import(/* webpackChunkName: "page-login" */ '../pages/Login.vue');
+const SharedMail = () => import(/* webpackChunkName: "page-shared-mail" */ '../pages/SharedMail.vue');
 
-
-
-function makeRoutes(app: MailHedgehog) {
+const makeRoutes = (app: MailHedgehog) => {
   const routes: any = [
     { path: '/:pathMatch(.*)*', redirect: '/', name: 'notFound' },
   ];
 
-  if(app.configValue('http.auth') === 'internal') {
-    routes.push( { path: '/login', component: Login, name: 'login' });
+  if (app.configValue('http.auth') === 'internal') {
+    routes.push({ path: '/login', component: Login, name: 'login' });
   }
+
+  routes.push({ path: '/shared/:id', component: SharedMail, name: 'sharedMail' });
 
   routes.push({
     path: '/',
@@ -32,18 +33,18 @@ function makeRoutes(app: MailHedgehog) {
       {
         path: 'emails/:id',
         component: Email,
-        name: 'email'
+        name: 'email',
       },
       {
         path: 'users',
         component: Users,
         name: 'users',
-      }
+      },
     ],
-  },)
+  });
 
   return routes;
-}
+};
 
 // eslint-disable-next-line import/prefer-default-export
 export function setupRouter(app: MailHedgehog) {

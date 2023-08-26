@@ -1,11 +1,12 @@
 import 'floating-vue/dist/style.css';
 import './assets/scss/app.scss';
 import Toast, { POSITION, useToast } from 'vue-toastification';
-import _, {isObject} from 'lodash';
+import _, { isObject } from 'lodash';
 import FloatingVue from 'floating-vue';
 import { createApp, App } from 'vue';
-import mitt, {Handler, WildcardHandler} from 'mitt';
-import {Axios, AxiosError, AxiosResponse} from 'axios';
+import mitt, { Handler, WildcardHandler } from 'mitt';
+import { Axios, AxiosError, AxiosResponse } from 'axios';
+import { Router } from 'vue-router';
 import enMessages from './assets/locales/en';
 import ukMessages from './assets/locales/uk';
 import frMessages from './assets/locales/fr';
@@ -15,7 +16,6 @@ import { setupStore } from './plugins/store';
 import { fetchConfigs } from './plugins/fetchConfigs';
 import { setI18nLanguage, setupI18n } from './plugins/i18n';
 import AppView from './App.vue';
-import {Router} from "vue-router";
 
 const i18n = setupI18n({
   legacy: false,
@@ -62,11 +62,11 @@ export class MailHedgehog {
   }
 
   setAuthToken(token?: string) {
-    if(token) {
-      sessionStorage.setItem("mailHedgehogToken", token);
+    if (token) {
+      sessionStorage.setItem('mailHedgehogToken', token);
       this.$axios.defaults.headers.common.Authorization = `Bearer ${token}`;
     } else {
-      sessionStorage.removeItem("mailHedgehogToken");
+      sessionStorage.removeItem('mailHedgehogToken');
       delete this.$axios.defaults.headers.common.Authorization;
     }
 
@@ -105,7 +105,7 @@ export class MailHedgehog {
   }
 
   goTo(to: any) {
-    this.router?.push(to)
+    this.router?.push(to);
   }
 
   onResponseError(error: AxiosError, defaultError: string|null = null) {
@@ -118,13 +118,13 @@ export class MailHedgehog {
         return;
       }
 
-      if(defaultError) {
+      if (defaultError) {
         this.error(defaultError);
       }
     }
 
-    console.error(error)
-    this.error(defaultError ? defaultError : 'Response returned error.');
+    console.error(error);
+    this.error(defaultError || 'Response returned error.');
   }
 
   init() {
@@ -142,10 +142,12 @@ export class MailHedgehog {
     this.app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
     this.app.provide('emitter', emitter);
 
-
     this.router.beforeEach((to) => {
-      if(to.name === 'login') {
-        return
+      if (
+        to.name === 'login'
+        || to.name === 'sharedMail'
+      ) {
+        return;
       }
       this.request()
         .get('user')
@@ -171,4 +173,3 @@ declare global {
 
 const mailHedgehog = new MailHedgehog(fetchConfigs());
 mailHedgehog.init();
-

@@ -63,6 +63,9 @@ export default {
     plainEmpty: 'Email not contains plain text content',
     noAttachments: 'Email has not attachments',
   },
+  sharedEmail: {
+    notFound: 'Shared email not found or share link expired.',
+  },
   inbox: {
     hello: 'Hello, "{msg}"',
     pageTitle: 'Inbox',

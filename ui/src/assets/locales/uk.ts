@@ -63,6 +63,9 @@ export default {
     plainEmpty: 'Імейл не містить звичайний тексту',
     noAttachments: 'Імейл не має вкладень',
   },
+  sharedEmail: {
+    notFound: 'Імейл не знайдено або термін дії посилання для доступу минув.',
+  },
   inbox: {
     hello: 'Привіт, "{msg}"',
     pageTitle: 'Вхідні',

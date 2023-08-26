@@ -58,7 +58,10 @@
                 </button>
               </div>
             </TransitionChild>
-            <Logo class="px-4" />
+            <Logo
+              class="px-4"
+              :reverse-color="false"
+            />
             <AppNavigation />
           </DialogPanel>
         </TransitionChild>
@@ -76,7 +79,10 @@
   <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
     <!-- Sidebar component, swap this element with another sidebar if you like -->
     <div class="flex flex-grow flex-col overflow-y-auto bg-primary-700 pt-5 pb-4">
-      <Logo class="px-4" />
+      <Logo
+        class="px-4"
+        :reverse-color="false"
+      />
       <AppNavigation />
     </div>
   </div>
@@ -120,11 +126,7 @@
       class="py-4 px-4 sm:px-6 flex justify-between items-center shadow dark:shadow-context-500 text-context-900 dark:text-context-100"
     >
       <Copyright />
-      <div class="hidden sm:block text-sm text-context-300 dark:text-context-700 select-none">
-        <div class="sr-only">
-          #StandWithUkraine
-        </div>
-      </div>
+      <FooterRightContent />
     </div>
   </div>
   <ConfirmDialog />
@@ -153,6 +155,7 @@ import Copyright from '@/components/Footer/Copyright.vue';
 import Logo from '@/components/Header/Logo.vue';
 import ConfirmDialog from '@/components/Confirm/Dialog.vue';
 import { User } from '@/plugins/store';
+import FooterRightContent from '@/components/Footer/FooterRightContent.vue';
 
 const { t } = useI18n();
 const store = useStore();

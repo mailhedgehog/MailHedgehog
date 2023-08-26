@@ -63,6 +63,9 @@ export default {
     plainEmpty: 'L\'e-mail ne contient pas de contenu en texte brut',
     noAttachments: 'L\'e-mail n\'a pas de pièces jointes',
   },
+  sharedEmail: {
+    notFound: 'E-mail partagé introuvable ou lien de partage expiré.',
+  },
   inbox: {
     hello: 'Bonjour, "{msg}"',
     pageTitle: 'Boîte de réception',

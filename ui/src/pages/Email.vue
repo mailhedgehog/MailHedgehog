@@ -1,8 +1,114 @@
+<script setup lang="ts">
+import { useRouter, useRoute } from 'vue-router';
+import {
+  inject, nextTick, onMounted, ref,
+} from 'vue';
+import { useI18n } from 'vue-i18n';
+import {
+  Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
+} from '@headlessui/vue';
+import {
+  ArrowSmallLeftIcon,
+  TrashIcon,
+  DocumentArrowDownIcon,
+  PaperAirplaneIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  PaperClipIcon,
+  ArrowDownTrayIcon,
+  ExclamationTriangleIcon,
+  ArchiveBoxArrowDownIcon,
+  ArchiveBoxXMarkIcon,
+} from '@heroicons/vue/24/outline';
+import { useStore } from 'vuex';
+import { useShowHeader } from '@/composables/email-headers';
+import { useEmailTabs } from '@/composables/email-tabs';
+import { useEmailIframe } from '@/composables/email-iframe';
+import { useEmailAttachments } from '@/composables/email-attachments';
+import { Email } from '@/interfaces/Email';
+import { MailHedgehog } from '@/main';
+import { useEmailRelease } from '@/composables/email-release';
+
+const { t } = useI18n();
+const mailHedgehog: MailHedgehog|undefined = inject('MailHedgehog');
+const router = useRouter();
+const route = useRoute();
+const store = useStore();
+
+const isRequesting = ref(false);
+const email = ref<Email|null>(null);
+
+const { isAllHeaders, headers } = useShowHeader(email);
+const { currentTab, tabs } = useEmailTabs();
+const { iframeHeight, resizeIframe } = useEmailIframe();
+const { downloadEmailAttachment, downloadEmail } = useEmailAttachments(email);
+const {
+  isOpenReleaseModal,
+  releaseForm,
+  fromLocalStorage,
+  clearFromLocalStorage,
+  saveToLocalStorage,
+  releaseEmail,
+  isRequestingReleaseEmail,
+} = useEmailRelease();
+
+const getEmail = (emailId: string) => {
+  isRequesting.value = true;
+  mailHedgehog?.request()
+    .get(`emails/${emailId}`)
+    .then((response) => {
+      if (response.data?.data) {
+        email.value = response.data?.data;
+      } else {
+        email.value = null;
+      }
+    })
+    .catch(() => {
+      router.push({ path: '/404' });
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+};
+
+onMounted(() => {
+  fromLocalStorage();
+  getEmail(route.params.id as string);
+});
+
+const goBack = () => {
+  router.push({ name: 'emails', params: {} });
+};
+
+const deleteEmail = () => {
+  if (!email.value) {
+    return;
+  }
+  store.dispatch('confirmDialog/confirm')
+    .then(() => {
+      isRequesting.value = true;
+      mailHedgehog?.request()
+        .delete(`emails/${email.value?.id}`)
+        .then(() => {
+          mailHedgehog?.success(t('email.deleted'));
+          nextTick(() => goBack());
+        })
+        .catch((error) => {
+          mailHedgehog.onResponseError(error, 'Response Error');
+        })
+        .finally(() => {
+          isRequesting.value = false;
+        });
+    });
+};
+
+</script>
+
 <template>
   <div
     class="flex flex-col justify-center"
     :class="{
-      'pointer-events-none opacity-75': isRequesting
+      'pointer-events-none opacity-75': isRequesting || isRequestingReleaseEmail
     }"
   >
     <div
@@ -49,7 +155,7 @@
                 v-tooltip="t('email.downloadHint')"
                 type="button"
                 class="btn btn--default rounded-none"
-                @click.prevent="downloadEmail"
+                @click.prevent="downloadEmail()"
               >
                 <DocumentArrowDownIcon class="md:mr-2 h-5 w-5" />
                 <span class="hidden md:inline">
@@ -155,7 +261,7 @@
               v-for="tab in tabs"
               :key="tab.id"
               :value="tab.id"
-              :selected="currentTab"
+              :selected="currentTab == tab.id"
             >
               {{ t(`email.tab.${tab.id}`) }}
             </option>
@@ -319,7 +425,7 @@
     <Dialog
       as="div"
       class="relative z-10"
-      :class="{'pointer-events-none': isRequesting}"
+      :class="{'pointer-events-none': isRequesting || isRequestingReleaseEmail}"
       @close="isOpenReleaseModal = false"
     >
       <TransitionChild
@@ -465,7 +571,7 @@
                 <button
                   type="button"
                   class="btn btn--primary"
-                  @click="releaseEmail"
+                  @click="releaseEmail(email)"
                 >
                   {{ t('email.release') }}
                 </button>
@@ -477,252 +583,3 @@
     </Dialog>
   </TransitionRoot>
 </template>
-
-<script setup>
-import { useRouter, useRoute } from 'vue-router';
-import {
-  computed, inject, nextTick, onMounted, ref,
-} from 'vue';
-import { useI18n } from 'vue-i18n';
-import {
-  Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
-} from '@headlessui/vue';
-import {
-  ArrowSmallLeftIcon,
-  TrashIcon,
-  DocumentArrowDownIcon,
-  PaperAirplaneIcon,
-  EyeIcon,
-  EyeSlashIcon,
-  PaperClipIcon,
-  ArrowDownTrayIcon,
-  ExclamationTriangleIcon,
-  ArchiveBoxArrowDownIcon,
-  ArchiveBoxXMarkIcon,
-} from '@heroicons/vue/24/outline';
-import { useStore } from 'vuex';
-
-const { t } = useI18n();
-const mailHedgehog = inject('MailHedgehog');
-const router = useRouter();
-const route = useRoute();
-const store = useStore();
-
-const isRequesting = ref(false);
-const email = ref(null);
-
-const getEmail = (emailId) => {
-  isRequesting.value = true;
-  mailHedgehog?.request()
-    .get(`emails/${emailId}`)
-    .then((response) => {
-      if (response.data?.data) {
-        email.value = response.data?.data;
-      } else {
-        email.value = null;
-      }
-    })
-    .catch(() => {
-      router.push({ path: '/404' });
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-};
-
-onMounted(() => {
-  getEmail(route.params.id);
-});
-
-const goBack = () => {
-  router.push({ name: 'emails', params: {} });
-};
-
-const deleteEmail = () => {
-  store.dispatch('confirmDialog/confirm')
-    .then(() => {
-      isRequesting.value = true;
-      mailHedgehog?.request()
-        .delete(`emails/${email.value.id}`)
-        .then(() => {
-          mailHedgehog?.success(t('email.deleted'));
-          nextTick(() => goBack());
-        })
-        .catch(error => {
-          mailHedgehog.onResponseError(error, 'Response Error');
-        })
-        .finally(() => {
-          isRequesting.value = false;
-        });
-    });
-};
-
-const downloadBlobFile = (data, contentType, filename) => {
-  const blob = new Blob([data], { type: contentType });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
-  link.remove();
-};
-
-function downloadAttachment(index, filename) {
-  const url = `emails/${email.value.id}/attachment/${index}`;
-  mailHedgehog?.request()
-    .get(url)
-    .then(() => {
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = `${mailHedgehog?.request().defaults.baseURL}/${url}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    })
-    .catch(error => {
-      mailHedgehog.onResponseError(error, 'Response Error');
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-}
-
-const downloadEmail = () => {
-  downloadBlobFile(email.value.source, 'text/plain', `${email.value.id}.eml`);
-};
-
-const downloadEmailAttachment = (attachment) => {
-  if (attachment.data && attachment.data.length > 0) {
-    downloadBlobFile(attachment.data, attachment.contentType, attachment.filename);
-  } else {
-    downloadAttachment(attachment.index, attachment.filename);
-  }
-};
-
-const isAllHeaders = ref(false);
-const importantHeaders = [
-  'Subject',
-  'From',
-  'To',
-  'Cc',
-];
-const headers = computed(() => {
-  const headersList = {};
-
-  if (email.value && email.value.headers) {
-    for (let i = 0; i < Object.entries(email.value.headers).length; i += 1) {
-      const [headerKey, headerValues] = Object.entries(email.value.headers)[i];
-      if (Array.isArray(headerValues) && headerValues.length > 0) {
-        if (isAllHeaders.value) {
-          headersList[headerKey] = headerValues;
-        } else if (importantHeaders.includes(headerKey)) {
-          headersList[headerKey] = headerValues;
-        }
-      }
-    }
-  }
-
-  return headersList;
-});
-
-const currentTab = ref('html');
-const tabs = [
-  {
-    id: 'html',
-  },
-  {
-    id: 'plain',
-  },
-  {
-    id: 'source',
-  },
-  {
-    id: 'attachments',
-  },
-];
-
-const iframeHeight = ref('0rem');
-const resizeIframe = (event) => {
-  const obj = event.currentTarget;
-  const newHeight = obj.contentWindow.document.documentElement.scrollHeight + 2;
-  iframeHeight.value = `${newHeight}px`;
-};
-
-const releaseForm = ref({
-  host: '',
-  port: 25,
-  username: '',
-  password: '',
-});
-
-const fromLocalStorage = () => {
-  let smtpReleaseCredentials = localStorage.getItem('smtpReleaseCredentials');
-  if (smtpReleaseCredentials) {
-    try {
-      smtpReleaseCredentials = JSON.parse(atob(smtpReleaseCredentials));
-      if (
-        typeof smtpReleaseCredentials === 'object'
-        && !Array.isArray(smtpReleaseCredentials)
-        && smtpReleaseCredentials !== null
-      ) {
-        if (smtpReleaseCredentials.host) {
-          releaseForm.value.host = smtpReleaseCredentials.host;
-        }
-        if (smtpReleaseCredentials.port) {
-          releaseForm.value.port = smtpReleaseCredentials.port;
-        }
-        if (smtpReleaseCredentials.username) {
-          releaseForm.value.username = smtpReleaseCredentials.username;
-        }
-        if (smtpReleaseCredentials.password) {
-          releaseForm.value.password = smtpReleaseCredentials.password;
-        }
-      }
-    } catch (e) {
-      mailHedgehog?.error(e.message);
-    }
-  }
-};
-const clearFromLocalStorage = () => {
-  localStorage.removeItem('smtpReleaseCredentials');
-  mailHedgehog?.success(t('release.deleted'));
-};
-const saveToLocalStorage = () => {
-  const smtpReleaseCredentials = {};
-  if (releaseForm.value.host) {
-    smtpReleaseCredentials.host = releaseForm.value.host;
-  }
-  if (releaseForm.value.port) {
-    smtpReleaseCredentials.port = releaseForm.value.port;
-  }
-  if (releaseForm.value.username) {
-    smtpReleaseCredentials.username = releaseForm.value.username;
-  }
-  if (releaseForm.value.password) {
-    smtpReleaseCredentials.password = releaseForm.value.password;
-  }
-  localStorage.setItem('smtpReleaseCredentials', btoa(JSON.stringify(smtpReleaseCredentials)));
-  fromLocalStorage();
-  mailHedgehog?.success(t('release.saved'));
-};
-
-onMounted(() => fromLocalStorage());
-
-const isOpenReleaseModal = ref(false);
-const releaseEmail = () => {
-  isRequesting.value = true;
-  mailHedgehog?.request()
-    .post(`emails/${email.value.id}/release`, releaseForm.value)
-    .then(() => {
-      isOpenReleaseModal.value = false;
-      mailHedgehog?.success(t('email.released'));
-    })
-    .catch(() => {
-      mailHedgehog?.error(t('response.error'));
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-};
-
-</script>
