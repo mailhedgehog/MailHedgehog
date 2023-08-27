@@ -1,3 +1,47 @@
+<script setup lang="ts">
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/vue';
+import {
+  UserCircleIcon,
+  ChevronDownIcon,
+} from '@heroicons/vue/24/outline';
+import { inject } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { MailHedgehog } from '@/main';
+
+const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
+const { t } = useI18n();
+
+const logout = () => {
+  mailHedgehog?.request()
+    .post('logout')
+    .finally(() => {
+      mailHedgehog?.setAuthToken();
+      const reloadNow = () => {
+        let url = mailHedgehog?.configValue('http.baseUrl', '')
+          .trim()
+          .replace(/\/+$/, '');
+        url = `${url}/`;
+        window.open(url, '_self');
+      };
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', import.meta.env.VITE_MH_CONFIG_URL, false, 'logout', 'logout');
+      xhr.onload = () => {
+        if (xhr.readyState === 4) {
+          reloadNow();
+        }
+      };
+      xhr.onerror = () => reloadNow();
+      xhr.send(null);
+    });
+};
+</script>
+
 <template>
   <Menu
     as="div"
@@ -33,52 +77,10 @@
             class="icon-select__menu-item"
             @click="logout"
           >
-            {{ $t('menu.logout') }}
+            {{ t('menu.logout') }}
           </a>
         </MenuItem>
       </MenuItems>
     </transition>
   </Menu>
 </template>
-
-<script setup lang="ts">
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from '@headlessui/vue';
-import {
-  UserCircleIcon,
-  ChevronDownIcon,
-} from '@heroicons/vue/24/outline';
-import { inject } from 'vue';
-import { MailHedgehog } from '@/main';
-
-const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
-
-const logout = () => {
-  mailHedgehog?.request()
-    .post('logout')
-    .finally(() => {
-      mailHedgehog?.setAuthToken();
-      const reloadNow = () => {
-        let url = mailHedgehog?.configValue('http.baseUrl', '')
-          .trim()
-          .replace(/\/+$/, '');
-        url = `${url}/`;
-        window.open(url, '_self');
-      };
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', import.meta.env.VITE_MH_CONFIG_URL, false, 'logout', 'logout');
-      xhr.onload = () => {
-        if (xhr.readyState === 4) {
-          reloadNow();
-        }
-      };
-      xhr.onerror = () => reloadNow();
-      xhr.send(null);
-    });
-};
-</script>

@@ -113,7 +113,9 @@ func Start(context *serverContext.Context) {
 
 	api.CreateAPIRoutes(context, httpApp)
 	ui.CreateUIRoutes(context, httpApp)
-	websocket.CreateWebsocket(context, httpApp)
+	if context.Config.Http.Websocket {
+		websocket.CreateWebsocket(context, httpApp)
+	}
 
 	logManager().Debug(fmt.Sprintf("HTTP Binding to address %s", context.HttpBindAddr()))
 	go logger.PanicIfError(httpApp.Listen(context.HttpBindAddr()))

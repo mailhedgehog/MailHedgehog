@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
 import { LockClosedIcon } from '@heroicons/vue/20/solid';
 import { useI18n } from 'vue-i18n';
 import { computed, inject, ref } from 'vue';

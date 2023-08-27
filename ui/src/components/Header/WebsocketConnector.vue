@@ -1,33 +1,14 @@
-<template>
-  <button
-    v-tooltip="soc?'Online':'Offline'"
-    class="cursor-pointer text-context-400 dark:text-context-600 flex items-center justify-center font-medium uppercase"
-    :disabled="disabled"
-    @click.prevent="toggleSocket"
-  >
-    <SignalIcon
-      v-if="soc"
-      class="h-6 w-6"
-      aria-hidden="true"
-    />
-    <SignalSlashIcon
-      v-else
-      class="h-6 w-6"
-      aria-hidden="true"
-    />
-  </button>
-</template>
-
-<script setup>
+<script setup lang="ts">
 import {
   SignalIcon,
   SignalSlashIcon,
 } from '@heroicons/vue/24/outline';
 import { onMounted, ref, inject } from 'vue';
+import { MailHedgehog } from '@/main';
 
-const mailHedgehog = inject('MailHedgehog');
+const mailHedgehog: MailHedgehog|undefined = inject('MailHedgehog');
 const disabled = ref(false);
-const soc = ref(null);
+const soc = ref<WebSocket|null>(null);
 
 const closeSocket = () => {
   disabled.value = true;
@@ -38,10 +19,14 @@ const closeSocket = () => {
   disabled.value = false;
 };
 
-const handleSystemMessage = (msg) => {
+const handleSystemMessage = (msg: {
+  flow? : string,
+  type? : string,
+  data? : any,
+}) => {
   switch (msg.type) {
     case 'new_message':
-      mailHedgehog.$emit('new_message', msg.data);
+      mailHedgehog?.$emit('new_message', msg.data);
       mailHedgehog?.info('Message received');
       break;
     default:
@@ -105,3 +90,24 @@ onMounted(() => {
   initSocket();
 });
 </script>
+
+<template>
+  <button
+    v-if="mailHedgehog?.configValue('http.websocket', false)"
+    v-tooltip="soc?'Online':'Offline'"
+    class="cursor-pointer text-context-400 dark:text-context-600 flex items-center justify-center font-medium uppercase"
+    :disabled="disabled"
+    @click.prevent="toggleSocket"
+  >
+    <SignalIcon
+      v-if="soc"
+      class="h-6 w-6"
+      aria-hidden="true"
+    />
+    <SignalSlashIcon
+      v-else
+      class="h-6 w-6"
+      aria-hidden="true"
+    />
+  </button>
+</template>

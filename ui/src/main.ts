@@ -103,8 +103,8 @@ export class MailHedgehog {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  $emit(type: string) {
-    emitter.emit(type);
+  $emit(type: string, data:any = null) {
+    emitter.emit(type, data);
   }
 
   goTo(to: any) {

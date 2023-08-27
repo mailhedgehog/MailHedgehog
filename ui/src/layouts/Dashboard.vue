@@ -1,3 +1,36 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue';
+import {
+  Dialog,
+  DialogPanel,
+  TransitionChild,
+  TransitionRoot,
+} from '@headlessui/vue';
+import {
+  Bars3CenterLeftIcon,
+  XMarkIcon,
+} from '@heroicons/vue/24/outline';
+import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
+import AppNavigation from '@/components/Header/AppNavigation.vue';
+import WebsocketConnector from '@/components/Header/WebsocketConnector.vue';
+import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
+import LangModeSelect from '@/components/Header/LangModeSelect.vue';
+import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
+import Copyright from '@/components/Footer/Copyright.vue';
+import Logo from '@/components/Header/Logo.vue';
+import ConfirmDialog from '@/components/Confirm/Dialog.vue';
+import { User } from '@/plugins/store';
+import FooterRightContent from '@/components/Footer/FooterRightContent.vue';
+
+const { t } = useI18n();
+const store = useStore();
+
+const user = computed<User | null>(() => store.getters.getUser);
+
+const sidebarOpen = ref(false);
+</script>
+
 <template>
   <TransitionRoot
     as="template"
@@ -131,36 +164,3 @@
   </div>
   <ConfirmDialog />
 </template>
-
-<script lang="ts" setup>
-import { computed, inject, ref } from 'vue';
-import {
-  Dialog,
-  DialogPanel,
-  TransitionChild,
-  TransitionRoot,
-} from '@headlessui/vue';
-import {
-  Bars3CenterLeftIcon,
-  XMarkIcon,
-} from '@heroicons/vue/24/outline';
-import { useStore } from 'vuex';
-import { useI18n } from 'vue-i18n';
-import AppNavigation from '@/components/Header/AppNavigation.vue';
-import WebsocketConnector from '@/components/Header/WebsocketConnector.vue';
-import ColorModeSelect from '@/components/Header/ColorModeSelect.vue';
-import LangModeSelect from '@/components/Header/LangModeSelect.vue';
-import ProfileDropdown from '@/components/Header/ProfileDropdown.vue';
-import Copyright from '@/components/Footer/Copyright.vue';
-import Logo from '@/components/Header/Logo.vue';
-import ConfirmDialog from '@/components/Confirm/Dialog.vue';
-import { User } from '@/plugins/store';
-import FooterRightContent from '@/components/Footer/FooterRightContent.vue';
-
-const { t } = useI18n();
-const store = useStore();
-
-const user = computed<User | null>(() => store.getters.getUser);
-
-const sidebarOpen = ref(false);
-</script>

@@ -1,3 +1,138 @@
+<script setup lang="ts">
+import {
+  ref, onMounted, watch, computed, inject,
+} from 'vue';
+// FIXME: locales not works
+import moment from 'moment';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import {
+  EyeIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/vue/24/outline';
+import Pagination from '@/utils/pagination';
+import { MailHedgehog } from '@/main';
+import { EmailItem } from '@/interfaces/Email';
+
+const { t } = useI18n();
+const mailHedgehog: MailHedgehog|undefined = inject('MailHedgehog');
+const router = useRouter();
+const store = useStore();
+
+const queryParams = ref({
+  page: 1,
+  per_page: 25,
+  search: '',
+});
+const mounted = ref(false);
+const isRequesting = ref(false);
+const emails = ref<Array<EmailItem>>([]);
+const pagination = ref(new Pagination());
+
+const user = computed(() => store.getters.getUser);
+
+const getEmails = (page: number|null = null) => {
+  isRequesting.value = true;
+  if (page) {
+    queryParams.value.page = page;
+  }
+  mailHedgehog?.request()
+    .get('emails', {
+      params: queryParams.value,
+    })
+    .then((response) => {
+      if (response.data?.data) {
+        emails.value = response.data?.data;
+      } else {
+        emails.value = [];
+      }
+      if (response.data?.meta?.pagination) {
+        pagination.value = new Pagination(
+          response.data?.meta?.pagination.current_page,
+          response.data?.meta?.pagination.per_page,
+          response.data?.meta?.pagination.last_page,
+          response.data?.meta?.pagination.from,
+          response.data?.meta?.pagination.to,
+          response.data?.meta?.pagination.total,
+        );
+      } else {
+        pagination.value = new Pagination();
+      }
+    })
+    .catch((error) => {
+      mailHedgehog.onResponseError(error, 'Response Error');
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+};
+
+let searchTimeout: NodeJS.Timeout|null = null;
+watch(() => queryParams.value.search, () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+    searchTimeout = null;
+  }
+  searchTimeout = setTimeout(() => {
+    getEmails(1);
+  }, 500);
+}, { deep: true });
+
+onMounted(() => {
+  getEmails(1);
+  mounted.value = true;
+});
+
+mailHedgehog?.$on('new_message', () => getEmails());
+
+const goToDirection = (direction = 'next') => {
+  getEmails(pagination.value.getPageFromDirection(direction));
+};
+
+const clearInbox = () => {
+  store.dispatch('confirmDialog/confirm')
+    .then(() => {
+      isRequesting.value = true;
+      mailHedgehog?.request()
+        .delete('emails')
+        .then(() => {
+          getEmails(1);
+          mailHedgehog?.success(t('inbox.cleared'));
+        })
+        .catch(() => {
+          isRequesting.value = false;
+        });
+    });
+};
+
+const showEmail = (emailId: string) => {
+  router.push({ name: 'email', params: { id: emailId } });
+};
+
+const deleteEmail = (emailId: string) => {
+  store.dispatch('confirmDialog/confirm')
+    .then(() => {
+      isRequesting.value = true;
+      mailHedgehog?.request()
+        .delete(`emails/${emailId}`)
+        .then(() => {
+          if (pagination.value.count() === 0) {
+            goToDirection('prev');
+          } else {
+            getEmails();
+          }
+          mailHedgehog?.success(t('email.deleted'));
+        })
+        .catch(() => {
+          isRequesting.value = false;
+        });
+    });
+};
+
+</script>
+
 <template>
   <!-- Page header -->
   <div class="lg:-mt-px bg-context-50 dark:bg-context-900 shadow dark:shadow-context-500">
@@ -382,136 +517,3 @@
     </form>
   </Teleport>
 </template>
-
-<script setup>
-import {
-  ref, onMounted, watch, computed, inject,
-} from 'vue';
-// FIXME: locales not works
-import moment from 'moment';
-import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
-import {
-  EyeIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-} from '@heroicons/vue/24/outline';
-import Pagination from '@/utils/pagination.ts';
-
-const { t } = useI18n();
-const mailHedgehog = inject('MailHedgehog');
-const router = useRouter();
-const store = useStore();
-
-const queryParams = ref({
-  page: 1,
-  per_page: 25,
-  search: '',
-});
-const mounted = ref(false);
-const isRequesting = ref(false);
-const emails = ref([]);
-const pagination = ref(new Pagination());
-
-const user = computed(() => store.getters.getUser);
-
-const getEmails = (page = null) => {
-  isRequesting.value = true;
-  if (page) {
-    queryParams.value.page = page;
-  }
-  mailHedgehog?.request()
-    .get('emails', {
-      params: queryParams.value,
-    })
-    .then((response) => {
-      if (response.data?.data) {
-        emails.value = response.data?.data;
-      } else {
-        emails.value = [];
-      }
-      if (response.data?.meta?.pagination) {
-        pagination.value = new Pagination(
-          response.data?.meta?.pagination.current_page,
-          response.data?.meta?.pagination.per_page,
-          response.data?.meta?.pagination.last_page,
-          response.data?.meta?.pagination.from,
-          response.data?.meta?.pagination.to,
-          response.data?.meta?.pagination.total,
-        );
-      } else {
-        pagination.value = new Pagination();
-      }
-    })
-    .catch((error) => {
-      mailHedgehog.onResponseError(error, 'Response Error');
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-};
-
-let searchTimeout = null;
-watch(() => queryParams.value.search, () => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout);
-    searchTimeout = null;
-  }
-  searchTimeout = setTimeout(() => {
-    getEmails(1);
-  }, 500);
-}, { deep: true });
-
-onMounted(() => {
-  getEmails(1);
-  mounted.value = true;
-});
-
-mailHedgehog.$on('new_message', () => getEmails());
-
-const goToDirection = (direction = 'next') => {
-  getEmails(pagination.value.getPageFromDirection(direction));
-};
-
-const clearInbox = () => {
-  store.dispatch('confirmDialog/confirm')
-    .then(() => {
-      isRequesting.value = true;
-      mailHedgehog?.request()
-        .delete('emails')
-        .then(() => {
-          getEmails(1);
-          mailHedgehog?.success(t('inbox.cleared'));
-        })
-        .catch(() => {
-          isRequesting.value = false;
-        });
-    });
-};
-
-const showEmail = (emailId) => {
-  router.push({ name: 'email', params: { id: emailId } });
-};
-
-const deleteEmail = (emailId) => {
-  store.dispatch('confirmDialog/confirm')
-    .then(() => {
-      isRequesting.value = true;
-      mailHedgehog?.request()
-        .delete(`emails/${emailId}`)
-        .then(() => {
-          if (pagination.value.count() === 0) {
-            goToDirection('prev');
-          } else {
-            getEmails();
-          }
-          mailHedgehog?.success(t('email.deleted'));
-        })
-        .catch(() => {
-          isRequesting.value = false;
-        });
-    });
-};
-
-</script>

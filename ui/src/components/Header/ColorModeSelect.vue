@@ -1,3 +1,55 @@
+<script setup lang="ts">
+import {
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/vue';
+import {
+  SunIcon,
+  MoonIcon,
+  ComputerDesktopIcon,
+} from '@heroicons/vue/24/outline';
+import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
+
+const mode = ref('');
+const setMode = (newMode: string) => {
+  mode.value = newMode;
+  localStorage.setItem('ColorMode', mode.value);
+
+  switch (mode.value) {
+    case 'light':
+      document.querySelector('html')?.classList.remove('dark');
+      break;
+    case 'dark':
+      document.querySelector('html')?.classList.add('dark');
+      break;
+    default:
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.querySelector('html')?.classList.add('dark');
+      } else {
+        document.querySelector('html')?.classList.remove('dark');
+      }
+      break;
+  }
+};
+
+onMounted(() => {
+  const ALLOWED_COLOR_MODES = ['system', 'light', 'dark'];
+  let storedMode = localStorage.getItem('ColorMode') || '';
+  if (!ALLOWED_COLOR_MODES.includes(storedMode)) {
+    // eslint-disable-next-line prefer-destructuring
+    storedMode = ALLOWED_COLOR_MODES[0];
+  }
+
+  setMode(storedMode);
+});
+
+</script>
+
 <template>
   <Menu
     as="div"
@@ -8,7 +60,7 @@
         class="icon-select__menu-btn"
         :title="$t('colorMode.title')"
       >
-        <span class="sr-only">{{ $t('colorMode.title') }}</span>
+        <span class="sr-only">{{ t('colorMode.title') }}</span>
         <SunIcon
           v-if="mode === 'light'"
           class="h-6 w-6"
@@ -47,7 +99,7 @@
               class="h-6 w-6 mr-2"
               aria-hidden="true"
             />
-            <span class="">{{ $t('colorMode.light') }}</span>
+            <span class="">{{ t('colorMode.light') }}</span>
           </a>
         </MenuItem>
         <MenuItem v-slot="{ active }">
@@ -60,7 +112,7 @@
               class="h-6 w-6 mr-2"
               aria-hidden="true"
             />
-            <span class="">{{ $t('colorMode.dark') }}</span>
+            <span class="">{{ t('colorMode.dark') }}</span>
           </a>
         </MenuItem>
         <MenuItem v-slot="{ active }">
@@ -73,59 +125,10 @@
               class="h-6 w-6 mr-2"
               aria-hidden="true"
             />
-            <span class="">{{ $t('colorMode.system') }}</span>
+            <span class="">{{ t('colorMode.system') }}</span>
           </a>
         </MenuItem>
       </MenuItems>
     </transition>
   </Menu>
 </template>
-
-<script lang="ts" setup>
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-} from '@headlessui/vue';
-import {
-  SunIcon,
-  MoonIcon,
-  ComputerDesktopIcon,
-} from '@heroicons/vue/24/outline';
-import { onMounted, ref } from 'vue';
-
-const mode = ref('');
-const setMode = (newMode: string) => {
-  mode.value = newMode;
-  localStorage.setItem('ColorMode', mode.value);
-
-  switch (mode.value) {
-    case 'light':
-      document.querySelector('html')?.classList.remove('dark');
-      break;
-    case 'dark':
-      document.querySelector('html')?.classList.add('dark');
-      break;
-    default:
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector('html')?.classList.add('dark');
-      } else {
-        document.querySelector('html')?.classList.remove('dark');
-      }
-      break;
-  }
-};
-
-onMounted(() => {
-  const ALLOWED_COLOR_MODES = ['system', 'light', 'dark'];
-  let storedMode = localStorage.getItem('ColorMode') || '';
-  if (!ALLOWED_COLOR_MODES.includes(storedMode)) {
-    // eslint-disable-next-line prefer-destructuring
-    storedMode = ALLOWED_COLOR_MODES[0];
-  }
-
-  setMode(storedMode);
-});
-
-</script>

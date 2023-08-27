@@ -24,6 +24,8 @@ type AppConfig struct {
 		AllowOrigins string `yaml:"allow_origins"`
 		AssetsRoot   string `yaml:"assets_root"`
 		BaseUrl      string `yaml:"base_url"`
+		// TODO: error after long time server run. Error still not fixed
+		Websocket bool `yaml:"websocket"`
 	} `yaml:"http"`
 	Websocket struct {
 		MaxConnection int `yaml:"max_connection"`

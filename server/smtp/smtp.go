@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
 	"io"
@@ -112,13 +113,14 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 
 		id, err := context.Storage.Store(session.loggedUsername, formattedMessage)
 
-		logManager().Debug("Send to websocket notification about new message received. (commented for now)")
-		// TODO: error after long time server run
-		// Send to websocket notification about new message received.
-		// websocket.BroadcastToClient <- websocket.BroadcastMessage{
-		//	  Room:    session.loggedUsername,
-		//	  Message: `{"flow": "system", "type": "new_message"}`,
-		// }
+		if context.Config.Http.Websocket {
+			logManager().Debug("Send to websocket notification about new message received. (commented for now)")
+			// Send to websocket notification about new message received.
+			websocket.BroadcastToClient <- websocket.BroadcastMessage{
+				Room:    session.loggedUsername,
+				Message: `{"flow": "system", "type": "new_message"}`,
+			}
+		}
 
 		messageId := string(id)
 		logManager().Debug(fmt.Sprintf("OnMessageReceived callback processed for message id: %s", messageId))

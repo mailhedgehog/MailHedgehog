@@ -69,8 +69,9 @@ func configurationHandler(context *serverContext.Context) func(c *fiber.Ctx) err
 	return func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"http": fiber.Map{
-				"baseUrl": baseUrl,
-				"auth":    authType,
+				"baseUrl":   baseUrl,
+				"auth":      authType,
+				"websocket": context.Config.Http.Websocket,
 			},
 			"ui": uiData,
 			"sharing": fiber.Map{

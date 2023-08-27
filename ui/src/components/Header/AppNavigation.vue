@@ -1,3 +1,35 @@
+<script setup lang="ts">
+import { InboxArrowDownIcon, UsersIcon } from '@heroicons/vue/24/outline';
+import { useI18n } from 'vue-i18n';
+import { computed, inject, ref } from 'vue';
+import { useStore } from 'vuex';
+import { MailHedgehog } from '@/main';
+
+const store = useStore();
+const { t } = useI18n();
+const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
+
+const canManageUsers = computed(() => {
+  const permissions = store.getters.getUser?.permissions;
+
+  if (!Array.isArray(permissions)) {
+    return false;
+  }
+
+  return permissions.includes('manage_users');
+});
+
+const navigation = computed(() => {
+  const list = [
+    { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
+  ];
+  if (canManageUsers.value) {
+    list.push({ name: 'users', href: '/users', icon: UsersIcon });
+  }
+  return list;
+});
+</script>
+
 <template>
   <nav
     class="mt-5 flex-shrink-0 divide-y divide-primary-800 overflow-y-auto"
@@ -28,36 +60,3 @@
     </div>
   </nav>
 </template>
-
-<script setup lang="ts">
-import { InboxArrowDownIcon, UsersIcon } from '@heroicons/vue/24/outline';
-import { useI18n } from 'vue-i18n';
-import { computed, inject, ref } from 'vue';
-import { Axios } from 'axios';
-import { useStore } from 'vuex';
-import { MailHedgehog } from '@/main';
-
-const store = useStore();
-const { t } = useI18n();
-const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
-
-const canManageUsers = computed(() => {
-  const permissions = store.getters.getUser?.permissions;
-
-  if (!Array.isArray(permissions)) {
-    return false;
-  }
-
-  return permissions.includes('manage_users');
-});
-
-const navigation = computed(() => {
-  const list = [
-    { name: 'inbox', href: '/', icon: InboxArrowDownIcon },
-  ];
-  if (canManageUsers.value) {
-    list.push({ name: 'users', href: '/users', icon: UsersIcon });
-  }
-  return list;
-});
-</script>

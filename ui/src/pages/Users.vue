@@ -1,3 +1,172 @@
+<script setup lang="ts">
+import {
+  ref, onMounted, watch, computed, inject,
+} from 'vue';
+// FIXME: locales not works
+import moment from 'moment';
+import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
+import {
+  PencilIcon,
+  UserPlusIcon,
+  TrashIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/vue/24/outline';
+import {
+  Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
+} from '@headlessui/vue';
+import Pagination from '@/utils/pagination';
+import { MailHedgehog } from '@/main';
+import { User } from '@/interfaces/User';
+
+const { t } = useI18n();
+const mailHedgehog: MailHedgehog|undefined = inject('MailHedgehog');
+const router = useRouter();
+const store = useStore();
+
+const queryParams = ref({
+  page: 1,
+  per_page: 25,
+  search: '',
+});
+const mounted = ref(false);
+const isRequesting = ref(false);
+const users = ref<Array<User>>([]);
+const pagination = ref(new Pagination());
+
+const getUsers = (page: number|null = null) => {
+  isRequesting.value = true;
+  if (page) {
+    queryParams.value.page = page;
+  }
+  mailHedgehog?.request()
+    .get('users', {
+      params: queryParams.value,
+    })
+    .then((response) => {
+      if (response.data?.data) {
+        users.value = response.data?.data;
+      } else {
+        users.value = [];
+      }
+      if (response.data?.meta?.pagination) {
+        pagination.value = new Pagination(
+          response.data?.meta?.pagination.current_page,
+          response.data?.meta?.pagination.per_page,
+          response.data?.meta?.pagination.last_page,
+          response.data?.meta?.pagination.from,
+          response.data?.meta?.pagination.to,
+          response.data?.meta?.pagination.total,
+        );
+      } else {
+        pagination.value = new Pagination();
+      }
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+};
+
+let searchTimeout: NodeJS.Timeout|null = null;
+watch(() => queryParams.value.search, () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+    searchTimeout = null;
+  }
+  searchTimeout = setTimeout(() => {
+    getUsers(1);
+  }, 500);
+}, { deep: true });
+
+onMounted(() => {
+  getUsers(1);
+  mounted.value = true;
+});
+
+const goToDirection = (direction = 'next') => {
+  getUsers(pagination.value.getPageFromDirection(direction));
+};
+
+const editingUser = ref<string|null>(null);
+
+const userForm = ref({
+  new_username: null,
+  hub_password: null,
+  smtp_password: null,
+});
+
+const editUser = (user:User) => {
+  editingUser.value = user.username;
+};
+
+const updateOrCreateUser = () => {
+  isRequesting.value = true;
+  const request = mailHedgehog?.request();
+  let promise;
+  if (editingUser.value) {
+    promise = request?.put(`users/${editingUser.value}`, {
+      hub_password: userForm.value.hub_password,
+      smtp_password: userForm.value.smtp_password,
+    });
+  } else {
+    promise = request?.post('users', {
+      username: userForm.value.new_username,
+      hub_password: userForm.value.hub_password,
+      smtp_password: userForm.value.smtp_password,
+    });
+  }
+  promise?.then((response) => {
+    getUsers();
+    if (editingUser.value) {
+      mailHedgehog?.success(t('users.updated'));
+    } else {
+      mailHedgehog?.success(t('users.created'));
+    }
+    closeModal();
+  })
+    .catch((error) => {
+      mailHedgehog?.onResponseError(error, 'Response Error');
+    })
+    .finally(() => {
+      isRequesting.value = false;
+    });
+};
+
+const closeModal = () => {
+  editingUser.value = null;
+  userForm.value = {
+    new_username: null,
+    hub_password: null,
+    smtp_password: null,
+  };
+};
+
+const deleteUser = (user:User) => {
+  store.dispatch('confirmDialog/confirm')
+    .then(() => {
+      isRequesting.value = true;
+      mailHedgehog?.request()
+        .delete(`users/${user.username}`)
+        .then(() => {
+          if (pagination.value.count() === 0) {
+            goToDirection('prev');
+          } else {
+            getUsers();
+          }
+          mailHedgehog?.success(t('users.deleted'));
+        })
+        .catch((error) => {
+          mailHedgehog.onResponseError(error, 'Response Error');
+        })
+        .catch(() => {
+          isRequesting.value = false;
+        });
+    });
+};
+
+</script>
+
 <template>
   <!-- Page header -->
   <div class="lg:-mt-px bg-context-50 dark:bg-context-900 shadow dark:shadow-context-500">
@@ -62,7 +231,7 @@
         >
           <li
             v-for="user in users"
-            :key="user.name"
+            :key="user.username"
           >
             <div
               class="block bg-context-50 dark:bg-context-800 px-4 py-4 hover:bg-context-50"
@@ -455,171 +624,3 @@
     </form>
   </Teleport>
 </template>
-
-<script setup>
-import {
-  ref, onMounted, watch, computed, inject,
-} from 'vue';
-// FIXME: locales not works
-import moment from 'moment';
-import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
-import { useStore } from 'vuex';
-import {
-  PencilIcon,
-  UserPlusIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from '@heroicons/vue/24/outline';
-import {
-  Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot,
-} from '@headlessui/vue';
-import { ArchiveBoxArrowDownIcon, ArchiveBoxXMarkIcon } from '@heroicons/vue/24/outline/index.js';
-import Pagination from '@/utils/pagination.ts';
-
-const { t } = useI18n();
-const mailHedgehog = inject('MailHedgehog');
-const router = useRouter();
-const store = useStore();
-
-const queryParams = ref({
-  page: 1,
-  per_page: 25,
-  search: '',
-});
-const mounted = ref(false);
-const isRequesting = ref(false);
-const users = ref([]);
-const pagination = ref(new Pagination());
-
-const getUsers = (page = null) => {
-  isRequesting.value = true;
-  if (page) {
-    queryParams.value.page = page;
-  }
-  mailHedgehog?.request()
-    .get('users', {
-      params: queryParams.value,
-    })
-    .then((response) => {
-      if (response.data?.data) {
-        users.value = response.data?.data;
-      } else {
-        users.value = [];
-      }
-      if (response.data?.meta?.pagination) {
-        pagination.value = new Pagination(
-          response.data?.meta?.pagination.current_page,
-          response.data?.meta?.pagination.per_page,
-          response.data?.meta?.pagination.last_page,
-          response.data?.meta?.pagination.from,
-          response.data?.meta?.pagination.to,
-          response.data?.meta?.pagination.total,
-        );
-      } else {
-        pagination.value = new Pagination();
-      }
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-};
-
-let searchTimeout = null;
-watch(() => queryParams.value.search, () => {
-  if (searchTimeout) {
-    clearTimeout(searchTimeout);
-    searchTimeout = null;
-  }
-  searchTimeout = setTimeout(() => {
-    getUsers(1);
-  }, 500);
-}, { deep: true });
-
-onMounted(() => {
-  getUsers(1);
-  mounted.value = true;
-});
-
-const goToDirection = (direction = 'next') => {
-  getUsers(pagination.value.getPageFromDirection(direction));
-};
-
-const editingUser = ref(null);
-
-const userForm = ref({
-  new_username: null,
-  hub_password: null,
-  smtp_password: null,
-});
-
-const editUser = (user) => {
-  editingUser.value = user.username;
-};
-
-const updateOrCreateUser = () => {
-  isRequesting.value = true;
-  let request = mailHedgehog?.request();
-  if (editingUser.value) {
-    request = request.put(`users/${editingUser.value}`, {
-      hub_password: userForm.value.hub_password,
-      smtp_password: userForm.value.smtp_password,
-    });
-  } else {
-    request = request.post('users', {
-      username: userForm.value.new_username,
-      hub_password: userForm.value.hub_password,
-      smtp_password: userForm.value.smtp_password,
-    });
-  }
-  request.then((response) => {
-    getUsers();
-    if (editingUser.value) {
-      mailHedgehog?.success(t('users.updated'));
-    } else {
-      mailHedgehog?.success(t('users.created'));
-    }
-    closeModal();
-  })
-    .catch((error) => {
-      mailHedgehog.onResponseError(error, 'Response Error');
-    })
-    .finally(() => {
-      isRequesting.value = false;
-    });
-};
-
-const closeModal = () => {
-  editingUser.value = null;
-  userForm.value = {
-    new_username: null,
-    hub_password: null,
-    smtp_password: null,
-  };
-};
-
-const deleteUser = (user) => {
-  store.dispatch('confirmDialog/confirm')
-    .then(() => {
-      isRequesting.value = true;
-      mailHedgehog?.request()
-        .delete(`users/${user.username}`)
-        .then(() => {
-          if (pagination.value.count() === 0) {
-            goToDirection('prev');
-          } else {
-            getUsers();
-          }
-          mailHedgehog?.success(t('users.deleted'));
-        })
-        .catch((error) => {
-          mailHedgehog.onResponseError(error, 'Response Error');
-        })
-        .catch(() => {
-          isRequesting.value = false;
-        });
-    });
-};
-
-</script>
