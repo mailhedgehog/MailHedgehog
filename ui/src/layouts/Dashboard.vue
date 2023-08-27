@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, inject, ref } from 'vue';
 import {
   Dialog,
   DialogPanel,
@@ -22,8 +22,10 @@ import Logo from '@/components/Header/Logo.vue';
 import ConfirmDialog from '@/components/Confirm/Dialog.vue';
 import { User } from '@/plugins/store';
 import FooterRightContent from '@/components/Footer/FooterRightContent.vue';
+import { MailHedgehog } from '@/main';
 
 const { t } = useI18n();
+const mailHedgehog = inject<MailHedgehog>('MailHedgehog');
 const store = useStore();
 
 const user = computed<User | null>(() => store.getters.getUser);
@@ -145,7 +147,7 @@ const sidebarOpen = ref(false);
           class="flex flex-1"
         />
         <div class="ml-4 flex items-center md:ml-6 space-x-3">
-          <WebsocketConnector />
+          <WebsocketConnector v-if="mailHedgehog?.configValue('http.websocket', false)" />
           <ColorModeSelect />
           <LangModeSelect />
           <ProfileDropdown v-if="user" />

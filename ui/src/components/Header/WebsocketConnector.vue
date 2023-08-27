@@ -93,7 +93,6 @@ onMounted(() => {
 
 <template>
   <button
-    v-if="mailHedgehog?.configValue('http.websocket', false)"
     v-tooltip="soc?'Online':'Offline'"
     class="cursor-pointer text-context-400 dark:text-context-600 flex items-center justify-center font-medium uppercase"
     :disabled="disabled"
