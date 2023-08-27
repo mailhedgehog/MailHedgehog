@@ -3,11 +3,14 @@ package emailSharing
 import (
 	"encoding/csv"
 	"errors"
+	"github.com/google/uuid"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"io"
 	"os"
 	"time"
 )
+
+var ExpiredAdFormat = "2006-01-02 15:04:05"
 
 type CsvEmailSharing struct {
 	csvFilePath string
@@ -42,7 +45,7 @@ func (csvEmailSharing *CsvEmailSharing) Find(id string) (*EmailSharingRecord, er
 			continue
 		}
 
-		expiredAt, err := time.Parse("2006-01-02 15:04:05", rec[3])
+		expiredAt, err := time.Parse(ExpiredAdFormat, rec[3])
 
 		if err == nil && expiredAt.After(time.Now().UTC()) {
 			emailSharingRecord = &EmailSharingRecord{
@@ -61,4 +64,75 @@ func (csvEmailSharing *CsvEmailSharing) Find(id string) (*EmailSharingRecord, er
 	}
 
 	return nil, errors.New("row not found")
+}
+
+func (csvEmailSharing *CsvEmailSharing) Create(emailSharingRecord *EmailSharingRecord) (*EmailSharingRecord, error) {
+	f, err := os.OpenFile(csvEmailSharing.csvFilePath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logger.PanicIfError(err)
+
+	defer f.Close()
+
+	emailSharingRecord.Id = uuid.New().String()
+
+	row := []string{
+		emailSharingRecord.Id,
+		emailSharingRecord.Room,
+		emailSharingRecord.EmailId,
+		emailSharingRecord.ExpiredAt.Format(ExpiredAdFormat),
+	}
+
+	csvWriter := csv.NewWriter(f)
+	err = csvWriter.Write(row)
+	if err != nil {
+		return nil, err
+	}
+	csvWriter.Flush()
+
+	return emailSharingRecord, nil
+}
+
+func (csvEmailSharing *CsvEmailSharing) DeleteExpired() (bool, error) {
+
+	tmpFile := csvEmailSharing.csvFilePath + ".tmp"
+
+	f, err := os.Open(csvEmailSharing.csvFilePath)
+	logger.PanicIfError(err)
+	defer f.Close()
+
+	outFile, err := os.Create(tmpFile)
+	logger.PanicIfError(err)
+	defer outFile.Close()
+
+	csvReader := csv.NewReader(f)
+	csvWriter := csv.NewWriter(outFile)
+
+	rowFound := false
+
+	for {
+		rec, err := csvReader.Read()
+		if err == io.EOF {
+			break
+		}
+		logger.PanicIfError(err)
+
+		expiredAt, err := time.Parse(ExpiredAdFormat, rec[3])
+
+		if err == nil && expiredAt.After(time.Now().UTC()) {
+			_ = csvWriter.Write(rec)
+			continue
+		}
+
+		rowFound = true
+	}
+
+	csvWriter.Flush()
+	f.Close()
+	outFile.Close()
+
+	defer os.Remove(tmpFile)
+	_ = os.Remove(csvEmailSharing.csvFilePath)
+
+	_ = os.Rename(tmpFile, csvEmailSharing.csvFilePath)
+
+	return rowFound, nil
 }

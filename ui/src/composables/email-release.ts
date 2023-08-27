@@ -45,6 +45,7 @@ export function useEmailRelease() {
       } catch (e: Error|any) {
         mailHedgehog?.error(e?.message);
       }
+      console.error(releaseForm.value);
     }
   };
   const clearFromLocalStorage = () => {

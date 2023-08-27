@@ -22,5 +22,7 @@ type EmailSharingRecord struct {
 }
 
 type EmailSharing interface {
+	Create(emailSharingRecord *EmailSharingRecord) (*EmailSharingRecord, error)
 	Find(id string) (*EmailSharingRecord, error)
+	DeleteExpired() (bool, error)
 }

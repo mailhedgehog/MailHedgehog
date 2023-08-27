@@ -26,6 +26,10 @@ export default {
     uk: 'Українська',
     fr: 'Французька',
   },
+  clipboard: {
+    success: 'Скопійовано в буфер обміну',
+    error: 'Помилка копіювання в буфер обміну',
+  },
   pagination: {
     requesting: 'Завантаження...',
     prev: 'Попередня',
@@ -48,9 +52,12 @@ export default {
     deleted: 'імейл видалено',
     download: 'Завантажити',
     downloadHint: 'Завантажити імейлу файл',
+    share: 'Поділитися',
+    shareHint: 'Дозволити доступ за посиланням',
     release: 'Переслати',
     releaseHint: 'Переслати імейл',
     released: 'Переслано',
+    linkCreated: 'Посилання створено',
     cancel: 'Скасувати',
     back: 'Назад',
     tab: {
@@ -65,6 +72,24 @@ export default {
   },
   sharedEmail: {
     notFound: 'Імейл не знайдено або термін дії посилання для доступу минув.',
+    modalTitle: 'Поділитися',
+    form: {
+      expiration: {
+        label: 'Термін дії',
+        '10m': '10 хвилин',
+        '30m': '30 хвилин',
+        '1h': '1 година',
+        '3h': '3 години',
+        '1d': '1 день',
+        '7d': '7 днів',
+      },
+      shareLink: {
+        label: 'Посилання',
+      },
+      submitButton: {
+        label: 'Поділитися',
+      },
+    },
   },
   inbox: {
     hello: 'Привіт, "{msg}"',

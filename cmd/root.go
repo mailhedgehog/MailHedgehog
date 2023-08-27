@@ -23,6 +23,7 @@ func init() {
 	rootCmd.AddCommand(initCmd)
 	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(authAddUserCmd)
+	rootCmd.AddCommand(sharingDeleteExpiredCmd)
 }
 
 var configuredLogger *logger.Logger
@@ -56,4 +57,12 @@ var authAddUserCmd = &cobra.Command{
 	Long:  `Add new authentication credentials`,
 	Args:  authAddUserArgs,
 	Run:   authAddUser,
+}
+
+var sharingDeleteExpiredCmd = &cobra.Command{
+	Use:   "sharing:delete-expired",
+	Short: "Delete expired sharing links",
+	Long:  `Clear all expired sharing links`,
+	Args:  sharingDeleteExpiredArgs,
+	Run:   sharingDeleteExpired,
 }

@@ -7,17 +7,20 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/dto/email"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
+	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpClient"
 	"github.com/mailhedgehog/MailHedgehog/storage"
 	"io"
 	"math"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var configuredLogger *logger.Logger
@@ -43,11 +46,6 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/user", apiV1.showUser)
 
-	if apiV1.context.Sharing != nil {
-		v1.Get("/shared-email/:id", apiV1.showSharedEmail)
-		v1.Get("/shared-email/:id/attachment/:fileIndex", apiV1.downloadSharedEmailAttachment)
-	}
-
 	if context.Authentication.RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
 		case "internal":
@@ -71,6 +69,12 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 	v1.Post("/emails/:id/release", apiV1.releaseEmail)
 
 	v1.Get("/emails/:id/attachment/:fileIndex", apiV1.downloadAttachment)
+
+	if apiV1.context.Sharing != nil {
+		v1.Post("/emails/:id/share", apiV1.shareEmail)
+		v1.Get("/shared-email/:id", apiV1.showSharedEmail)
+		v1.Get("/shared-email/:id/attachment/:fileIndex", apiV1.downloadSharedEmailAttachment)
+	}
 
 	users := v1.Group("/users", func(c *fiber.Ctx) error {
 		return c.Next()
@@ -359,6 +363,47 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 	return (&Response{Message: "Email released"}).Send(ctx)
 }
 
+func (apiV1 *ApiV1) shareEmail(ctx *fiber.Ctx) error {
+	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
+	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	type ShareQuery struct {
+		Minutes int `json:"expiration_in" xml:"expiration_in" form:"expiration_in" validate:"min=1,max=10080"`
+	}
+
+	shareQuery := new(ShareQuery)
+
+	if err := ctx.BodyParser(shareQuery); err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	emailSharingRecord, err := apiV1.context.Sharing.Create(&emailSharing.EmailSharingRecord{
+		Room:      username,
+		EmailId:   string(smtpEmail.ID),
+		ExpiredAt: time.Now().UTC().Add(time.Minute * time.Duration(shareQuery.Minutes)),
+	})
+
+	if err != nil {
+		return UnprocessableEntityResponse(ctx, []*ValidationError{
+			ValidationErrorFromError("query", err),
+		})
+	}
+
+	return (&Response{
+		Message: "Shared link created.",
+		Data: fiber.Map{
+			"id": emailSharingRecord.Id,
+		},
+	}).Send(ctx)
+}
+
 func (apiV1 *ApiV1) postInternalLogin(ctx *fiber.Ctx) error {
 	type LoginBody struct {
 		Username string `json:"username" xml:"username" form:"username" validate:"min=1,max=99999"`
@@ -385,8 +430,6 @@ func (apiV1 *ApiV1) postInternalLogin(ctx *fiber.Ctx) error {
 			ValidationErrorFromError("query", err),
 		})
 	}
-
-	fmt.Println(token)
 
 	return (&Response{
 		Message: "You are logged",
@@ -617,6 +660,11 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 }
 
 func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
+	// Lottery to remove all expired
+	if rand.Intn(10) == 0 {
+		apiV1.context.Sharing.DeleteExpired()
+	}
+
 	emailSharingRecord, err := apiV1.context.Sharing.Find(ctx.Params("id"))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{

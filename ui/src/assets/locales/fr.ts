@@ -26,6 +26,10 @@ export default {
     uk: 'Ukrainien',
     fr: 'Français',
   },
+  clipboard: {
+    success: 'Copié dans le presse-papier',
+    error: 'Erreur lors du copié dans le presse-papiers',
+  },
   pagination: {
     requesting: 'Chargement...',
     prev: 'Précédent',
@@ -48,9 +52,12 @@ export default {
     deleted: 'E-mail supprimé',
     download: 'Télécharger',
     downloadHint: 'Télécharger l\'e-mail en tant que fichier',
+    share: 'Partager',
+    shareHint: 'Autoriser l\'accès aux e-mails par lien de partage',
     release: 'Transfér',
     releaseHint: 'Transfér l\'e-mail',
     released: 'E-mail transféré',
+    linkCreated: 'Lien créé',
     cancel: 'Annuler',
     back: 'Retour',
     tab: {
@@ -65,6 +72,24 @@ export default {
   },
   sharedEmail: {
     notFound: 'E-mail partagé introuvable ou lien de partage expiré.',
+    modalTitle: 'Partager',
+    form: {
+      expiration: {
+        label: 'Expiration dans',
+        '10m': '10 minutes',
+        '30m': '30 minutes',
+        '1h': '1 heure',
+        '3h': '3 heures',
+        '1d': 'Un jour',
+        '7d': '7 jours',
+      },
+      shareLink: {
+        label: 'Lien',
+      },
+      submitButton: {
+        label: 'Partager',
+      },
+    },
   },
   inbox: {
     hello: 'Bonjour, "{msg}"',

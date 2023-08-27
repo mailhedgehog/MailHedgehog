@@ -73,6 +73,9 @@ func configurationHandler(context *serverContext.Context) func(c *fiber.Ctx) err
 				"auth":    authType,
 			},
 			"ui": uiData,
+			"sharing": fiber.Map{
+				"enabled": context.Sharing != nil,
+			},
 		})
 	}
 }

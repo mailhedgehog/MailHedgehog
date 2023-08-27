@@ -26,6 +26,10 @@ export default {
     uk: 'Ukrainian',
     fr: 'French',
   },
+  clipboard: {
+    success: 'Copied to clipboard',
+    error: 'Error to copy to clipboard',
+  },
   pagination: {
     requesting: 'Loading...',
     prev: 'Previous',
@@ -48,9 +52,12 @@ export default {
     deleted: 'Email deleted',
     download: 'Download',
     downloadHint: 'Download email as file',
+    share: 'Share',
+    shareHint: 'Allow access email by share link',
     release: 'Release',
     releaseHint: 'Release email',
     released: 'Released',
+    linkCreated: 'Link created',
     cancel: 'Cancel',
     back: 'Back',
     tab: {
@@ -65,6 +72,24 @@ export default {
   },
   sharedEmail: {
     notFound: 'Shared email not found or share link expired.',
+    modalTitle: 'Share',
+    form: {
+      expiration: {
+        label: 'Expiration in',
+        '10m': '10 minutes',
+        '30m': '30 minutes',
+        '1h': '1 hour',
+        '3h': '3 hours',
+        '1d': '1 day',
+        '7d': '7 days',
+      },
+      shareLink: {
+        label: 'Link',
+      },
+      submitButton: {
+        label: 'Share',
+      },
+    },
   },
   inbox: {
     hello: 'Hello, "{msg}"',

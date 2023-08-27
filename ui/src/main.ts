@@ -7,6 +7,7 @@ import { createApp, App } from 'vue';
 import mitt, { Handler, WildcardHandler } from 'mitt';
 import { Axios, AxiosError, AxiosResponse } from 'axios';
 import { Router } from 'vue-router';
+import copy from 'copy-to-clipboard';
 import enMessages from './assets/locales/en';
 import ukMessages from './assets/locales/uk';
 import frMessages from './assets/locales/fr';
@@ -37,6 +38,8 @@ export class MailHedgehog {
   mhConf: object;
 
   $toast: any;
+
+  $t: any;
 
   $axios: Axios;
 
@@ -108,6 +111,14 @@ export class MailHedgehog {
     this.router?.push(to);
   }
 
+  copyToClipboard(text: string = '', options = {}) {
+    if (copy(text, options)) {
+      this.success(this.$t('clipboard.success'));
+      return;
+    }
+    this.error(this.$t('clipboard.error'));
+  }
+
   onResponseError(error: AxiosError, defaultError: string|null = null) {
     if (error.response && error.response.data && isObject(error.response.data)) {
       // @ts-ignore
@@ -138,6 +149,8 @@ export class MailHedgehog {
     this.app.use(Toast, {
       position: POSITION.BOTTOM_RIGHT,
     });
+
+    this.$t = i18n.global.t;
 
     this.app.provide('SetLocale', (locale: string) => setI18nLanguage(i18n, locale));
     this.app.provide('emitter', emitter);
