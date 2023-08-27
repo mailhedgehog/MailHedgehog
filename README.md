@@ -38,7 +38,7 @@ storage:
   use: directory
   per_room_limit: 100
   directory:
-    path: "/home/yaroslawww/work/go/mailhog/_storage"
+    path: "/home/me/work/go/mailhog/_storage"
 #  use: mongodb
 #  #  per_room_limit: 100
 #  mongodb:
@@ -56,6 +56,10 @@ authentication:
   file:
     path: ".mh-authfile"
 db:
+sharing:
+    use: csv
+    csv:
+        path: ".mh-sharing.csv"
 #  connections:
 #    mongodb:
 #      uri: 127.0.0.1:27017
