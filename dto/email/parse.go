@@ -110,15 +110,30 @@ func Parse(r io.Reader) (email *Email, err error) {
 	case contentTypeMultipartRelated:
 		email.TextBody, email.HTMLBody, email.EmbeddedFiles, err = parseMultipartRelated(msg.Body, params["boundary"])
 	case contentTypeTextPlain:
-		content, _ := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
-		message, _ := io.ReadAll(content)
+		content, err := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
+		if err != nil {
+			return email, err
+		}
+		message, err := io.ReadAll(content)
+		if err != nil {
+			return email, err
+		}
 		email.TextBody = strings.TrimSuffix(string(message[:]), "\n")
 	case contentTypeTextHtml:
-		content, _ := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
-		message, _ := io.ReadAll(content)
+		content, err := decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
+		if err != nil {
+			return email, err
+		}
+		message, err := io.ReadAll(content)
+		if err != nil {
+			return email, err
+		}
 		email.HTMLBody = strings.TrimSuffix(string(message[:]), "\n")
 	default:
 		email.Content, err = decodeContent(msg.Body, msg.Header.Get("Content-Transfer-Encoding"))
+		if err != nil {
+			return email, err
+		}
 	}
 
 	return
@@ -438,7 +453,7 @@ func decodeContent(content io.Reader, encoding string) (io.Reader, error) {
 		}
 
 		return bytes.NewReader(message), nil
-	case "":
+	case "8bit", "binary", "":
 		return content, nil
 	default:
 		return nil, fmt.Errorf("unknown encoding: %s", encoding)
