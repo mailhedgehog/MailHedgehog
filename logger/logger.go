@@ -1,6 +1,10 @@
 package logger
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/aquilax/truncate"
+	"runtime"
+)
 
 type Logger struct {
 	LogGroup string
@@ -14,6 +18,10 @@ func CreateLogger(logGroup string) *Logger {
 
 func (logger *Logger) prepareMessage(message string) string {
 	if len(logger.LogGroup) > 0 {
+		_, filename, line, ok := runtime.Caller(2)
+		if ok {
+			return fmt.Sprintf("[%s (%s:%d)] %s", logger.LogGroup, truncate.Truncate(filename, 20, "...", truncate.PositionStart), line, message)
+		}
 		return fmt.Sprintf("[%s] %s", logger.LogGroup, message)
 	}
 
