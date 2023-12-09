@@ -11,10 +11,38 @@
     @apply focus:dark:border-primary-500 focus:dark:ring-primary-500;
     @apply placeholder-context-400 dark:placeholder-context-500;
     @apply px-3 py-2 shadow-sm focus:outline-none sm:text-sm;
+    &:focus {
+      @apply z-[1];
+    }
   }
   &-hint {
     @apply block text-sm;
     @apply text-context-400;
     @apply dark:text-context-400;
+  }
+  &-inputs-list-item {
+    & > * {
+      @apply rounded-none;
+    }
+    &:first-child {
+      & > * {
+        &:first-child {
+          @apply rounded-tl-md;
+        }
+        &:last-child {
+          @apply rounded-tr-md;
+        }
+      }
+    }
+    &:last-child {
+      & > * {
+        &:first-child {
+          @apply rounded-bl-md;
+        }
+        &:last-child {
+          @apply rounded-br-md;
+        }
+      }
+    }
   }
 }

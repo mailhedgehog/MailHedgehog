@@ -42,7 +42,7 @@ func init() {
 
 func TestAuthFile(t *testing.T) {
 	auth := CreateFileAuthentication(filePath)
-	(*gounit.T)(t).AssertEqualsInt(3, len(auth.users))
+	(*gounit.T)(t).AssertEqualsInt(4, len(auth.users))
 
 	auth = CreateFileAuthentication(filePath + "2")
 	(*gounit.T)(t).AssertLessOrEqualInt(len(auth.users), 0)

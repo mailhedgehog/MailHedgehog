@@ -143,6 +143,9 @@ export default {
     smtpPassword: 'SMTP пароль',
     emptySmtpPasswordHint: 'Залиште порожнім, щоб встановити той самий пароль, що й UI',
     emptyPasswordHint: 'Залишити порожнім, щоб зберегти старий пароль',
+    smtpNoPassIps: 'IP-адреси клієнта SMTP, щоб пропустити автентифікацію пароля',
+    ipPlaceholder: '127.0.0.1',
+    addIPHint: 'Додати IP-адресу',
     modal: {
       createTitle: 'Створити користувача',
       editTitle: 'Редагувати користувача \'{user}\'',

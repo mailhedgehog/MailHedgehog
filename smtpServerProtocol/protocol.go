@@ -6,6 +6,7 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/logger"
 	"golang.org/x/exp/slices"
+	"net"
 	"regexp"
 	"strings"
 )
@@ -48,6 +49,7 @@ type Validation struct {
 
 type Protocol struct {
 	Hostname   string
+	Ip         *net.TCPAddr
 	validation *Validation
 
 	state   ConversationState
@@ -61,7 +63,7 @@ type Protocol struct {
 	currentScene              Scene
 }
 
-func CreateProtocol(hostname string, validation *Validation) *Protocol {
+func CreateProtocol(hostname string, ip *net.TCPAddr, validation *Validation) *Protocol {
 	if validation == nil {
 		validation = &Validation{
 			MaximumLineLength: 0,
@@ -71,6 +73,7 @@ func CreateProtocol(hostname string, validation *Validation) *Protocol {
 
 	protocol := &Protocol{
 		Hostname:   hostname,
+		Ip:         ip,
 		validation: validation,
 	}
 	protocol.resetState()
@@ -169,7 +172,7 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 	logManager().Debug(fmt.Sprintf("Handle command: '%s', with args: '%s'", command.verb, command.args))
 
 	if protocol.state == StateWaitingAuth && command.verb != CommandAuth {
-		return ReplyAuthFailed()
+		return ReplyAuthFailed("")
 	}
 
 	switch command.verb {
@@ -179,6 +182,7 @@ func (protocol *Protocol) handleCommand(receivedLine string) *Reply {
 		return protocol.EHLO(command)
 	case CommandAuth:
 		logManager().Debug(fmt.Sprintf("Got %s command", command.verb))
+
 		authMechanism := protocol.parseAuthMechanism(command.args)
 		if slices.Contains(protocol.supportedAuthMechanisms, authMechanism) && protocol.createCustomSceneCallback != nil {
 			protocol.currentScene = protocol.createCustomSceneCallback(string(command.verb) + "_" + authMechanism)
@@ -224,7 +228,6 @@ func (protocol *Protocol) EHLO(command *Command) *Reply {
 		protocol.state = StateWaitingAuth
 		replyArgs = append(replyArgs, string(CommandAuth)+" "+strings.Join(protocol.supportedAuthMechanisms, " "))
 	}
-
 	return ReplyOk(replyArgs...)
 }
 

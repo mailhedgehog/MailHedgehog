@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/exp/slices"
 )
 
 type Mongo struct {
@@ -17,9 +18,12 @@ type Mongo struct {
 }
 
 type UserRow struct {
-	Username string `bson:"username"`
-	HttpPass string `bson:"http_password"`
-	SmtpPass string `bson:"smtp_password"`
+	Username      string   `bson:"username"`
+	HttpPass      string   `bson:"http_password"`
+	SmtpPass      string   `bson:"smtp_password"`
+	NoPassIPs     []string `bson:"no_pass_ips"`
+	RestrictedIPs []string `bson:"restricted_ips"`
+	LoginEmails   []string `bson:"login_emails"`
 }
 
 func CreateMongoDbAuthentication(collection *mongo.Collection) *Mongo {
@@ -63,6 +67,40 @@ func (mongoClient *Mongo) Authenticate(authType AuthenticationType, username str
 	return true
 }
 
+func (mongoClient *Mongo) AuthenticateSMTPViaIP(username string, ip string) bool {
+	if !mongoClient.RequiresAuthentication() {
+		return true
+	}
+
+	var user UserRow
+	err := mongoClient.Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		logManager().Debug(err.Error())
+		return false
+	}
+
+	return slices.Contains(user.NoPassIPs, ip)
+}
+
+func (mongoClient *Mongo) SmtpIpIsWhitelisted(username string, ip string) bool {
+	if !mongoClient.RequiresAuthentication() {
+		return true
+	}
+
+	var user UserRow
+	err := mongoClient.Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		logManager().Debug(err.Error())
+		return false
+	}
+
+	if len(user.RestrictedIPs) > 0 {
+		return slices.Contains(user.RestrictedIPs, ip)
+	}
+
+	return true
+}
+
 func (mongoClient *Mongo) UsernamePresent(username string) bool {
 	count, err := mongoClient.Collection.CountDocuments(context.TODO(), bson.M{"username": username})
 
@@ -78,6 +116,9 @@ func (mongoClient *Mongo) AddUser(username string, httpPassHash string, smtpPass
 		username,
 		httpPassHash,
 		smtpPassHash,
+		[]string{},
+		[]string{},
+		[]string{},
 	})
 
 	logManager().Debug(fmt.Sprintf("New user [%s] added, mongo _id='%s'", username, insertResult.InsertedID))
@@ -110,7 +151,6 @@ func (mongoClient *Mongo) UpdateUser(username string, httpPassHash string, smtpP
 }
 
 func (mongoClient *Mongo) DeleteUser(username string) error {
-	logManager().Error(username)
 	filter := bson.D{
 		{"$and",
 			bson.A{
@@ -155,8 +195,95 @@ func (mongoClient *Mongo) ListUsers(searchQuery string, offset, limit int) ([]Us
 		return nil, 0, err
 	}
 	for _, result := range results {
-		resources = append(resources, UserResource{Username: result.Username})
+		resources = append(resources, UserResource{
+			Username:      result.Username,
+			NoPassIPs:     result.NoPassIPs,
+			RestrictedIPs: result.RestrictedIPs,
+			LoginEmails:   result.LoginEmails,
+		})
 	}
 
 	return resources, int(totalCount), nil
+}
+
+func (mongoClient *Mongo) AddNoPassSmtpIp(username string, ip string) error {
+	var user UserRow
+	err := mongoClient.Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return err
+	}
+
+	if slices.Contains(user.NoPassIPs, ip) {
+		return nil
+	}
+
+	filter := bson.D{
+		{"$and",
+			bson.A{
+				bson.D{{"username", username}},
+			}},
+	}
+
+	newValues := bson.D{}
+
+	user.NoPassIPs = append(user.NoPassIPs, ip)
+
+	newValues = append(newValues, bson.E{"NoPassIPs", user.NoPassIPs})
+
+	updateResult, err := mongoClient.Collection.UpdateOne(context.TODO(), filter, bson.D{bson.E{"$set", newValues}})
+
+	logManager().Debug(fmt.Sprintf("User [%s] updated, mongo _id='%s'", username, updateResult.UpsertedID))
+
+	return err
+}
+
+func (mongoClient *Mongo) DeleteNoPassSmtpIp(username string, ip string) error {
+	var user UserRow
+	err := mongoClient.Collection.FindOne(context.TODO(), bson.M{"username": username}).Decode(&user)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.D{
+		{"$and",
+			bson.A{
+				bson.D{{"username", username}},
+			}},
+	}
+
+	newValues := bson.D{}
+
+	if !slices.Contains(user.NoPassIPs, ip) {
+		return nil
+	}
+
+	i := slices.Index(user.NoPassIPs, ip)
+	user.NoPassIPs = slices.Delete(user.NoPassIPs, i, i+1)
+
+	newValues = append(newValues, bson.E{"NoPassIPs", user.NoPassIPs})
+
+	updateResult, err := mongoClient.Collection.UpdateOne(context.TODO(), filter, bson.D{bson.E{"$set", newValues}})
+
+	logManager().Debug(fmt.Sprintf("User [%s] updated, mongo _id='%s'", username, updateResult.UpsertedID))
+
+	return err
+}
+
+func (mongoClient *Mongo) ClearAllNoPassSmtpIps(username string) error {
+	filter := bson.D{
+		{"$and",
+			bson.A{
+				bson.D{{"username", username}},
+			}},
+	}
+
+	newValues := bson.D{}
+
+	newValues = append(newValues, bson.E{"NoPassIPs", []string{}})
+
+	updateResult, err := mongoClient.Collection.UpdateOne(context.TODO(), filter, bson.D{bson.E{"$set", newValues}})
+
+	logManager().Debug(fmt.Sprintf("User [%s] updated, mongo _id='%s'", username, updateResult.UpsertedID))
+
+	return err
 }

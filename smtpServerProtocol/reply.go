@@ -97,8 +97,11 @@ func ReplyAuthCredentials(response string) *Reply {
 }
 
 // ReplyAuthFailed creates reply with auth failed response
-func ReplyAuthFailed() *Reply {
-	return &Reply{CODE_AUTH_FAILED, []string{"Authenticate failed"}}
+func ReplyAuthFailed(response string) *Reply {
+	if len(response) <= 0 {
+		response = "Authenticate failed"
+	}
+	return &Reply{CODE_AUTH_FAILED, []string{response}}
 }
 
 func ReplyMailbox404(response string) *Reply {

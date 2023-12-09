@@ -222,7 +222,7 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return (&Response{Message: "Emails cleared"}).Send(ctx)
+	return (&Response{Message: "LoginEmails cleared"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
@@ -502,7 +502,10 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 	usersResponse := []fiber.Map{}
 	for _, user := range users {
 		usersResponse = append(usersResponse, fiber.Map{
-			"username": user.Username,
+			"username":       user.Username,
+			"no_pass_ips":    user.NoPassIPs,
+			"restricted_ips": user.RestrictedIPs,
+			"login_emails":   user.LoginEmails,
 		})
 	}
 
@@ -523,9 +526,10 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) createUser(ctx *fiber.Ctx) error {
 	type CreateUserBody struct {
-		Username     string `json:"username" xml:"username" form:"username" validate:"min=1,max=255,alphanum"`
-		HubPassword  string `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"min=1,max=255"`
-		SmtpPassword string `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
+		Username     string   `json:"username" xml:"username" form:"username" validate:"min=1,max=255,alphanum"`
+		HubPassword  string   `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"min=1,max=255"`
+		SmtpPassword string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
+		NoPassIps    []string `json:"no_pass_ips" xml:"no_pass_ips" form:"no_pass_ips" validate:"omitempty,dive"`
 	}
 
 	createUserBody := new(CreateUserBody)
@@ -571,6 +575,16 @@ func (apiV1 *ApiV1) createUser(ctx *fiber.Ctx) error {
 		})
 	}
 
+	err = apiV1.context.Authentication.ClearAllNoPassSmtpIps(createUserBody.Username)
+	if err == nil {
+		for i := range createUserBody.NoPassIps {
+			err = apiV1.context.Authentication.AddNoPassSmtpIp(createUserBody.Username, strings.TrimSpace(createUserBody.NoPassIps[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
+		}
+	}
+
 	return (&Response{Message: "Create User"}).Send(ctx)
 }
 
@@ -578,9 +592,11 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 	var err error
 
 	type UpdateUserBody struct {
-		HubPassword  string `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"omitempty,max=255"`
-		SmtpPassword string `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
+		HubPassword  string   `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"omitempty,max=255"`
+		SmtpPassword string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
+		NoPassIps    []string `json:"no_pass_ips" xml:"no_pass_ips" form:"no_pass_ips" validate:"omitempty,dive"`
 	}
+
 	updateUserBody := new(UpdateUserBody)
 
 	if err := ctx.BodyParser(updateUserBody); err != nil {
@@ -622,6 +638,16 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
+	}
+
+	err = apiV1.context.Authentication.ClearAllNoPassSmtpIps(username)
+	if err == nil {
+		for i := range updateUserBody.NoPassIps {
+			err = apiV1.context.Authentication.AddNoPassSmtpIp(username, strings.TrimSpace(updateUserBody.NoPassIps[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
+		}
 	}
 
 	return (&Response{Message: "User Updated"}).Send(ctx)

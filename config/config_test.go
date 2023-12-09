@@ -29,7 +29,7 @@ func TestParseConfigs(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsInt(1025, config.Smtp.Port)
 
 	(*gounit.T)(t).AssertEqualsInt(8025, config.Http.Port)
-	(*gounit.T)(t).AssertEqualsString("box", config.Http.Path)
+	(*gounit.T)(t).AssertEqualsString("", config.Http.Path)
 
 	(*gounit.T)(t).AssertEqualsString("directory", config.Storage.Use)
 	(*gounit.T)(t).AssertEqualsString("", config.Storage.Directory.Path)

@@ -6,7 +6,7 @@ import (
 )
 
 func TestResetState(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	protocol.state = StateData
 	protocol.message.From = "foo bar"
@@ -21,7 +21,7 @@ func TestResetState(t *testing.T) {
 }
 
 func TestSayHi(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	reply := protocol.SayWelcome("   foo bar    ")
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_SERVICE_READY, reply.Status)
@@ -33,14 +33,14 @@ func TestHandleReceivedLine(t *testing.T) {
 }
 
 func TestHandleMailContent(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	(*gounit.T)(t).AssertNil(protocol.handleMailContent("content foo bar baz"))
 	(*gounit.T)(t).AssertNil(protocol.handleMailContent("content foo bar"))
 	(*gounit.T)(t).AssertNil(protocol.handleMailContent("foo bar baz"))
 }
 
 func TestHandleCommandQUIT(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	reply := protocol.handleCommand("QUIT")
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_SERVICE_CLOSING, reply.Status)
@@ -49,7 +49,7 @@ func TestHandleCommandQUIT(t *testing.T) {
 }
 
 func TestHandleCommandCommandFake(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	reply := protocol.handleCommand("FAKE :)")
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_COMMAND_SYNTAX_ERROR, reply.Status)
@@ -57,7 +57,7 @@ func TestHandleCommandCommandFake(t *testing.T) {
 
 func TestHELO(t *testing.T) {
 	command := CommandFromLine("HELO foo.host.bar")
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	reply := protocol.HELO(command)
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_ACTION_OK, reply.Status)
@@ -69,7 +69,7 @@ func TestHELO(t *testing.T) {
 
 func TestEHLO(t *testing.T) {
 	command := CommandFromLine("EHLO foo.host.bar")
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	reply := protocol.EHLO(command)
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_ACTION_OK, reply.Status)
@@ -82,7 +82,7 @@ func TestEHLO(t *testing.T) {
 
 func TestMAIL(t *testing.T) {
 	command := CommandFromLine("MAIL FROM:<userx@y.foo.org>")
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
 
@@ -96,7 +96,7 @@ func TestMAIL(t *testing.T) {
 
 func TestMAILFails(t *testing.T) {
 	command := CommandFromLine("MAIL fake data")
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	reply := protocol.MAIL(command)
 
@@ -105,7 +105,7 @@ func TestMAILFails(t *testing.T) {
 }
 
 func TestRCPT(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.message.To))
 
@@ -124,7 +124,7 @@ func TestRCPT(t *testing.T) {
 }
 
 func TestRCPTFails(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	command := CommandFromLine("RCPT fake")
 	reply := protocol.RCPT(command)
 	(*gounit.T)(t).AssertEqualsInt(CODE_MAILBOX_404, reply.Status)
@@ -132,7 +132,7 @@ func TestRCPTFails(t *testing.T) {
 }
 
 func TestGetAuthMechanisms(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 	(*gounit.T)(t).AssertEqualsInt(0, len(protocol.supportedAuthMechanisms))
 
 	protocol.supportedAuthMechanisms = []string{"PLAIN", "foo", "BAR"}
@@ -145,7 +145,7 @@ func TestGetAuthMechanisms(t *testing.T) {
 }
 
 func TestParseAuthMechanism(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	(*gounit.T)(t).AssertEqualsString("", protocol.parseAuthMechanism(""))
 	(*gounit.T)(t).AssertEqualsString("foo", protocol.parseAuthMechanism("foo"))
@@ -154,7 +154,7 @@ func TestParseAuthMechanism(t *testing.T) {
 }
 
 func TestParseFROM(t *testing.T) {
-	protocol := CreateProtocol("", nil)
+	protocol := CreateProtocol("", nil, nil)
 
 	res, err := protocol.ParseFROM("FROM:<userx@y.foo.org>")
 	(*gounit.T)(t).AssertNotError(err)

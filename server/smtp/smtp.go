@@ -84,10 +84,13 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	defer connection.Close()
 	logManager().Debug("Initialising session")
 
+	ipAddr, _ := connection.RemoteAddr().(*net.TCPAddr)
+
 	session := &session{
 		context: context,
 		protocol: smtpServerProtocol.CreateProtocol(
 			context.Config.Hostname,
+			ipAddr,
 			&smtpServerProtocol.Validation{
 				MaximumLineLength: context.Config.Smtp.Validation.MaximumLineLength,
 				MaximumReceivers:  context.Config.Smtp.Validation.MaximumReceivers,

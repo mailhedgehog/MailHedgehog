@@ -11,6 +11,7 @@ import {
   PencilIcon,
   UserPlusIcon,
   TrashIcon,
+  PlusIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline';
 import {
@@ -88,37 +89,59 @@ const goToDirection = (direction = 'next') => {
   getUsers(pagination.value.getPageFromDirection(direction));
 };
 
-const editingUser = ref<string|null>(null);
+const editingUser = ref<User|null>(null);
 
 const userForm = ref({
-  new_username: null,
-  hub_password: null,
-  smtp_password: null,
+  new_username: null as null|string,
+  hub_password: null as null|string,
+  smtp_password: null as null|string,
+  no_pass_ips: [] as string[],
+  restricted_ips: [] as string[],
+  login_emails: [] as string[],
 });
 
 const editUser = (user:User) => {
-  editingUser.value = user.username;
+  userForm.value.no_pass_ips = user.no_pass_ips;
+  userForm.value.restricted_ips = user.restricted_ips;
+  userForm.value.login_emails = user.login_emails;
+
+  editingUser.value = user;
+};
+
+const openCreateUserModal = () => {
+  editingUser.value = {
+    username: '',
+    no_pass_ips: [],
+    restricted_ips: [],
+    login_emails: [],
+  };
 };
 
 const updateOrCreateUser = () => {
   isRequesting.value = true;
   const request = mailHedgehog?.request();
   let promise;
-  if (editingUser.value) {
-    promise = request?.put(`users/${editingUser.value}`, {
+  if (editingUser.value?.username) {
+    promise = request?.put(`users/${editingUser.value.username}`, {
       hub_password: userForm.value.hub_password,
       smtp_password: userForm.value.smtp_password,
+      no_pass_ips: userForm.value.no_pass_ips,
+      restricted_ips: userForm.value.restricted_ips,
+      login_emails: userForm.value.login_emails,
     });
   } else {
     promise = request?.post('users', {
       username: userForm.value.new_username,
       hub_password: userForm.value.hub_password,
       smtp_password: userForm.value.smtp_password,
+      no_pass_ips: userForm.value.no_pass_ips,
+      restricted_ips: userForm.value.restricted_ips,
+      login_emails: userForm.value.login_emails,
     });
   }
   promise?.then((response) => {
     getUsers();
-    if (editingUser.value) {
+    if (editingUser.value?.username) {
       mailHedgehog?.success(t('users.updated'));
     } else {
       mailHedgehog?.success(t('users.created'));
@@ -139,6 +162,9 @@ const closeModal = () => {
     new_username: null,
     hub_password: null,
     smtp_password: null,
+    no_pass_ips: [],
+    restricted_ips: [],
+    login_emails: [],
   };
 };
 
@@ -188,7 +214,7 @@ const deleteUser = (user:User) => {
             v-tooltip="t('users.create')"
             type="button"
             class="btn btn--default whitespace-nowrap"
-            @click.prevent="editingUser = ''"
+            @click.prevent="openCreateUserModal"
           >
             <UserPlusIcon class="w-4 h-4 md:mr-2" />
             <span
@@ -465,11 +491,11 @@ const deleteUser = (user:User) => {
                       as="h3"
                       class="text-lg font-medium leading-6 text-context-900 dark:text-context-100"
                     >
-                      <template v-if="editingUser === ''">
+                      <template v-if="editingUser?.username === ''">
                         {{ t('users.modal.createTitle') }}
                       </template>
                       <template v-else>
-                        {{ t('users.modal.editTitle', {user: editingUser}) }}
+                        {{ t('users.modal.editTitle', {user: editingUser?.username}) }}
                       </template>
                     </DialogTitle>
                     <div
@@ -483,7 +509,7 @@ const deleteUser = (user:User) => {
                       <div
                         class="space-y-6"
                       >
-                        <div v-if="editingUser === ''">
+                        <div v-if="editingUser?.username === ''">
                           <label
                             for="new_username"
                             class="form-label"
@@ -497,7 +523,7 @@ const deleteUser = (user:User) => {
                               name="new_username"
                               type="text"
                               autocomplete="off"
-                              :required="editingUser === ''"
+                              :required="editingUser.username === ''"
                               class="form-input"
                               :placeholder="t('users.username')"
                             >
@@ -517,13 +543,13 @@ const deleteUser = (user:User) => {
                               name="hub_password"
                               type="password"
                               autocomplete="hub_password"
-                              :required="editingUser === ''"
+                              :required="editingUser?.username === ''"
                               class="form-input"
                               :placeholder="t('users.hubPassword')"
                             >
                           </div>
                           <div class="form-hint">
-                            <template v-if="editingUser === ''" />
+                            <template v-if="editingUser?.username === ''" />
                             <template v-else>
                               {{ t('users.emptyPasswordHint') }}
                             </template>
@@ -548,12 +574,74 @@ const deleteUser = (user:User) => {
                             >
                           </div>
                           <div class="form-hint">
-                            <template v-if="editingUser === ''">
+                            <template v-if="editingUser?.username === ''">
                               {{ t('users.emptySmtpPasswordHint') }}
                             </template>
                             <template v-else>
                               {{ t('users.emptyPasswordHint') }}
                             </template>
+                          </div>
+                        </div>
+                        <div>
+                          <div class="flex justify-between">
+                            <label
+                              for="no_pass_ips"
+                              class="form-label"
+                            >
+                              {{ t('users.smtpNoPassIps') }}
+                            </label>
+                            <a
+                              v-tooltip="t('users.addIPHint')"
+                              class="
+                                  cursor-pointer
+                                  transition-all duration-500
+                                  text-context-500 dark:text-context-400
+                                  hover:text-primary-500 hover:dark:text-primary-500
+                                  flex justify-center items-center w-auto
+                                  px-3
+                                "
+                              @click.prevent="userForm?.no_pass_ips?.push('127.0.0.1')"
+                            >
+                              <PlusIcon
+                                class="h-5 w-5 flex-shrink-0"
+                                aria-hidden="true"
+                              />
+                            </a>
+                          </div>
+                          <div class="mt-1 flex flex-col -space-y-px">
+                            <div
+                              v-for="(noPassIP, i) in userForm.no_pass_ips"
+                              :key="i"
+                              class="flex form-inputs-list-item"
+                            >
+                              <input
+                                :id="`no_pass_ips_${i}`"
+                                v-model="userForm.no_pass_ips[i]"
+                                name="no_pass_ips[]"
+                                type="text"
+                                autocomplete="off"
+                                class="form-input"
+                                :placeholder="t('users.ipPlaceholder')"
+                                maxlength="39"
+                                required
+                              >
+                              <a
+                                class="
+                                  cursor-pointer
+                                  transition-all duration-500
+                                  text-context-500 dark:text-context-400
+                                  hover:text-context-700 hover:dark:text-context-300
+                                  flex justify-center items-center form-input w-auto
+                                  border-l-0
+                                "
+                                @click.prevent="userForm.no_pass_ips.splice(i, 1)"
+                              >
+                                <TrashIcon
+                                  class="h-5 w-5 flex-shrink-0"
+                                  aria-hidden="true"
+                                />
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </div>

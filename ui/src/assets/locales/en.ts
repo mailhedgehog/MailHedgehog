@@ -143,6 +143,9 @@ export default {
     smtpPassword: 'SMTP password',
     emptySmtpPasswordHint: 'Left blank to set same password as UI',
     emptyPasswordHint: 'Left blank to keep old password',
+    smtpNoPassIps: 'SMTP client IPs to skip password auth',
+    ipPlaceholder: '127.0.0.1',
+    addIPHint: 'Add IP',
     modal: {
       createTitle: 'Create user',
       editTitle: 'Edit user \'{user}\'',
