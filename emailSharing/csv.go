@@ -4,7 +4,7 @@ import (
 	"encoding/csv"
 	"errors"
 	"github.com/google/uuid"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"io"
 	"os"
 	"time"

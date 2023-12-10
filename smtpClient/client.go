@@ -2,7 +2,7 @@ package smtpClient
 
 import (
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"net/smtp"
 )
 

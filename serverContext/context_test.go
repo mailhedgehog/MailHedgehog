@@ -2,7 +2,7 @@ package serverContext
 
 import (
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/gounit"
+	"github.com/mailhedgehog/gounit"
 	"testing"
 )
 

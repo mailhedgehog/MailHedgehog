@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
+	"github.com/mailhedgehog/logger"
 	"net/http"
 	"os"
 )

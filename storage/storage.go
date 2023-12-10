@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 )
 
 type SearchQuery = map[string]string

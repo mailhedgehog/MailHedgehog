@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"io"
 	"os"
 	"path/filepath"

@@ -1,8 +1,8 @@
 package authentication
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/gounit"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/gounit"
+	"github.com/mailhedgehog/logger"
 	"os"
 	"testing"
 )

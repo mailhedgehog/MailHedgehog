@@ -3,8 +3,8 @@ package cmd
 import (
 	_ "embed"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
+	"github.com/mailhedgehog/logger"
 	"github.com/spf13/cobra"
 	"os"
 )

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
+	"github.com/mailhedgehog/logger"
 	"github.com/spf13/cobra"
 	"os"
 )

@@ -2,7 +2,7 @@ package config
 
 import (
 	"crypto/rand"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"gopkg.in/yaml.v3"
 	"os"
 )

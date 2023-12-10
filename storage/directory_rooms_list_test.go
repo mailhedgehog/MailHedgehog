@@ -3,7 +3,7 @@ package storage
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/gounit"
+	"github.com/mailhedgehog/gounit"
 	"golang.org/x/exp/slices"
 	"strings"
 	"testing"

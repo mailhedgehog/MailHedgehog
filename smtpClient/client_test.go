@@ -2,7 +2,7 @@ package smtpClient
 
 import (
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/gounit"
+	"github.com/mailhedgehog/gounit"
 	"os"
 	"path/filepath"
 	"testing"

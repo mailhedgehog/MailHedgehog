@@ -1,6 +1,6 @@
 package db
 
-import "github.com/mailhedgehog/MailHedgehog/logger"
+import "github.com/mailhedgehog/logger"
 
 var configuredLogger *logger.Logger
 

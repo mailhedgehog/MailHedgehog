@@ -9,8 +9,8 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
-	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/storage"
+	"github.com/mailhedgehog/logger"
 	"strings"
 	"time"
 )

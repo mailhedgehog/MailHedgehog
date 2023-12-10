@@ -3,8 +3,8 @@ package server
 import (
 	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/gounit"
 	"github.com/mailhedgehog/MailHedgehog/storage"
+	"github.com/mailhedgehog/gounit"
 	"testing"
 )
 

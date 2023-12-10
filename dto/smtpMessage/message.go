@@ -2,7 +2,7 @@ package smtpMessage
 
 import (
 	"bytes"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"io"
 	"strings"
 )

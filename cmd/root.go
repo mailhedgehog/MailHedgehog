@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"github.com/spf13/cobra"
 )
 

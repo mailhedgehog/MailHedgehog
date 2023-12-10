@@ -1,7 +1,7 @@
 package smtpServerProtocol
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/gounit"
+	"github.com/mailhedgehog/gounit"
 	"testing"
 )
 

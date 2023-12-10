@@ -3,7 +3,7 @@ package userInput
 import (
 	"bufio"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"golang.org/x/crypto/ssh/terminal"
 	"os"
 	"strings"

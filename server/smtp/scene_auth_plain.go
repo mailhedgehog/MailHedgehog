@@ -56,9 +56,10 @@ func (scene *AuthPlainScene) checkCredentials(encodedCredentials string) *smtpSe
 		return smtpServerProtocol.ReplyAuthFailed("")
 	}
 
-	if !scene.authentication.AuthenticateSMTPViaIP(username, scene.protocol.Ip.IP.String()) &&
-		!scene.authentication.Authenticate(authentication.SMTP, username, password) {
-		return smtpServerProtocol.ReplyAuthFailed("")
+	if !scene.authentication.AuthenticateSMTPViaIP(username, scene.protocol.Ip.IP.String()) {
+		if !scene.authentication.Authenticate(authentication.SMTP, username, password) {
+			return smtpServerProtocol.ReplyAuthFailed("")
+		}
 	}
 
 	if scene.authenticated != nil {

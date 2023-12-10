@@ -3,12 +3,13 @@ module github.com/mailhedgehog/MailHedgehog
 go 1.19
 
 require (
-	github.com/aquilax/truncate v1.0.0
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/gofiber/fiber/v2 v2.40.1
 	github.com/gofiber/websocket/v2 v2.1.2
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/google/uuid v1.3.0
+	github.com/mailhedgehog/gounit v1.0.0
+	github.com/mailhedgehog/logger v1.0.0
 	github.com/spf13/cobra v1.6.1
 	go.mongodb.org/mongo-driver v1.11.4
 	golang.org/x/crypto v0.3.0

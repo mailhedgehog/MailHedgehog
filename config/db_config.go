@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/db"
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

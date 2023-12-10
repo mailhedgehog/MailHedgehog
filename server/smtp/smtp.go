@@ -3,10 +3,10 @@ package smtp
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
-	"github.com/mailhedgehog/MailHedgehog/logger"
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
+	"github.com/mailhedgehog/logger"
 	"io"
 	"net"
 )

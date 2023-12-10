@@ -1,7 +1,7 @@
 package emailSharing
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/logger"
+	"github.com/mailhedgehog/logger"
 	"time"
 )
 
