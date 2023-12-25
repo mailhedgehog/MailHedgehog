@@ -62,7 +62,7 @@ func configurationHandler(context *serverContext.Context) func(c *fiber.Ctx) err
 	}
 
 	authType := ""
-	if context.Authentication.RequiresAuthentication() {
+	if context.Authentication.Dashboard().RequiresAuthentication() {
 		authType = context.Config.Authentication.Type
 	}
 

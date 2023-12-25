@@ -24,7 +24,7 @@ func CreateAPIRoutes(context *serverContext.Context, httpApp *fiber.App) {
 		return c.Next()
 	})
 
-	if context.Authentication.RequiresAuthentication() {
+	if context.Authentication.Dashboard().RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
 		case "internal":
 			api.Use(skip.New(authenticationInternal(context), func(ctx *fiber.Ctx) bool {

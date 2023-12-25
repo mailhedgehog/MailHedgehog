@@ -6,10 +6,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/storage"
+	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"strings"
 	"time"
@@ -25,7 +25,7 @@ func logManager() *logger.Logger {
 }
 
 type Context struct {
-	Authentication authentication.Authentication
+	Authentication contracts.Authentication
 	Storage        storage.Storage
 	Config         config.AppConfig
 	HttpSession    *session.Store

@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/fiber/v2/utils"
-	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/server/api"
@@ -16,6 +15,8 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/storage"
+	"github.com/mailhedgehog/authenticationFile"
+	"github.com/mailhedgehog/authenticationMongo"
 	"github.com/mailhedgehog/logger"
 	"os"
 	"strings"
@@ -63,14 +64,15 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 
 	switch config.Authentication.Use {
 	case "file":
-		context.Authentication = authentication.CreateFileAuthentication(config.Authentication.File.Path)
+		context.Authentication = authenticationFile.CreateFileAuthentication(&config.Authentication.File, &config.Authentication.Config)
 	case "mongodb":
-		context.Authentication = authentication.CreateMongoDbAuthentication(
+		context.Authentication = authenticationMongo.CreateMongoDbAuthentication(
 			config.DB.GetMongoDBConnection(
 				config.Authentication.MongoDB.Connection,
 			).Collection(
 				config.Authentication.MongoDB.Collection,
 			),
+			&config.Authentication.Config,
 		)
 	default:
 		panic("Incorrect authentication type, Supports: file, mongodb")
@@ -104,7 +106,7 @@ func Start(context *serverContext.Context) {
 		}))
 	}
 
-	if context.Authentication.RequiresAuthentication() {
+	if context.Authentication.Dashboard().RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
 		case "basic":
 			httpApp.Use(authenticationBasic(context))
@@ -167,7 +169,7 @@ func authenticationBasic(context *serverContext.Context) func(ctx *fiber.Ctx) er
 			username := credentials[:index]
 			password := credentials[index+1:]
 
-			if !context.Authentication.Authenticate(authentication.HTTP, username, password) {
+			if !context.Authentication.Dashboard().ViaPasswordAuthentication().Authenticate(username, password) {
 				return Unauthorized()
 			}
 

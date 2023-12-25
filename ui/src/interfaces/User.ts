@@ -1,6 +1,6 @@
 export interface User {
   username: string;
-  no_pass_ips: [];
-  restricted_ips: [];
-  login_emails: [];
+  smtp_auth_ips: [];
+  smtp_allow_listed_ips: [];
+  dashboard_auth_emails: [];
 }

@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/authentication"
-	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/storage"
-	"github.com/mailhedgehog/gounit"
-	"testing"
+    "github.com/mailhedgehog/MailHedgehog/config"
+    "github.com/mailhedgehog/MailHedgehog/storage"
+    "github.com/mailhedgehog/authenticationFile"
+    "github.com/mailhedgehog/gounit"
+    "testing"
 )
 
 func TestConfigure(t *testing.T) {
@@ -20,6 +20,6 @@ func TestConfigure(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("", context.Config.Authentication.File.Path)
 
 	(*gounit.T)(t).AssertInstanceOf((*storage.Directory)(nil), context.Storage)
-	(*gounit.T)(t).AssertInstanceOf((*authentication.FileAuth)(nil), context.Authentication)
+	(*gounit.T)(t).AssertInstanceOf((*authenticationFile.FileAuth)(nil), context.Authentication)
 
 }

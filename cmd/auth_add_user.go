@@ -3,9 +3,11 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/config"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
+	"github.com/mailhedgehog/authenticationFile"
+	"github.com/mailhedgehog/authenticationMongo"
+	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"github.com/spf13/cobra"
 	"os"
@@ -27,21 +29,22 @@ func authAddUser(cmd *cobra.Command, args []string) {
 	configuration := config.ParseConfig(filePath)
 	switch configuration.Authentication.Use {
 	case "file":
-		addUser(authentication.CreateFileAuthentication(configuration.Authentication.File.Path))
+		addUser(authenticationFile.CreateFileAuthentication(&configuration.Authentication.File, &configuration.Authentication.Config))
 	case "mongodb":
-		addUser(authentication.CreateMongoDbAuthentication(
+		addUser(authenticationMongo.CreateMongoDbAuthentication(
 			configuration.DB.GetMongoDBConnection(
 				configuration.Authentication.MongoDB.Connection,
 			).Collection(
 				configuration.Authentication.MongoDB.Collection,
 			),
+			&configuration.Authentication.Config,
 		))
 	default:
 		logManager().Error(fmt.Sprintf("Unsupported auth type [%s]", configuration.Authentication.Use))
 	}
 }
 
-func addUser(auth authentication.Authentication) {
+func addUser(auth contracts.Authentication) {
 	roomName, err := userInput.Get("Please input room name:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(roomName, 0, 20)
@@ -50,7 +53,7 @@ func addUser(auth authentication.Authentication) {
 		os.Exit(0)
 	}
 
-	if auth.UsernamePresent(roomName) {
+	if auth.UsersStorage().Exists(roomName) {
 		logManager().Critical(fmt.Sprintf("Room [%s] already present in credentials list.", roomName))
 		os.Exit(0)
 	}
@@ -62,26 +65,35 @@ func addUser(auth authentication.Authentication) {
 		logManager().Critical(err.Error())
 		os.Exit(0)
 	}
-	hashHttpPassword, err := authentication.CreatePasswordHash(httpPassword)
-	logger.PanicIfError(err)
 
-	hashSmtpPassword := []byte{}
 	smtpPassword, err := userInput.GetSilent("Please set password for smtp login(optional, if empty will be used http password):")
 	logger.PanicIfError(err)
-	if len(smtpPassword) > 0 {
-		err = validateMinMaxLength(smtpPassword, 6, 20)
+	err = validateMinMaxLength(httpPassword, 6, 20)
+	if err != nil {
+		logManager().Critical(err.Error())
+		os.Exit(0)
+	}
+
+	err = auth.UsersStorage().Add(roomName)
+	if err != nil {
+		logManager().Critical(err.Error())
+		os.Exit(0)
+	}
+
+	if len(httpPassword) > 0 {
+		err = auth.Dashboard().ViaPasswordAuthentication().SetPassword(roomName, httpPassword)
 		if err != nil {
 			logManager().Critical(err.Error())
 			os.Exit(0)
 		}
-		hashSmtpPassword, err = authentication.CreatePasswordHash(smtpPassword)
-		logger.PanicIfError(err)
 	}
 
-	err = auth.AddUser(roomName, string(hashHttpPassword), string(hashSmtpPassword))
-	if err != nil {
-		logManager().Critical(err.Error())
-		os.Exit(0)
+	if len(smtpPassword) > 0 {
+		err = auth.SMTP().ViaPasswordAuthentication().SetPassword(roomName, smtpPassword)
+		if err != nil {
+			logManager().Critical(err.Error())
+			os.Exit(0)
+		}
 	}
 
 	logManager().Info(fmt.Sprintf("Room [%s] credentials added.", roomName))

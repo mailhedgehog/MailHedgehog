@@ -93,17 +93,17 @@ const editingUser = ref<User|null>(null);
 
 const userForm = ref({
   new_username: null as null|string,
-  hub_password: null as null|string,
+  dashboard_password: null as null|string,
   smtp_password: null as null|string,
-  no_pass_ips: [] as string[],
-  restricted_ips: [] as string[],
-  login_emails: [] as string[],
+  smtp_auth_ips: [] as string[],
+  smtp_allow_listed_ips: [] as string[],
+  dashboard_auth_emails: [] as string[],
 });
 
 const editUser = (user:User) => {
-  userForm.value.no_pass_ips = user.no_pass_ips;
-  userForm.value.restricted_ips = user.restricted_ips;
-  userForm.value.login_emails = user.login_emails;
+  userForm.value.smtp_auth_ips = user.smtp_auth_ips;
+  userForm.value.smtp_allow_listed_ips = user.smtp_allow_listed_ips;
+  userForm.value.dashboard_auth_emails = user.dashboard_auth_emails;
 
   editingUser.value = user;
 };
@@ -111,9 +111,9 @@ const editUser = (user:User) => {
 const openCreateUserModal = () => {
   editingUser.value = {
     username: '',
-    no_pass_ips: [],
-    restricted_ips: [],
-    login_emails: [],
+    smtp_auth_ips: [],
+    smtp_allow_listed_ips: [],
+    dashboard_auth_emails: [],
   };
 };
 
@@ -123,20 +123,20 @@ const updateOrCreateUser = () => {
   let promise;
   if (editingUser.value?.username) {
     promise = request?.put(`users/${editingUser.value.username}`, {
-      hub_password: userForm.value.hub_password,
+      dashboard_password: userForm.value.dashboard_password,
       smtp_password: userForm.value.smtp_password,
-      no_pass_ips: userForm.value.no_pass_ips,
-      restricted_ips: userForm.value.restricted_ips,
-      login_emails: userForm.value.login_emails,
+      smtp_auth_ips: userForm.value.smtp_auth_ips,
+      smtp_allow_listed_ips: userForm.value.smtp_allow_listed_ips,
+      dashboard_auth_emails: userForm.value.dashboard_auth_emails,
     });
   } else {
     promise = request?.post('users', {
       username: userForm.value.new_username,
-      hub_password: userForm.value.hub_password,
+      dashboard_password: userForm.value.dashboard_password,
       smtp_password: userForm.value.smtp_password,
-      no_pass_ips: userForm.value.no_pass_ips,
-      restricted_ips: userForm.value.restricted_ips,
-      login_emails: userForm.value.login_emails,
+      smtp_auth_ips: userForm.value.smtp_auth_ips,
+      smtp_allow_listed_ips: userForm.value.smtp_allow_listed_ips,
+      dashboard_auth_emails: userForm.value.dashboard_auth_emails,
     });
   }
   promise?.then((response) => {
@@ -160,11 +160,11 @@ const closeModal = () => {
   editingUser.value = null;
   userForm.value = {
     new_username: null,
-    hub_password: null,
+    dashboard_password: null,
     smtp_password: null,
-    no_pass_ips: [],
-    restricted_ips: [],
-    login_emails: [],
+    smtp_auth_ips: [],
+    smtp_allow_listed_ips: [],
+    dashboard_auth_emails: [],
   };
 };
 
@@ -539,7 +539,7 @@ const deleteUser = (user:User) => {
                           <div class="mt-1 flex">
                             <input
                               id="hub_password"
-                              v-model="userForm.hub_password"
+                              v-model="userForm.dashboard_password"
                               name="hub_password"
                               type="password"
                               autocomplete="hub_password"
@@ -585,7 +585,7 @@ const deleteUser = (user:User) => {
                         <div>
                           <div class="flex justify-between">
                             <label
-                              for="no_pass_ips"
+                              for="smtp_auth_ips"
                               class="form-label"
                             >
                               {{ t('users.smtpNoPassIps') }}
@@ -600,7 +600,7 @@ const deleteUser = (user:User) => {
                                   flex justify-center items-center w-auto
                                   px-3
                                 "
-                              @click.prevent="userForm?.no_pass_ips?.push('127.0.0.1')"
+                              @click.prevent="userForm?.smtp_auth_ips?.push('127.0.0.1')"
                             >
                               <PlusIcon
                                 class="h-5 w-5 flex-shrink-0"
@@ -610,14 +610,14 @@ const deleteUser = (user:User) => {
                           </div>
                           <div class="mt-1 flex flex-col -space-y-px">
                             <div
-                              v-for="(noPassIP, i) in userForm.no_pass_ips"
+                              v-for="(noPassIP, i) in userForm.smtp_auth_ips"
                               :key="i"
                               class="flex form-inputs-list-item"
                             >
                               <input
-                                :id="`no_pass_ips_${i}`"
-                                v-model="userForm.no_pass_ips[i]"
-                                name="no_pass_ips[]"
+                                :id="`smtp_auth_ips_${i}`"
+                                v-model="userForm.smtp_auth_ips[i]"
+                                name="smtp_auth_ips[]"
                                 type="text"
                                 autocomplete="off"
                                 class="form-input"
@@ -634,7 +634,7 @@ const deleteUser = (user:User) => {
                                   flex justify-center items-center form-input w-auto
                                   border-l-0
                                 "
-                                @click.prevent="userForm.no_pass_ips.splice(i, 1)"
+                                @click.prevent="userForm.smtp_auth_ips.splice(i, 1)"
                               >
                                 <TrashIcon
                                   class="h-5 w-5 flex-shrink-0"

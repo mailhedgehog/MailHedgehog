@@ -103,7 +103,7 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	}
 
 	// Set conditionally Authentication flow
-	if context.Authentication.RequiresAuthentication() {
+	if context.Authentication.Dashboard().RequiresAuthentication() {
 		// TODO: there can be added other auth mechanisms
 		session.protocol.SetAuthMechanisms([]string{AuthMechanismPlain})
 	}

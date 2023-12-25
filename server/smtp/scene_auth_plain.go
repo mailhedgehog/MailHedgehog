@@ -6,13 +6,13 @@ package smtp
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
+	"github.com/mailhedgehog/contracts"
 	"strings"
 )
 
 type AuthPlainScene struct {
-	authentication authentication.Authentication
+	authentication contracts.Authentication
 	authenticated  func(username string)
 	protocol       *smtpServerProtocol.Protocol
 }
@@ -52,12 +52,12 @@ func (scene *AuthPlainScene) checkCredentials(encodedCredentials string) *smtpSe
 		return smtpServerProtocol.ReplyAuthFailed("")
 	}
 
-	if !scene.authentication.SmtpIpIsWhitelisted(username, scene.protocol.Ip.IP.String()) {
+	if !scene.authentication.SMTP().IpsAllowList().Allowed(username, scene.protocol.Ip.IP.String()) {
 		return smtpServerProtocol.ReplyAuthFailed("")
 	}
 
-	if !scene.authentication.AuthenticateSMTPViaIP(username, scene.protocol.Ip.IP.String()) {
-		if !scene.authentication.Authenticate(authentication.SMTP, username, password) {
+	if !scene.authentication.SMTP().ViaIpAuthentication().Authenticate(username, scene.protocol.Ip.IP.String()) {
+		if !scene.authentication.SMTP().ViaPasswordAuthentication().Authenticate(username, password) {
 			return smtpServerProtocol.ReplyAuthFailed("")
 		}
 	}

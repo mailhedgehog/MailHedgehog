@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailhedgehog/MailHedgehog/authentication"
 	"github.com/mailhedgehog/MailHedgehog/dto/email"
 	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
@@ -46,7 +45,7 @@ func CreateAPIV1Routes(context *serverContext.Context, api fiber.Router) {
 
 	v1.Get("/user", apiV1.showUser)
 
-	if context.Authentication.RequiresAuthentication() {
+	if context.Authentication.Dashboard().RequiresAuthentication() {
 		switch context.Config.Authentication.Type {
 		case "internal":
 			v1.Post("/login", apiV1.postInternalLogin)
@@ -222,7 +221,7 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return (&Response{Message: "LoginEmails cleared"}).Send(ctx)
+	return (&Response{Message: "DashboardAuthEmails cleared"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
@@ -418,7 +417,7 @@ func (apiV1 *ApiV1) postInternalLogin(ctx *fiber.Ctx) error {
 		})
 	}
 
-	if !apiV1.context.Authentication.Authenticate(authentication.HTTP, loginBody.Username, loginBody.Password) {
+	if !apiV1.context.Authentication.Dashboard().ViaPasswordAuthentication().Authenticate(loginBody.Username, loginBody.Password) {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			{FailedField: "username", Value: "Incorrect credentials"},
 		})
@@ -476,7 +475,7 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 	}
 
 	from := (listQuery.Page - 1) * listQuery.PerPage
-	users, totalCount, err := apiV1.context.Authentication.ListUsers(listQuery.SearchText, from, listQuery.PerPage)
+	users, totalCount, err := apiV1.context.Authentication.UsersStorage().List(listQuery.SearchText, from, listQuery.PerPage)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -502,10 +501,10 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 	usersResponse := []fiber.Map{}
 	for _, user := range users {
 		usersResponse = append(usersResponse, fiber.Map{
-			"username":       user.Username,
-			"no_pass_ips":    user.NoPassIPs,
-			"restricted_ips": user.RestrictedIPs,
-			"login_emails":   user.LoginEmails,
+			"username":              user.Username,
+			"smtp_auth_ips":         user.SmtpAuthIPs,
+			"smtp_allow_listed_ips": user.SmtpAllowListedIPs,
+			"dashboard_auth_emails": user.DashboardAuthEmails,
 		})
 	}
 
@@ -526,10 +525,12 @@ func (apiV1 *ApiV1) getUsers(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) createUser(ctx *fiber.Ctx) error {
 	type CreateUserBody struct {
-		Username     string   `json:"username" xml:"username" form:"username" validate:"min=1,max=255,alphanum"`
-		HubPassword  string   `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"min=1,max=255"`
-		SmtpPassword string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
-		NoPassIps    []string `json:"no_pass_ips" xml:"no_pass_ips" form:"no_pass_ips" validate:"omitempty,dive"`
+		Username            string   `json:"username" xml:"username" form:"username" validate:"min=1,max=255,alphanum"`
+		DashboardPassword   string   `json:"dashboard_password" xml:"dashboard_password" form:"hub_password" validate:"omitempty,min=1,max=255"`
+		SmtpPassword        string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,min=1,max=255"`
+		SmtpAuthIPs         []string `json:"smtp_auth_ips" xml:"smtp_auth_ips" form:"smtp_auth_ips" validate:"omitempty,dive"`
+		SmtpAllowListedIPs  []string `json:"smtp_allow_listed_ips" xml:"smtp_allow_listed_ips" form:"smtp_allow_listed_ips" validate:"omitempty,dive"`
+		DashboardAuthEmails []string `json:"dashboard_auth_emails" xml:"dashboard_auth_emails" form:"dashboard_auth_emails" validate:"omitempty,dive"`
 	}
 
 	createUserBody := new(CreateUserBody)
@@ -545,40 +546,50 @@ func (apiV1 *ApiV1) createUser(ctx *fiber.Ctx) error {
 		return UnprocessableEntityResponse(ctx, errs)
 	}
 
-	if apiV1.context.Authentication.UsernamePresent(createUserBody.Username) {
+	if apiV1.context.Authentication.UsersStorage().Exists(createUserBody.Username) {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", errors.New("user with same username already present")),
 		})
 	}
 
-	hubPasswordHash, err := authentication.CreatePasswordHash(createUserBody.HubPassword)
+	err := apiV1.context.Authentication.UsersStorage().Add(createUserBody.Username)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
 
-	smtpPasswordHash := []byte{}
+	if len(createUserBody.DashboardPassword) > 0 {
+		err = apiV1.context.Authentication.Dashboard().ViaPasswordAuthentication().SetPassword(createUserBody.Username, createUserBody.DashboardPassword)
+	}
 	if len(createUserBody.SmtpPassword) > 0 {
-		smtpPasswordHash, err = authentication.CreatePasswordHash(createUserBody.SmtpPassword)
-		if err != nil {
-			return UnprocessableEntityResponse(ctx, []*ValidationError{
-				ValidationErrorFromError("query", err),
-			})
+		err = apiV1.context.Authentication.SMTP().ViaPasswordAuthentication().SetPassword(createUserBody.Username, createUserBody.SmtpPassword)
+	}
+
+	err = apiV1.context.Authentication.SMTP().ViaIpAuthentication().ClearAllIps(createUserBody.Username)
+	if err == nil {
+		for i := range createUserBody.SmtpAuthIPs {
+			err = apiV1.context.Authentication.SMTP().ViaIpAuthentication().AddIp(createUserBody.Username, strings.TrimSpace(createUserBody.SmtpAuthIPs[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
 		}
 	}
 
-	err = apiV1.context.Authentication.AddUser(createUserBody.Username, string(hubPasswordHash), string(smtpPasswordHash))
-	if err != nil {
-		return UnprocessableEntityResponse(ctx, []*ValidationError{
-			ValidationErrorFromError("query", err),
-		})
+	err = apiV1.context.Authentication.SMTP().IpsAllowList().ClearAllIps(createUserBody.Username)
+	if err == nil {
+		for i := range createUserBody.SmtpAllowListedIPs {
+			err = apiV1.context.Authentication.SMTP().IpsAllowList().AddIp(createUserBody.Username, strings.TrimSpace(createUserBody.SmtpAllowListedIPs[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
+		}
 	}
 
-	err = apiV1.context.Authentication.ClearAllNoPassSmtpIps(createUserBody.Username)
+	err = apiV1.context.Authentication.Dashboard().ViaEmailAuthentication().ClearAllEmails(createUserBody.Username)
 	if err == nil {
-		for i := range createUserBody.NoPassIps {
-			err = apiV1.context.Authentication.AddNoPassSmtpIp(createUserBody.Username, strings.TrimSpace(createUserBody.NoPassIps[i]))
+		for i := range createUserBody.DashboardAuthEmails {
+			err = apiV1.context.Authentication.Dashboard().ViaEmailAuthentication().AddEmail(createUserBody.Username, strings.TrimSpace(createUserBody.DashboardAuthEmails[i]))
 			if err != nil {
 				logManager().Warning(err.Error())
 			}
@@ -592,9 +603,11 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 	var err error
 
 	type UpdateUserBody struct {
-		HubPassword  string   `json:"hub_password" xml:"hub_password" form:"hub_password" validate:"omitempty,max=255"`
-		SmtpPassword string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,max=255"`
-		NoPassIps    []string `json:"no_pass_ips" xml:"no_pass_ips" form:"no_pass_ips" validate:"omitempty,dive"`
+		DashboardPassword   string   `json:"dashboard_password" xml:"dashboard_password" form:"hub_password" validate:"omitempty,min=1,max=255"`
+		SmtpPassword        string   `json:"smtp_password" xml:"smtp_password" form:"smtp_password" validate:"omitempty,min=1,max=255"`
+		SmtpAuthIPs         []string `json:"smtp_auth_ips" xml:"smtp_auth_ips" form:"smtp_auth_ips" validate:"omitempty,dive"`
+		SmtpAllowListedIPs  []string `json:"smtp_allow_listed_ips" xml:"smtp_allow_listed_ips" form:"smtp_allow_listed_ips" validate:"omitempty,dive"`
+		DashboardAuthEmails []string `json:"dashboard_auth_emails" xml:"dashboard_auth_emails" form:"dashboard_auth_emails" validate:"omitempty,dive"`
 	}
 
 	updateUserBody := new(UpdateUserBody)
@@ -612,9 +625,8 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 
 	username := ctx.Params("username")
 
-	hubPasswordHash := []byte{}
-	if len(updateUserBody.HubPassword) > 0 {
-		hubPasswordHash, err = authentication.CreatePasswordHash(updateUserBody.HubPassword)
+	if len(updateUserBody.DashboardPassword) > 0 {
+		err = apiV1.context.Authentication.Dashboard().ViaPasswordAuthentication().SetPassword(username, updateUserBody.DashboardPassword)
 		if err != nil {
 			return UnprocessableEntityResponse(ctx, []*ValidationError{
 				ValidationErrorFromError("query", err),
@@ -622,9 +634,8 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 		}
 	}
 
-	smtpPasswordHash := []byte{}
 	if len(updateUserBody.SmtpPassword) > 0 {
-		smtpPasswordHash, err = authentication.CreatePasswordHash(updateUserBody.SmtpPassword)
+		err = apiV1.context.Authentication.SMTP().ViaPasswordAuthentication().SetPassword(username, updateUserBody.SmtpPassword)
 		if err != nil {
 			return UnprocessableEntityResponse(ctx, []*ValidationError{
 				ValidationErrorFromError("query", err),
@@ -632,18 +643,30 @@ func (apiV1 *ApiV1) updateUser(ctx *fiber.Ctx) error {
 		}
 	}
 
-	err = apiV1.context.Authentication.UpdateUser(username, string(hubPasswordHash), string(smtpPasswordHash))
-
-	if err != nil {
-		return UnprocessableEntityResponse(ctx, []*ValidationError{
-			ValidationErrorFromError("query", err),
-		})
+	err = apiV1.context.Authentication.SMTP().ViaIpAuthentication().ClearAllIps(username)
+	if err == nil {
+		for i := range updateUserBody.SmtpAuthIPs {
+			err = apiV1.context.Authentication.SMTP().ViaIpAuthentication().AddIp(username, strings.TrimSpace(updateUserBody.SmtpAuthIPs[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
+		}
 	}
 
-	err = apiV1.context.Authentication.ClearAllNoPassSmtpIps(username)
+	err = apiV1.context.Authentication.SMTP().IpsAllowList().ClearAllIps(username)
 	if err == nil {
-		for i := range updateUserBody.NoPassIps {
-			err = apiV1.context.Authentication.AddNoPassSmtpIp(username, strings.TrimSpace(updateUserBody.NoPassIps[i]))
+		for i := range updateUserBody.SmtpAllowListedIPs {
+			err = apiV1.context.Authentication.SMTP().IpsAllowList().AddIp(username, strings.TrimSpace(updateUserBody.SmtpAllowListedIPs[i]))
+			if err != nil {
+				logManager().Warning(err.Error())
+			}
+		}
+	}
+
+	err = apiV1.context.Authentication.Dashboard().ViaEmailAuthentication().ClearAllEmails(username)
+	if err == nil {
+		for i := range updateUserBody.DashboardAuthEmails {
+			err = apiV1.context.Authentication.Dashboard().ViaEmailAuthentication().AddEmail(username, strings.TrimSpace(updateUserBody.DashboardAuthEmails[i]))
 			if err != nil {
 				logManager().Warning(err.Error())
 			}
@@ -675,7 +698,7 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = apiV1.context.Authentication.DeleteUser(username)
+	err = apiV1.context.Authentication.UsersStorage().Delete(username)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
