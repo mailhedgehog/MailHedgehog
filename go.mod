@@ -11,6 +11,7 @@ require (
 	github.com/mailhedgehog/authenticationFile v1.0.0
 	github.com/mailhedgehog/authenticationMongo v1.0.0
 	github.com/mailhedgehog/contracts v1.0.0
+	github.com/mailhedgehog/email v1.0.0
 	github.com/mailhedgehog/gounit v1.0.0
 	github.com/mailhedgehog/logger v1.0.0
 	github.com/spf13/cobra v1.6.1

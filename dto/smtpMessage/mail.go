@@ -3,7 +3,7 @@ package smtpMessage
 import (
 	"errors"
 	"github.com/google/uuid"
-	"github.com/mailhedgehog/MailHedgehog/dto/email"
+	"github.com/mailhedgehog/email"
 	"strings"
 )
 
