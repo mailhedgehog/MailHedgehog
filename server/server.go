@@ -14,10 +14,11 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/server/ui"
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
-	"github.com/mailhedgehog/MailHedgehog/storage"
 	"github.com/mailhedgehog/authenticationFile"
 	"github.com/mailhedgehog/authenticationMongo"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/messagesStorageDirectory"
+	"github.com/mailhedgehog/messagesStorageMongo"
 	"os"
 	"strings"
 	"time"
@@ -43,21 +44,16 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 
 	switch config.Storage.Use {
 	case "directory":
-		context.Storage = storage.CreateDirectoryStorage(config.Storage.Directory.Path)
-		if config.Storage.PerRoomLimit > 0 {
-			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
-		}
+		context.Storage = messagesStorageDirectory.CreateDirectoryStorage(&config.Storage.Directory, &config.Storage.Config)
 	case "mongodb":
-		context.Storage = storage.CreateMongoDbStorage(
+		context.Storage = messagesStorageMongo.CreateMongoDbStorage(
 			config.DB.GetMongoDBConnection(
 				config.Storage.MongoDB.Connection,
 			).Collection(
 				config.Storage.MongoDB.Collection,
 			),
+			&config.Storage.Config,
 		)
-		if config.Storage.PerRoomLimit > 0 {
-			storage.SetPerRoomLimit(config.Storage.PerRoomLimit)
-		}
 	default:
 		panic("Incorrect storage type, Supports: directory")
 	}

@@ -3,8 +3,8 @@ package smtpServerProtocol
 import (
 	"errors"
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/smtpMessage"
 	"golang.org/x/exp/slices"
 	"net"
 	"regexp"
@@ -52,12 +52,13 @@ type Protocol struct {
 	Ip         *net.TCPAddr
 	validation *Validation
 
-	state   ConversationState
-	message *smtpMessage.SMTPMessage
+	state      ConversationState
+	message    *smtpMessage.SmtpMessage
+	tempOrigin string
 
 	// supportedAuthMechanisms can be empty, if empty client will not go through auth flow
 	supportedAuthMechanisms []string
-	messageReceivedCallback func(message *smtpMessage.SMTPMessage) (string, error)
+	messageReceivedCallback func(message *smtpMessage.SmtpMessage) (string, error)
 
 	createCustomSceneCallback func(sceneName string) Scene
 	currentScene              Scene
@@ -85,7 +86,7 @@ func (protocol *Protocol) SetAuthMechanisms(authMechanisms []string) {
 	protocol.supportedAuthMechanisms = authMechanisms
 }
 
-func (protocol *Protocol) OnMessageReceived(callback func(message *smtpMessage.SMTPMessage) (string, error)) {
+func (protocol *Protocol) OnMessageReceived(callback func(message *smtpMessage.SmtpMessage) (string, error)) {
 	protocol.messageReceivedCallback = callback
 }
 
@@ -132,17 +133,22 @@ func (protocol *Protocol) HandleReceivedLine(receivedLine string) *Reply {
 }
 
 func (protocol *Protocol) resetState() {
-	protocol.message = &smtpMessage.SMTPMessage{}
+	protocol.message = &smtpMessage.SmtpMessage{
+		ID: smtpMessage.NewMessageID(),
+	}
+	protocol.tempOrigin = ""
 	protocol.SetStateCommandsExchange()
 }
 
 func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
-	protocol.message.Data += receivedLine + "\r\n"
-	if strings.HasSuffix(protocol.message.Data, "\r\n.\r\n") {
-		protocol.message.Data = strings.ReplaceAll(protocol.message.Data, "\r\n..", "\r\n.")
+	protocol.tempOrigin += receivedLine + "\r\n"
+
+	// Check is this is end
+	if strings.HasSuffix(protocol.tempOrigin, "\r\n.\r\n") {
+		protocol.tempOrigin = strings.ReplaceAll(protocol.tempOrigin, "\r\n..", "\r\n.")
 
 		logManager().Debug("Got EOF, storing message and reset state.")
-		protocol.message.Data = strings.TrimSuffix(protocol.message.Data, "\r\n.\r\n")
+		protocol.tempOrigin = strings.TrimSuffix(protocol.tempOrigin, "\r\n.\r\n")
 		protocol.state = StateCommandsExchange
 
 		defer protocol.resetState()
@@ -152,7 +158,16 @@ func (protocol *Protocol) handleMailContent(receivedLine string) *Reply {
 			return ReplyExceededStorage("No storage backend")
 		}
 
-		messageId, err := protocol.messageReceivedCallback(protocol.message)
+		var err error
+		var messageId string
+
+		err = protocol.message.SetOrigin(protocol.tempOrigin)
+		if err != nil {
+			logManager().Error(fmt.Sprintf("Error storing message origin: %s", err.Error()))
+			return ReplyExceededStorage("Unable to store message")
+		}
+
+		messageId, err = protocol.messageReceivedCallback(protocol.message)
 		if err != nil {
 			logManager().Error(fmt.Sprintf("Error storing message: %s", err.Error()))
 			return ReplyExceededStorage("Unable to store message")
@@ -242,9 +257,13 @@ func (protocol *Protocol) MAIL(command *Command) *Reply {
 	if err != nil {
 		return ReplyMailbox404(err.Error())
 	}
-	protocol.message.From = from
 
-	return ReplyOk("Sender " + protocol.message.From + " ok")
+	protocol.message.From, err = smtpMessage.MessagePathFromString(from)
+	if err != nil {
+		return ReplyMailbox404(err.Error())
+	}
+
+	return ReplyOk("Sender " + protocol.message.From.Address() + " ok")
 }
 
 func (protocol *Protocol) RCPT(command *Command) *Reply {
@@ -255,9 +274,15 @@ func (protocol *Protocol) RCPT(command *Command) *Reply {
 	if err != nil {
 		return ReplyMailbox404(err.Error())
 	}
-	protocol.message.To = append(protocol.message.To, to)
 
-	return ReplyOk("Receiver " + to + " ok")
+	mailPath, err := smtpMessage.MessagePathFromString(to)
+	if err != nil {
+		return ReplyMailbox404(err.Error())
+	}
+
+	protocol.message.To = append(protocol.message.To, mailPath)
+
+	return ReplyOk("Receiver " + mailPath.Address() + " ok")
 }
 
 func (protocol *Protocol) parseAuthMechanism(args string) string {
@@ -267,7 +292,7 @@ func (protocol *Protocol) parseAuthMechanism(args string) string {
 }
 
 func (protocol *Protocol) ParseFROM(mail string) (string, error) {
-	match := regexp.MustCompile(`(?i:From):\s*<([^>]+)>`).FindStringSubmatch(mail)
+	match := regexp.MustCompile(`(?i:From):\s*(.+)`).FindStringSubmatch(mail)
 
 	if len(match) != 2 {
 		return "", errors.New("Invalid syntax in MAIL command")
@@ -277,7 +302,7 @@ func (protocol *Protocol) ParseFROM(mail string) (string, error) {
 }
 
 func (protocol *Protocol) ParseRCPT(mail string) (string, error) {
-	match := regexp.MustCompile(`(?i:To):\s*<([^>]+)>`).FindStringSubmatch(mail)
+	match := regexp.MustCompile(`(?i:To):\s*(.+)`).FindStringSubmatch(mail)
 
 	if len(match) != 2 {
 		return "", errors.New("Invalid syntax in MAIL command")

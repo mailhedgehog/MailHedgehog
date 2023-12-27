@@ -2,6 +2,7 @@ package smtpServerProtocol
 
 import (
 	"github.com/mailhedgehog/gounit"
+	"github.com/mailhedgehog/smtpMessage"
 	"testing"
 )
 
@@ -9,15 +10,15 @@ func TestResetState(t *testing.T) {
 	protocol := CreateProtocol("", nil, nil)
 
 	protocol.state = StateData
-	protocol.message.From = "foo bar"
+	protocol.message.From, _ = smtpMessage.MessagePathFromString("<foo@bar.com>")
 
 	(*gounit.T)(t).AssertEqualsString(string(StateData), string(protocol.state))
-	(*gounit.T)(t).AssertEqualsString("foo bar", protocol.message.From)
+	(*gounit.T)(t).AssertEqualsString("foo@bar.com", protocol.message.From.Address())
 
 	protocol.resetState()
 
 	(*gounit.T)(t).AssertEqualsString(string(StateCommandsExchange), string(protocol.state))
-	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
+	(*gounit.T)(t).AssertNil(protocol.message.From)
 }
 
 func TestSayHi(t *testing.T) {
@@ -84,14 +85,14 @@ func TestMAIL(t *testing.T) {
 	command := CommandFromLine("MAIL FROM:<userx@y.foo.org>")
 	protocol := CreateProtocol("", nil, nil)
 
-	(*gounit.T)(t).AssertEqualsString("", protocol.message.From)
+	(*gounit.T)(t).AssertNil(protocol.message.From)
 
 	reply := protocol.MAIL(command)
 
 	(*gounit.T)(t).AssertEqualsInt(CODE_ACTION_OK, reply.Status)
 	(*gounit.T)(t).AssertEqualsString("Sender userx@y.foo.org ok", reply.lines[0])
 
-	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", protocol.message.From)
+	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", protocol.message.From.Address())
 }
 
 func TestMAILFails(t *testing.T) {
@@ -120,7 +121,7 @@ func TestRCPT(t *testing.T) {
 	(*gounit.T)(t).AssertEqualsString("Receiver user2@y.foo.org ok", reply.lines[0])
 
 	(*gounit.T)(t).AssertEqualsInt(2, len(protocol.message.To))
-	(*gounit.T)(t).AssertEqualsString("user2@y.foo.org", protocol.message.To[1])
+	(*gounit.T)(t).AssertEqualsString("user2@y.foo.org", protocol.message.To[1].Address())
 }
 
 func TestRCPTFails(t *testing.T) {
@@ -158,11 +159,11 @@ func TestParseFROM(t *testing.T) {
 
 	res, err := protocol.ParseFROM("FROM:<userx@y.foo.org>")
 	(*gounit.T)(t).AssertNotError(err)
-	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", res)
+	(*gounit.T)(t).AssertEqualsString("<userx@y.foo.org>", res)
 
 	res, err = protocol.ParseFROM("from:<userx@y.foo.org>")
 	(*gounit.T)(t).AssertNotError(err)
-	(*gounit.T)(t).AssertEqualsString("userx@y.foo.org", res)
+	(*gounit.T)(t).AssertEqualsString("<userx@y.foo.org>", res)
 }
 
 func TestParseRCPT(t *testing.T) {
@@ -170,9 +171,9 @@ func TestParseRCPT(t *testing.T) {
 
 	res, err := protocol.ParseRCPT("TO:<@hosta.int,@jkl.org:userc@d.bar.org>")
 	(*gounit.T)(t).AssertNotError(err)
-	(*gounit.T)(t).AssertEqualsString("@hosta.int,@jkl.org:userc@d.bar.org", res)
+	(*gounit.T)(t).AssertEqualsString("<@hosta.int,@jkl.org:userc@d.bar.org>", res)
 
 	res, err = protocol.ParseRCPT("to:<userc@d.bar.org>")
 	(*gounit.T)(t).AssertNotError(err)
-	(*gounit.T)(t).AssertEqualsString("userc@d.bar.org", res)
+	(*gounit.T)(t).AssertEqualsString("<userc@d.bar.org>", res)
 }

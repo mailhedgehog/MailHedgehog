@@ -1,8 +1,8 @@
 package smtpClient
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/gounit"
+	"github.com/mailhedgehog/smtpMessage"
 	"os"
 	"path/filepath"
 	"testing"
@@ -19,7 +19,7 @@ func TestSendMail(t *testing.T) {
 	b, err := os.ReadFile(filepath.Join("./", string(messageId)))
 	(*gounit.T)(t).AssertNotError(err)
 
-	email, err := smtpMessage.FromString(string(b)).ToSMTPMail(messageId)
+	email := smtpMessage.FromString(string(b), messageId)
 	(*gounit.T)(t).AssertNotError(err)
 
 	client := NewClient(

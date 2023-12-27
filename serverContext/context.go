@@ -8,7 +8,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/mailhedgehog/MailHedgehog/config"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
-	"github.com/mailhedgehog/MailHedgehog/storage"
 	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"strings"
@@ -26,7 +25,7 @@ func logManager() *logger.Logger {
 
 type Context struct {
 	Authentication contracts.Authentication
-	Storage        storage.Storage
+	Storage        contracts.MessagesStorage
 	Config         config.AppConfig
 	HttpSession    *session.Store
 	Sharing        emailSharing.EmailSharing

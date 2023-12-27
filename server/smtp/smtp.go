@@ -2,11 +2,11 @@ package smtp
 
 import (
 	"fmt"
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/smtpMessage"
 	"io"
 	"net"
 )
@@ -39,7 +39,7 @@ type Protocol interface {
 	// OnMessageReceived function called only when smtp protocol finished and messaage fully received and processed.
 	// So package can save this message or send to other services and return string ID of saved message to send
 	// this ID to "client"
-	OnMessageReceived(callback func(message *smtpMessage.SMTPMessage) (string, error))
+	OnMessageReceived(callback func(message *smtpMessage.SmtpMessage) (string, error))
 }
 
 const (
@@ -108,13 +108,8 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 		session.protocol.SetAuthMechanisms([]string{AuthMechanismPlain})
 	}
 
-	session.protocol.OnMessageReceived(func(message *smtpMessage.SMTPMessage) (string, error) {
-		formattedMessage, err := message.ToSMTPMail(smtpMessage.MessageID(""))
-		if err != nil {
-			return "", err
-		}
-
-		id, err := context.Storage.Store(session.loggedUsername, formattedMessage)
+	session.protocol.OnMessageReceived(func(message *smtpMessage.SmtpMessage) (string, error) {
+		id, err := context.Storage.MessagesRepo(session.loggedUsername).Store(message)
 
 		if context.Config.Http.Websocket {
 			logManager().Debug("Send to websocket notification about new message received. (commented for now)")

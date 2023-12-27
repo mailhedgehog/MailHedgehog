@@ -4,13 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpClient"
-	"github.com/mailhedgehog/MailHedgehog/storage"
+	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/email"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/smtpMessage"
 	"io"
 	"math"
 	"math/rand"
@@ -142,16 +142,16 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 		return UnprocessableEntityResponse(ctx, errs)
 	}
 
-	query := storage.SearchQuery{}
+	query := contracts.SearchQuery{}
 
 	if len(listQuery.SearchText) > 0 {
-		query["from"] = listQuery.SearchText
-		query["to"] = listQuery.SearchText
-		query["content"] = listQuery.SearchText
+		query[contracts.SearchParamFrom] = listQuery.SearchText
+		query[contracts.SearchParamTo] = listQuery.SearchText
+		query[contracts.SearchParamContent] = listQuery.SearchText
 	}
 
 	from := (listQuery.Page - 1) * listQuery.PerPage
-	messages, totalCount, err := apiV1.context.Storage.List(username, query, from, listQuery.PerPage)
+	messages, totalCount, err := apiV1.context.Storage.MessagesRepo(username).List(query, from, listQuery.PerPage)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -173,14 +173,14 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	messagesResponse := []fiber.Map{}
 	for _, message := range messages {
 		var from fiber.Map
-		if len(message.Email.From) > 0 {
+		if len(message.GetEmail().From) > 0 {
 			from = fiber.Map{
-				"name":  message.Email.From[0].Name,
-				"email": message.Email.From[0].Address,
+				"name":  message.GetEmail().From[0].Name,
+				"email": message.GetEmail().From[0].Address,
 			}
 		}
 		to := []fiber.Map{}
-		for _, toAddress := range message.Email.To {
+		for _, toAddress := range message.GetEmail().To {
 			to = append(to, fiber.Map{
 				"name":  toAddress.Name,
 				"email": toAddress.Address,
@@ -191,9 +191,9 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 			"id":          message.ID,
 			"from":        from,
 			"to":          to,
-			"subject":     message.Email.Subject,
-			"received_at": message.Email.Date.Format("2006-01-02 15:04:05"),
-			"size":        len(message.Origin.Data),
+			"subject":     message.GetEmail().Subject,
+			"received_at": message.GetEmail().Date.Format("2006-01-02 15:04:05"),
+			"size":        len(message.GetOrigin()),
 		})
 	}
 
@@ -214,7 +214,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	err := apiV1.context.Storage.DeleteRoom(username)
+	err := apiV1.context.Storage.RoomsRepo().Delete(username)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -226,22 +226,15 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
 
-	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
-	if err != nil {
-		return UnprocessableEntityResponse(ctx, []*ValidationError{
-			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
-		})
-	}
-
 	attachments := []fiber.Map{}
-	for index, a := range parsedEmail.Attachments {
+	for index, a := range smtpEmail.GetEmail().Attachments {
 		attachments = append(attachments, fiber.Map{
 			"filename":    a.Filename,
 			"contentType": a.ContentType,
@@ -250,21 +243,21 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
+	logManager().Debug(fmt.Sprintf("%v", smtpEmail.GetEmail()))
 
 	return (&Response{Data: fiber.Map{
 		"id":          smtpEmail.ID,
-		"headers":     smtpEmail.Email.Headers,
-		"html":        parsedEmail.HTMLBody,
-		"plain":       parsedEmail.TextBody,
-		"source":      smtpEmail.Origin.Data,
+		"headers":     smtpEmail.GetEmail().Headers,
+		"html":        smtpEmail.GetEmail().HTMLBody,
+		"plain":       smtpEmail.GetEmail().TextBody,
+		"source":      smtpEmail.GetOrigin(),
 		"attachments": attachments,
 	}}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -277,7 +270,7 @@ func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
+	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.GetOrigin())) // returns email struct and error
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
@@ -305,19 +298,19 @@ func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	err := apiV1.context.Storage.Delete(username, smtpMessage.MessageID(ctx.Params("id")))
+	err := apiV1.context.Storage.MessagesRepo(username).Delete(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
 
-	return (&Response{Message: "Email deleted"}).Send(ctx)
+	return (&Response{Message: "email deleted"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -359,12 +352,12 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	return (&Response{Message: "Email released"}).Send(ctx)
+	return (&Response{Message: "email released"}).Send(ctx)
 }
 
 func (apiV1 *ApiV1) shareEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.Load(username, smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -691,7 +684,7 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = apiV1.context.Storage.DeleteRoom(username)
+	err = apiV1.context.Storage.RoomsRepo().Delete(username)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -721,22 +714,15 @@ func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	smtpEmail, err := apiV1.context.Storage.Load(emailSharingRecord.Room, smtpMessage.MessageID(emailSharingRecord.EmailId))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(smtpMessage.MessageID(emailSharingRecord.EmailId))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
 		})
 	}
 
-	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
-	if err != nil {
-		return UnprocessableEntityResponse(ctx, []*ValidationError{
-			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
-		})
-	}
-
 	attachments := []fiber.Map{}
-	for index, a := range parsedEmail.Attachments {
+	for index, a := range smtpEmail.GetEmail().Attachments {
 		attachments = append(attachments, fiber.Map{
 			"filename":    a.Filename,
 			"contentType": a.ContentType,
@@ -745,14 +731,14 @@ func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	logManager().Debug(fmt.Sprintf("%v", parsedEmail))
+	logManager().Debug(fmt.Sprintf("%v", smtpEmail.GetEmail()))
 
 	return (&Response{Data: fiber.Map{
 		"id":          smtpEmail.ID,
-		"headers":     smtpEmail.Email.Headers,
-		"html":        parsedEmail.HTMLBody,
-		"plain":       parsedEmail.TextBody,
-		"source":      smtpEmail.Origin.Data,
+		"headers":     smtpEmail.GetEmail().Headers,
+		"html":        smtpEmail.GetEmail().HTMLBody,
+		"plain":       smtpEmail.GetEmail().TextBody,
+		"source":      smtpEmail.GetOrigin(),
 		"attachments": attachments,
 	}}).Send(ctx)
 }
@@ -765,7 +751,7 @@ func (apiV1 *ApiV1) downloadSharedEmailAttachment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	smtpEmail, err := apiV1.context.Storage.Load(emailSharingRecord.Room, smtpMessage.MessageID(emailSharingRecord.EmailId))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(smtpMessage.MessageID(emailSharingRecord.EmailId))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -779,19 +765,12 @@ func (apiV1 *ApiV1) downloadSharedEmailAttachment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	parsedEmail, err := email.Parse(strings.NewReader(smtpEmail.Origin.Data)) // returns Email struct and error
-	if err != nil {
-		return UnprocessableEntityResponse(ctx, []*ValidationError{
-			ValidationErrorFromError("parsedEmail", errors.New("email can't be parsed")),
-		})
-	}
-
-	if fileIndex >= len(parsedEmail.Attachments) || fileIndex < 0 {
+	if fileIndex >= len(smtpEmail.GetEmail().Attachments) || fileIndex < 0 {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("fileIndex", errors.New("incorrect attachment number")),
 		})
 	}
-	attachment := parsedEmail.Attachments[fileIndex]
+	attachment := smtpEmail.GetEmail().Attachments[fileIndex]
 
 	bytes, err := io.ReadAll(attachment.Data)
 	if err != nil {

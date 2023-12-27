@@ -36,7 +36,8 @@ http:
   assets_root: "./public"
 storage:
   use: directory
-  per_room_limit: 100
+  config:
+    per_room_limit: 100
   directory:
     path: "/home/me/work/go/mailhog/_storage"
 #  use: mongodb

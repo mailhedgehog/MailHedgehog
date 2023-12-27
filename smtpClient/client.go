@@ -1,8 +1,8 @@
 package smtpClient
 
 import (
-	"github.com/mailhedgehog/MailHedgehog/dto/smtpMessage"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/smtpMessage"
 	"net/smtp"
 )
 
@@ -25,7 +25,7 @@ func NewClient(smtpAddr string, authName string, authParams []string) *SmtpClien
 	return &SmtpClient{smtpAddr, authName, authParams}
 }
 
-func (client *SmtpClient) SendMail(message *smtpMessage.SMTPMail) error {
+func (client *SmtpClient) SendMail(message *smtpMessage.SmtpMessage) error {
 
 	fromAddr := message.From.Address()
 	to := []string{}
@@ -33,7 +33,7 @@ func (client *SmtpClient) SendMail(message *smtpMessage.SMTPMail) error {
 	for _, path := range message.To {
 		to = append(to, path.Address())
 	}
-	msg := []byte(message.Origin.Data)
+	msg := []byte(message.GetOrigin())
 
 	var auth smtp.Auth = nil
 

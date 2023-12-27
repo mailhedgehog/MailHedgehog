@@ -1,6 +1,6 @@
 ## SMTP server protocol
 
-RFC spec you can read [here](rfc2821.txt)
+RFC spec you can read [here](rfc5321.txt)
 
 #### Authentication
 
