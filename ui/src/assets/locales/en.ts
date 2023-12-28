@@ -76,12 +76,11 @@ export default {
     form: {
       expiration: {
         label: 'Expiration in',
-        '10m': '10 minutes',
-        '30m': '30 minutes',
         '1h': '1 hour',
         '3h': '3 hours',
         '1d': '1 day',
         '7d': '7 days',
+        '30d': '30 days',
       },
       shareLink: {
         label: 'Link',

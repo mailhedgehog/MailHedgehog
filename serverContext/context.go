@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"strings"
@@ -28,7 +27,7 @@ type Context struct {
 	Storage        contracts.MessagesStorage
 	Config         config.AppConfig
 	HttpSession    *session.Store
-	Sharing        emailSharing.EmailSharing
+	Sharing        contracts.MessageSharing
 }
 
 func (context *Context) SmtpBindAddr() string {

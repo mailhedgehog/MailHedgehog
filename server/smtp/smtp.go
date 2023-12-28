@@ -5,6 +5,7 @@ import (
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
+	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"github.com/mailhedgehog/smtpMessage"
 	"io"
@@ -109,7 +110,7 @@ func handleSession(connection net.Conn, context *serverContext.Context) {
 	}
 
 	session.protocol.OnMessageReceived(func(message *smtpMessage.SmtpMessage) (string, error) {
-		id, err := context.Storage.MessagesRepo(session.loggedUsername).Store(message)
+		id, err := context.Storage.MessagesRepo(contracts.Room(session.loggedUsername)).Store(message)
 
 		if context.Config.Http.Websocket {
 			logManager().Debug("Send to websocket notification about new message received. (commented for now)")

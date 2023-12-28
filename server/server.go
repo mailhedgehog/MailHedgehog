@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/server/api"
 	"github.com/mailhedgehog/MailHedgehog/server/smtp"
 	"github.com/mailhedgehog/MailHedgehog/server/ui"
@@ -17,6 +16,7 @@ import (
 	"github.com/mailhedgehog/authenticationFile"
 	"github.com/mailhedgehog/authenticationMongo"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/messageSharingStorageFileCsv"
 	"github.com/mailhedgehog/messagesStorageDirectory"
 	"github.com/mailhedgehog/messagesStorageMongo"
 	"os"
@@ -76,7 +76,7 @@ func Configure(config *config.AppConfig) *serverContext.Context {
 
 	switch config.Sharing.Use {
 	case "csv":
-		context.Sharing = emailSharing.CreateSharingEmailUsingCSV(config.Sharing.CSV.Path)
+		context.Sharing = messageSharingStorageFileCsv.CreateSharingEmailUsingCSV(&config.Sharing.CSV)
 	case "mongodb":
 		// TODO: add implementation
 	default:

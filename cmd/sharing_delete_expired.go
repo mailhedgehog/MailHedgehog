@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/config"
-	"github.com/mailhedgehog/MailHedgehog/emailSharing"
+	"github.com/mailhedgehog/messageSharingStorageFileCsv"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -24,7 +24,7 @@ func sharingDeleteExpired(cmd *cobra.Command, args []string) {
 	configuration := config.ParseConfig(filePath)
 	switch configuration.Sharing.Use {
 	case "csv":
-		emailSharingDeleteExpired(emailSharing.CreateSharingEmailUsingCSV(configuration.Sharing.CSV.Path))
+		emailSharingDeleteExpired(messageSharingStorageFileCsv.CreateSharingEmailUsingCSV(&configuration.Sharing.CSV))
 	case "mongodb":
 		// TODO: implement
 	default:
@@ -32,7 +32,7 @@ func sharingDeleteExpired(cmd *cobra.Command, args []string) {
 	}
 }
 
-func emailSharingDeleteExpired(emailSharing *emailSharing.CsvEmailSharing) {
+func emailSharingDeleteExpired(emailSharing *messageSharingStorageFileCsv.MessageSharingStorageFileCsv) {
 	result, err := emailSharing.DeleteExpired()
 	if err != nil {
 		logManager().Critical(err.Error())

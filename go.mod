@@ -7,15 +7,15 @@ require (
 	github.com/gofiber/fiber/v2 v2.51.0
 	github.com/gofiber/websocket/v2 v2.1.2
 	github.com/golang-jwt/jwt/v5 v5.0.0
-	github.com/google/uuid v1.5.0
 	github.com/mailhedgehog/authenticationFile v1.0.1
 	github.com/mailhedgehog/authenticationMongo v1.0.1
-	github.com/mailhedgehog/contracts v1.0.1
+	github.com/mailhedgehog/contracts v1.0.2
 	github.com/mailhedgehog/email v1.0.0
 	github.com/mailhedgehog/gounit v1.0.0
 	github.com/mailhedgehog/logger v1.0.0
-	github.com/mailhedgehog/messagesStorageDirectory v1.0.1
-	github.com/mailhedgehog/messagesStorageMongo v1.0.1
+	github.com/mailhedgehog/messageSharingStorageFileCsv v1.0.0
+	github.com/mailhedgehog/messagesStorageDirectory v1.0.2
+	github.com/mailhedgehog/messagesStorageMongo v1.0.2
 	github.com/mailhedgehog/smtpMessage v1.0.4
 	github.com/spf13/cobra v1.6.1
 	go.mongodb.org/mongo-driver v1.13.1
@@ -30,6 +30,7 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/klauspost/compress v1.17.4 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect

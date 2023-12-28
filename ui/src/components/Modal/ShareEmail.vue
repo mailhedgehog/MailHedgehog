@@ -137,23 +137,20 @@ const {
                           name="expiration_in"
                           class="form-input cursor-pointer"
                         >
-                          <option :value="10">
-                            {{ t('sharedEmail.form.expiration.10m') }}
-                          </option>
-                          <option :value="30">
-                            {{ t('sharedEmail.form.expiration.30m') }}
-                          </option>
-                          <option :value="60">
+                          <option :value="1">
                             {{ t('sharedEmail.form.expiration.1h') }}
                           </option>
-                          <option :value="180">
+                          <option :value="3">
                             {{ t('sharedEmail.form.expiration.3h') }}
                           </option>
-                          <option :value="1440">
+                          <option :value="24">
                             {{ t('sharedEmail.form.expiration.1d') }}
                           </option>
-                          <option :value="10080">
+                          <option :value="168">
                             {{ t('sharedEmail.form.expiration.7d') }}
+                          </option>
+                          <option :value="720">
+                            {{ t('sharedEmail.form.expiration.30d') }}
                           </option>
                         </select>
                         <ChevronUpDownIcon

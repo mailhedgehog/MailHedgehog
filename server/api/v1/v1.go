@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/mailhedgehog/MailHedgehog/emailSharing"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/MailHedgehog/smtpClient"
 	"github.com/mailhedgehog/contracts"
@@ -19,7 +18,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
 var configuredLogger *logger.Logger
@@ -151,7 +149,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 	}
 
 	from := (listQuery.Page - 1) * listQuery.PerPage
-	messages, totalCount, err := apiV1.context.Storage.MessagesRepo(username).List(query, from, listQuery.PerPage)
+	messages, totalCount, err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).List(query, from, listQuery.PerPage)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -214,7 +212,7 @@ func (apiV1 *ApiV1) getEmails(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	err := apiV1.context.Storage.RoomsRepo().Delete(username)
+	err := apiV1.context.Storage.RoomsRepo().Delete(contracts.Room(username))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -226,7 +224,7 @@ func (apiV1 *ApiV1) deleteEmails(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -257,7 +255,7 @@ func (apiV1 *ApiV1) showEmail(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -298,7 +296,7 @@ func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	err := apiV1.context.Storage.MessagesRepo(username).Delete(smtpMessage.MessageID(ctx.Params("id")))
+	err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).Delete(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -310,7 +308,7 @@ func (apiV1 *ApiV1) deleteEmail(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -357,7 +355,7 @@ func (apiV1 *ApiV1) releaseEmail(ctx *fiber.Ctx) error {
 
 func (apiV1 *ApiV1) shareEmail(ctx *fiber.Ctx) error {
 	username, _ := apiV1.context.GetHttpAuthenticatedUser(ctx)
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(username).Load(smtpMessage.MessageID(ctx.Params("id")))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(contracts.Room(username)).Load(smtpMessage.MessageID(ctx.Params("id")))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -365,7 +363,7 @@ func (apiV1 *ApiV1) shareEmail(ctx *fiber.Ctx) error {
 	}
 
 	type ShareQuery struct {
-		Minutes int `json:"expiration_in" xml:"expiration_in" form:"expiration_in" validate:"min=1,max=10080"`
+		Hours int `json:"expiration_in" xml:"expiration_in" form:"expiration_in" validate:"min=1,max=800"`
 	}
 
 	shareQuery := new(ShareQuery)
@@ -376,11 +374,10 @@ func (apiV1 *ApiV1) shareEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	emailSharingRecord, err := apiV1.context.Sharing.Create(&emailSharing.EmailSharingRecord{
-		Room:      username,
-		EmailId:   string(smtpEmail.ID),
-		ExpiredAt: time.Now().UTC().Add(time.Minute * time.Duration(shareQuery.Minutes)),
-	})
+	emailSharingRecord := contracts.NewSharedMessageRecord(contracts.Room(username), smtpEmail.ID)
+	emailSharingRecord.SetExpirationInHours(shareQuery.Hours)
+
+	emailSharingRecord, err = apiV1.context.Sharing.Add(emailSharingRecord)
 
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
@@ -684,7 +681,7 @@ func (apiV1 *ApiV1) deleteUser(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = apiV1.context.Storage.RoomsRepo().Delete(username)
+	err = apiV1.context.Storage.RoomsRepo().Delete(contracts.Room(username))
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -714,7 +711,7 @@ func (apiV1 *ApiV1) showSharedEmail(ctx *fiber.Ctx) error {
 		})
 	}
 
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(smtpMessage.MessageID(emailSharingRecord.EmailId))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(emailSharingRecord.MessageId)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),
@@ -751,7 +748,7 @@ func (apiV1 *ApiV1) downloadSharedEmailAttachment(ctx *fiber.Ctx) error {
 		})
 	}
 
-	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(smtpMessage.MessageID(emailSharingRecord.EmailId))
+	smtpEmail, err := apiV1.context.Storage.MessagesRepo(emailSharingRecord.Room).Load(emailSharingRecord.MessageId)
 	if err != nil {
 		return UnprocessableEntityResponse(ctx, []*ValidationError{
 			ValidationErrorFromError("query", err),

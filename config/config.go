@@ -5,6 +5,7 @@ import (
 	"github.com/mailhedgehog/authenticationFile"
 	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
+	"github.com/mailhedgehog/messageSharingStorageFileCsv"
 	"github.com/mailhedgehog/messagesStorageDirectory"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -62,10 +63,8 @@ type AppConfig struct {
 		Config contracts.AuthenticationConfig `yaml:"config"`
 	} `yaml:"authentication"`
 	Sharing struct {
-		Use string `yaml:"use"`
-		CSV struct {
-			Path string `yaml:"path"`
-		} `yaml:"csv"`
+		Use     string                                            `yaml:"use"`
+		CSV     messageSharingStorageFileCsv.StorageConfiguration `yaml:"csv"`
 		MongoDB struct {
 			Connection string `yaml:"connection"`
 			Collection string `yaml:"collection"`
