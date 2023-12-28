@@ -60,7 +60,7 @@ sharing:
     use: csv
     csv:
         path: ".mh-sharing.csv"
-# db:
+# dbConnectionMongo:
 #  connections:
 #    mongodb:
 #      uri: 127.0.0.1:27017

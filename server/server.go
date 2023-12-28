@@ -2,12 +2,14 @@ package server
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/dbConnectionMongo"
 	"github.com/mailhedgehog/MailHedgehog/server/api"
 	"github.com/mailhedgehog/MailHedgehog/server/smtp"
 	"github.com/mailhedgehog/MailHedgehog/server/ui"
@@ -35,48 +37,48 @@ func logManager() *logger.Logger {
 
 var exitChannel chan int
 
-func Configure(config *config.AppConfig) *serverContext.Context {
+func Configure(configuration *config.AppConfig) *serverContext.Context {
 	context := &serverContext.Context{
-		Config: *config,
+		Config: *configuration,
 	}
 
-	logger.MinLogLevel = config.Log.Level
+	logger.MinLogLevel = configuration.Log.Level
 
-	switch config.Storage.Use {
+	switch configuration.Storage.Use {
 	case "directory":
-		context.Storage = messagesStorageDirectory.CreateDirectoryStorage(&config.Storage.Directory, &config.Storage.Config)
+		context.Storage = messagesStorageDirectory.CreateDirectoryStorage(&configuration.Storage.Directory, &configuration.Storage.Config)
 	case "mongodb":
+		conf := configuration.DB.Connections[configuration.Storage.MongoDB.Connection]
+		if conf == nil {
+			logger.PanicIfError(errors.New(fmt.Sprintf("Undefined db connection [%s]", configuration.Storage.MongoDB.Connection)))
+		}
 		context.Storage = messagesStorageMongo.CreateMongoDbStorage(
-			config.DB.GetMongoDBConnection(
-				config.Storage.MongoDB.Connection,
-			).Collection(
-				config.Storage.MongoDB.Collection,
-			),
-			&config.Storage.Config,
+			dbConnectionMongo.MakeCollection(conf, configuration.Storage.MongoDB.Collection),
+			&configuration.Storage.Config,
 		)
 	default:
 		panic("Incorrect storage type, Supports: directory")
 	}
 
-	switch config.Authentication.Use {
+	switch configuration.Authentication.Use {
 	case "file":
-		context.Authentication = authenticationFile.CreateFileAuthentication(&config.Authentication.File, &config.Authentication.Config)
+		context.Authentication = authenticationFile.CreateFileAuthentication(&configuration.Authentication.File, &configuration.Authentication.Config)
 	case "mongodb":
+		conf := configuration.DB.Connections[configuration.Authentication.MongoDB.Connection]
+		if conf == nil {
+			logger.PanicIfError(errors.New(fmt.Sprintf("Undefined db connection [%s]", configuration.Authentication.MongoDB.Connection)))
+		}
 		context.Authentication = authenticationMongo.CreateMongoDbAuthentication(
-			config.DB.GetMongoDBConnection(
-				config.Authentication.MongoDB.Connection,
-			).Collection(
-				config.Authentication.MongoDB.Collection,
-			),
-			&config.Authentication.Config,
+			dbConnectionMongo.MakeCollection(conf, configuration.Authentication.MongoDB.Collection),
+			&configuration.Authentication.Config,
 		)
 	default:
 		panic("Incorrect authentication type, Supports: file, mongodb")
 	}
 
-	switch config.Sharing.Use {
+	switch configuration.Sharing.Use {
 	case "csv":
-		context.Sharing = messageSharingStorageFileCsv.CreateSharingEmailUsingCSV(&config.Sharing.CSV)
+		context.Sharing = messageSharingStorageFileCsv.CreateSharingEmailUsingCSV(&configuration.Sharing.CSV)
 	case "mongodb":
 		// TODO: add implementation
 	default:

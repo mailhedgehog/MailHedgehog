@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/config"
+	"github.com/mailhedgehog/MailHedgehog/dbConnectionMongo"
 	"github.com/mailhedgehog/MailHedgehog/userInput"
 	"github.com/mailhedgehog/authenticationFile"
 	"github.com/mailhedgehog/authenticationMongo"
@@ -31,12 +32,12 @@ func authAddUser(cmd *cobra.Command, args []string) {
 	case "file":
 		addUser(authenticationFile.CreateFileAuthentication(&configuration.Authentication.File, &configuration.Authentication.Config))
 	case "mongodb":
+		conf := configuration.DB.Connections[configuration.Authentication.MongoDB.Connection]
+		if conf == nil {
+			logger.PanicIfError(errors.New(fmt.Sprintf("Undefined db connection [%s]", configuration.Authentication.MongoDB.Connection)))
+		}
 		addUser(authenticationMongo.CreateMongoDbAuthentication(
-			configuration.DB.GetMongoDBConnection(
-				configuration.Authentication.MongoDB.Connection,
-			).Collection(
-				configuration.Authentication.MongoDB.Collection,
-			),
+			dbConnectionMongo.MakeCollection(conf, configuration.Authentication.MongoDB.Collection),
 			&configuration.Authentication.Config,
 		))
 	default:

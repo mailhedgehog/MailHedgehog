@@ -73,7 +73,7 @@ type AppConfig struct {
 	UI struct {
 		File string `yaml:"file"`
 	} `yaml:"ui"`
-	DB  DbConfig `yaml:"db"`
+	DB  contracts.DbConnectionsConfig `yaml:"db"`
 	Log struct {
 		Level string `yaml:"level"`
 	} `yaml:"log"`

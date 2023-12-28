@@ -9,7 +9,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/mailhedgehog/authenticationFile v1.0.1
 	github.com/mailhedgehog/authenticationMongo v1.0.1
-	github.com/mailhedgehog/contracts v1.0.2
+	github.com/mailhedgehog/contracts v1.0.3
 	github.com/mailhedgehog/email v1.0.0
 	github.com/mailhedgehog/gounit v1.0.0
 	github.com/mailhedgehog/logger v1.0.0
