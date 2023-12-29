@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/server/websocket"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
-	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
 	"github.com/mailhedgehog/contracts"
 	"github.com/mailhedgehog/logger"
 	"github.com/mailhedgehog/smtpMessage"
+	"github.com/mailhedgehog/smtpServerProtocol"
 	"io"
 	"net"
 )

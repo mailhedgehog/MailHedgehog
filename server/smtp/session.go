@@ -3,7 +3,7 @@ package smtp
 import (
 	"fmt"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
-	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
+	"github.com/mailhedgehog/smtpServerProtocol"
 	"io"
 	"strings"
 )
@@ -69,7 +69,7 @@ func (session *session) readAndWriteReply() bool {
 
 // writeReply a reply to the specific connection
 func (session *session) writeReply(reply *smtpServerProtocol.Reply) {
-	lines := reply.Lines()
+	lines := reply.FormattedLines()
 	replacer := strings.NewReplacer("\n", "\\n", "\r", "\\r")
 	for _, l := range lines {
 		logManager().Info(fmt.Sprintf("SERVER -> CLIENT: %s", replacer.Replace(l)))

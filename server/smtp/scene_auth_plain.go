@@ -6,8 +6,8 @@ package smtp
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/mailhedgehog/MailHedgehog/smtpServerProtocol"
 	"github.com/mailhedgehog/contracts"
+	"github.com/mailhedgehog/smtpServerProtocol"
 	"strings"
 )
 
