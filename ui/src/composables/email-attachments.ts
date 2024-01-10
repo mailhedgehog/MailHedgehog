@@ -34,7 +34,10 @@ export function useEmailAttachments(email: Ref<Email|null>, options: {
       .then(() => {
         const link = document.createElement('a');
         link.download = filename;
-        let urlString = `${window.location.protocol}${mailHedgehog?.request().defaults.baseURL}/${url}`;
+        let urlString = `${mailHedgehog?.request().defaults.baseURL}/${url}`;
+        if(urlString.startsWith('//')) {
+          urlString = `${window.location.protocol}${urlString}`;
+        }
         const newUrl = new URL(urlString);
         newUrl.searchParams.set('token', mailHedgehog?.getAuthToken() as string);
         link.href = newUrl.toString();

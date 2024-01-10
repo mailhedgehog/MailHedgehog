@@ -4,14 +4,14 @@
 # docker build  -t yaroslawww/mailhedgehog:latest . --network host
 # docker push  yaroslawww/mailhedgehog:latest
 
-FROM golang:1.18-alpine as builder
+FROM golang:1.19-alpine as builder
 
 # Install MailHedgehog:
 RUN apk --no-cache add --virtual build-dependencies \
     git \
   && mkdir -p /root/gocode \
   && export GOPATH=/root/gocode \
-  && go install github.com/mailhedgehog/MailHedgehog@v1.4.1
+  && go install github.com/mailhedgehog/MailHedgehog@v1.4.2
 
 FROM alpine:latest
 # Add mailhedgehog user/group with uid/gid 1000.
