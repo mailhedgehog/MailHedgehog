@@ -11,7 +11,7 @@ RUN apk --no-cache add --virtual build-dependencies \
     git \
   && mkdir -p /root/gocode \
   && export GOPATH=/root/gocode \
-  && go install github.com/mailhedgehog/MailHedgehog@v1.4.0
+  && go install github.com/mailhedgehog/MailHedgehog@v1.4.1
 
 FROM alpine:latest
 # Add mailhedgehog user/group with uid/gid 1000.
