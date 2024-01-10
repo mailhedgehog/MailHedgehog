@@ -32,7 +32,7 @@ func Get(proposal string) (string, error) {
 	return inputValue, nil
 }
 
-func GetSilent(proposal string) (string, error) {
+func GetSecret(proposal string) (string, error) {
 	fmt.Print(strings.TrimSpace(proposal) + " ")
 	inputValue, err := terminal.ReadPassword(0)
 	if err != nil {

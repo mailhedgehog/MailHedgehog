@@ -288,8 +288,10 @@ func (apiV1 *ApiV1) downloadAttachment(ctx *fiber.Ctx) error {
 			ValidationErrorFromError("fileIndex", errors.New("we can't get content of attachment")),
 		})
 	}
+
 	ctx.Attachment(attachment.Filename)
 	ctx.Type(attachment.ContentType)
+	ctx.Set("Access-Control-Expose-Headers", "Content-Disposition")
 
 	return ctx.Send(bytes)
 }

@@ -66,24 +66,30 @@ func (context *Context) GetHttpAuthenticatedUser(ctx *fiber.Ctx) (string, error)
 			username = fmt.Sprintf("%v", usernameValue)
 		}
 	case "internal":
-		tokenString := ctx.Get(fiber.HeaderAuthorization)
-		if len(tokenString) > 0 {
-			tokenString = strings.TrimPrefix(tokenString, "Bearer ")
-			if len(tokenString) > 0 {
-				token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-					// Don't forget to validate the alg is what you expect:
-					if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-						return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-					}
+		var authToken = ""
+		tokenFromHeader := ctx.Get(fiber.HeaderAuthorization)
+		if len(tokenFromHeader) > 0 {
+			authToken = strings.TrimPrefix(tokenFromHeader, "Bearer ")
+		}
 
-					// hmacSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-					return context.Config.Authentication.Internal.HmacSecret, nil
-				})
-				if err == nil {
-					if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-						if time.Now().Unix() < int64(claims["exp"].(float64)) {
-							username = claims["user"].(string)
-						}
+		if len(authToken) <= 0 {
+			authToken = ctx.Query("token")
+		}
+
+		if len(authToken) > 0 {
+			token, err := jwt.Parse(authToken, func(token *jwt.Token) (interface{}, error) {
+				// Don't forget to validate the alg is what you expect:
+				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+					return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+				}
+
+				// hmacSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
+				return context.Config.Authentication.Internal.HmacSecret, nil
+			})
+			if err == nil {
+				if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+					if time.Now().Unix() < int64(claims["exp"].(float64)) {
+						username = claims["user"].(string)
 					}
 				}
 			}

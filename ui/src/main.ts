@@ -76,6 +76,12 @@ export class MailHedgehog {
     return this;
   }
 
+  getAuthToken(token?: string) {
+    const header = this.$axios.defaults.headers.common.Authorization as string;
+
+    return header?.split('Bearer ').pop();
+  }
+
   info(message: string) {
     this.$toast.info(message);
   }

@@ -59,7 +59,7 @@ func addUser(auth contracts.Authentication) {
 		os.Exit(0)
 	}
 
-	httpPassword, err := userInput.GetSilent("Please set password for http login:")
+	httpPassword, err := userInput.GetSecret("Please set password for http login:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(httpPassword, 6, 20)
 	if err != nil {
@@ -67,7 +67,7 @@ func addUser(auth contracts.Authentication) {
 		os.Exit(0)
 	}
 
-	smtpPassword, err := userInput.GetSilent("Please set password for smtp login(optional, if empty will be used http password):")
+	smtpPassword, err := userInput.GetSecret("Please set password for smtp login(optional, if empty will be used http password):")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(httpPassword, 6, 20)
 	if err != nil {

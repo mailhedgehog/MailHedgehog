@@ -29,13 +29,15 @@ export function useEmailAttachments(email: Ref<Email|null>, options: {
       return;
     }
     const url = buildDownloadAttachmentUrl(index);
-
     mailHedgehog?.request()
       .get(url)
       .then(() => {
         const link = document.createElement('a');
         link.download = filename;
-        link.href = `${mailHedgehog?.request().defaults.baseURL}/${url}`;
+        let urlString = `${window.location.protocol}${mailHedgehog?.request().defaults.baseURL}/${url}`;
+        const newUrl = new URL(urlString);
+        newUrl.searchParams.set('token', mailHedgehog?.getAuthToken() as string);
+        link.href = newUrl.toString();
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);

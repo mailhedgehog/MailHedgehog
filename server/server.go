@@ -101,6 +101,7 @@ func Start(context *serverContext.Context) {
 		logManager().Debug(fmt.Sprintf("Allow origins: %s", context.Config.Http.AllowOrigins))
 		httpApp.Use(cors.New(cors.Config{
 			AllowOrigins: context.Config.Http.AllowOrigins,
+			AllowHeaders: "*",
 		}))
 	}
 
