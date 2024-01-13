@@ -18,6 +18,7 @@ require (
 	github.com/mailhedgehog/messagesStorageMongo v1.0.2
 	github.com/mailhedgehog/smtpMessage v1.0.4
 	github.com/mailhedgehog/smtpServerProtocol v1.0.0
+	github.com/mailhedgehog/ui v1.0.0
 	github.com/spf13/cobra v1.6.1
 	go.mongodb.org/mongo-driver v1.13.1
 	golang.org/x/crypto v0.17.0

@@ -22,7 +22,7 @@ func initApplicationArgs(cmd *cobra.Command, args []string) error {
 
 func initApplication(cmd *cobra.Command, args []string) {
 	defaultConfigFileName := ".mh-config.yml"
-	configFileName, err := userInput.Get(fmt.Sprintf("Config file name [%s]:", defaultConfigFileName))
+	configFileName, err := userInput.GetString(fmt.Sprintf("Config file name [%s]:", defaultConfigFileName))
 	logger.PanicIfError(err)
 	if len(configFileName) <= 0 {
 		configFileName = defaultConfigFileName

@@ -46,7 +46,7 @@ func authAddUser(cmd *cobra.Command, args []string) {
 }
 
 func addUser(auth contracts.Authentication) {
-	roomName, err := userInput.Get("Please input room name:")
+	roomName, err := userInput.GetString("Please input room name:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(roomName, 0, 20)
 	if err != nil {
@@ -59,7 +59,7 @@ func addUser(auth contracts.Authentication) {
 		os.Exit(0)
 	}
 
-	httpPassword, err := userInput.GetSecret("Please set password for http login:")
+	httpPassword, err := userInput.GetSecretString("Please set password for http login:")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(httpPassword, 6, 20)
 	if err != nil {
@@ -67,7 +67,7 @@ func addUser(auth contracts.Authentication) {
 		os.Exit(0)
 	}
 
-	smtpPassword, err := userInput.GetSecret("Please set password for smtp login(optional, if empty will be used http password):")
+	smtpPassword, err := userInput.GetSecretString("Please set password for smtp login(optional, if empty will be used http password):")
 	logger.PanicIfError(err)
 	err = validateMinMaxLength(httpPassword, 6, 20)
 	if err != nil {

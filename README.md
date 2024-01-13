@@ -31,9 +31,9 @@ smtp:
   port: 1026
 http:
   port: 8026
-  #  path: box
+  # path: box
   allow_origins: "http://localhost:5173"
-  assets_root: "./public"
+  # assets_root: "./public"
 storage:
   use: directory
   config:

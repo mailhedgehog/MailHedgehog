@@ -18,26 +18,39 @@ func logManager() *logger.Logger {
 	return configuredLogger
 }
 
-func Get(proposal string) (string, error) {
+func GetString(proposal string) (string, error) {
+
+	// Print proposal.
 	fmt.Print(strings.TrimSpace(proposal) + " ")
+
+	// Read input until new line.
 	reader := bufio.NewReader(os.Stdin)
-	inputValue, err := reader.ReadString('\n')
+	inputStringValue, err := reader.ReadString('\n')
 	if err != nil {
 		return "", err
 	}
-	inputValue = strings.TrimSuffix(inputValue, "\n")
 
-	logManager().Debug(fmt.Sprintf("User input: '%s'", inputValue))
+	// Remove new line symbol from resulting string.
+	inputStringValue = strings.TrimSuffix(inputStringValue, "\n")
 
-	return inputValue, nil
+	logManager().Debug(fmt.Sprintf("User input: '%s'", inputStringValue))
+
+	return inputStringValue, nil
 }
 
-func GetSecret(proposal string) (string, error) {
+func GetSecretString(proposal string) (string, error) {
+
+	// Print proposal.
 	fmt.Print(strings.TrimSpace(proposal) + " ")
-	inputValue, err := terminal.ReadPassword(0)
+
+	// Read input wrote by user.
+	inputBytesValue, err := terminal.ReadPassword(0)
 	if err != nil {
 		return "", err
 	}
+
+	// Print empty line to fix bug with hidden text.
 	fmt.Println(" ")
-	return string(inputValue), nil
+
+	return string(inputBytesValue), nil
 }

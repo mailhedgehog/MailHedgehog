@@ -1,7 +1,6 @@
 /go.sum
 /.mh-*
 /ui.json
-/public
 /dist
 /MailHedgehog.zip
 /vendor

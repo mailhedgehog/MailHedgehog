@@ -1,12 +1,12 @@
 package ui
 
 import (
-	"embed"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/mailhedgehog/MailHedgehog/serverContext"
 	"github.com/mailhedgehog/logger"
+	mailHedgehogUi "github.com/mailhedgehog/ui"
 	"net/http"
 	"os"
 )
@@ -20,22 +20,19 @@ func logManager() *logger.Logger {
 	return configuredLogger
 }
 
-//go:embed static/*
-var EmbedDirStatic embed.FS
-
 func CreateUIRoutes(context *serverContext.Context, httpApp *fiber.App) {
-	ui := httpApp.Group(context.PathWithPrefix(""), func(c *fiber.Ctx) error {
+	uiRouter := httpApp.Group(context.PathWithPrefix(""), func(c *fiber.Ctx) error {
 		return c.Next()
 	})
 
-	ui.Get("/mh-configuration.json", configurationHandler(context))
+	uiRouter.Get("/mh-configuration.json", configurationHandler(context))
 
 	if len(context.Config.Http.AssetsRoot) > 0 {
-		ui.Static("/", context.Config.Http.AssetsRoot)
+		uiRouter.Static("/", context.Config.Http.AssetsRoot)
 	} else {
-		ui.Use("/", filesystem.New(filesystem.Config{
-			Root:       http.FS(EmbedDirStatic),
-			PathPrefix: "static",
+		uiRouter.Use("/", filesystem.New(filesystem.Config{
+			Root:       http.FS(mailHedgehogUi.DirStaticEmbed),
+			PathPrefix: mailHedgehogUi.DirStaticName,
 			Browse:     false,
 		}))
 	}
